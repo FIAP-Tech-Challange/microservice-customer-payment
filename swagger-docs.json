@@ -1,0 +1,1 @@
+{"openapi":"3.0.0","paths":{"/":{"get":{"operationId":"AppController_getHello","parameters":[],"responses":{"200":{"description":""}},"tags":["App"]}}},"info":{"title":"API Tech Challenge - Phase One","description":"This application provides data from the cafeteria to customers and employees.","version":"1.0.0","contact":{}},"tags":[],"servers":[],"components":{"schemas":{}}}
