@@ -31,6 +31,20 @@
 $ npm install
 ```
 
+## Setting up the env vars
+
+```bash
+
+$ export DB_PG_HOST=[host]
+$ export DB_PG_PORT=[port]
+$ export DB_PG_USER=[dbuser]
+$ export DB_PG_PASSWORD=[dbpasswd]
+$ export DB_PG_NAME=[sid]
+$ export API_KEY=[apikey]
+$ export JWT_SECRET=[secret]
+$ export JWT_ACCESS_TOKEN_EXPIRATION_TIME=[jwtAccessTokenExpirationTime]
+$ export JWT_REFRESH_TOKEN_EXPIRATION_TIME=[jwtRefreshTokenExpirationTime]
+
 ## Compile and run the project
 
 ```bash
