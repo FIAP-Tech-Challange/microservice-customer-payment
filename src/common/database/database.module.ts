@@ -9,6 +9,7 @@ import { PostgresConfigService } from './postgres.config.service';
       useClass: PostgresConfigService,
       inject: [PostgresConfigService],
     }),
+    TypeOrmModule.forFeature([]),
   ],
   exports: [TypeOrmModule],
 })

@@ -3,8 +3,9 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import applicationConfig from './infra/config/application.config';
 import databaseConfig from './infra/config/database.config';
-import { DatabaseModule } from './commom/database/database.module';
+import { DatabaseModule } from './common/database/database.module';
 import { HealthModule } from './infra/health/health.module';
+import { StoresModule } from './modules/stores/stores.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { HealthModule } from './infra/health/health.module';
     }),
     HealthModule,
     DatabaseModule,
+    StoresModule,
   ],
   controllers: [],
   providers: [],
