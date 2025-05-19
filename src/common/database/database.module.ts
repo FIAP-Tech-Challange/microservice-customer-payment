@@ -2,14 +2,21 @@ import { Module, Logger, OnModuleInit } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { PostgresConfigService } from './postgres.config.service';
+import { ConfigService } from '@nestjs/config';
+import { SQLiteConfigService } from './sqlite.config.service';
 
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({
-      useClass: PostgresConfigService,
-      inject: [PostgresConfigService],
+      imports: [],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => {
+        console.log('ConfigService', configService.get<string>('DB_TYPE'));
+        return configService.get<string>('DB_TYPE') === 'sqlite'
+          ? new SQLiteConfigService().createTypeOrmOptions()
+          : new PostgresConfigService(configService).createTypeOrmOptions();
+      },
     }),
-    TypeOrmModule.forFeature([]),
   ],
   exports: [TypeOrmModule],
 })

@@ -1,6 +1,6 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { Store } from '../entities/store.entity';
-import { StoreRepository } from '../ports/stores.repository';
+import { StoresRepository } from '../ports/stores.repository';
 import { StoreModel } from 'src/common/database/models/store.model';
 import { Repository } from 'typeorm';
 import { TotemModel } from 'src/common/database/models/totem.model';
@@ -8,7 +8,7 @@ import { Totem } from '../entities/totem.entity';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
-export class StoreRepositoryTypeOrm implements StoreRepository {
+export class StoresRepositoryTypeorm implements StoresRepository {
   constructor(
     @InjectRepository(StoreModel)
     private readonly storeModel: Repository<StoreModel>,
@@ -35,6 +35,19 @@ export class StoreRepositoryTypeOrm implements StoreRepository {
   async findByEmail(email: string): Promise<Store | null> {
     const store = await this.storeModel.findOne({
       where: { email },
+      relations: ['totems'],
+    });
+
+    if (!store) {
+      return null;
+    }
+
+    return this.toEntity(store);
+  }
+
+  async findById(id: string): Promise<Store | null> {
+    const store = await this.storeModel.findOne({
+      where: { id },
       relations: ['totems'],
     });
 

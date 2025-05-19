@@ -30,7 +30,7 @@ export class StoreModel {
   @Column()
   is_active: boolean;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @Column()
   created_at: Date;
 
   @OneToMany(() => TotemModel, (totem) => totem.store, {

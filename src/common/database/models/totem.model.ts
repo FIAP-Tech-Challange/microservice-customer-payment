@@ -15,7 +15,7 @@ export class TotemModel {
   @Column()
   is_active: boolean;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @Column()
   created_at: Date;
 
   @ManyToOne(() => StoreModel, (store) => store.totems, { onDelete: 'CASCADE' })

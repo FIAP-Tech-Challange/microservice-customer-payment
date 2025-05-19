@@ -7,6 +7,8 @@ import { DatabaseModule } from './common/database/database.module';
 import { HealthModule } from './infra/health/health.module';
 import { StoresModule } from './modules/stores/stores.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { APP_GUARD } from '@nestjs/core';
+import { AuthGuard } from './modules/auth/guards/auth.guard';
 
 @Module({
   imports: [
@@ -20,6 +22,6 @@ import { AuthModule } from './modules/auth/auth.module';
     AuthModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [{ provide: APP_GUARD, useClass: AuthGuard }],
 })
 export class AppModule {}

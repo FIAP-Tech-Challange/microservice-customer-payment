@@ -1,11 +1,12 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { StoreService } from '../stores/stores.service';
+import { StoresService } from '../stores/stores.service';
 import { JwtService } from '@nestjs/jwt';
+import { TokenDto } from './dtos/token.dto';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private storeService: StoreService,
+    private storesService: StoresService,
     private jwtService: JwtService,
   ) {}
 
@@ -13,7 +14,7 @@ export class AuthService {
     email: string,
     password: string,
   ): Promise<{ access_token: string }> {
-    const store = await this.storeService.findByEmail(email);
+    const store = await this.storesService.findByEmail(email);
 
     if (!store) {
       throw new UnauthorizedException('Email or password is incorrect');
@@ -23,7 +24,7 @@ export class AuthService {
       throw new UnauthorizedException('Email or password is incorrect');
     }
 
-    const payload = { sub: store.id, email: store.email };
+    const payload: TokenDto = { storeId: store.id, email: store.email };
 
     const token = await this.jwtService.signAsync(payload);
 
