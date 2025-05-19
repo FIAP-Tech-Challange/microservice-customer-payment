@@ -3,12 +3,13 @@ import { ProductRepositoryPort } from '../ports/output/product-repository.port';
 import { ProductModel } from '../models/product.model';
 import { CreateProductDto } from '../models/dto/create-product.dto';
 import { UpdateProductDto } from '../models/dto/update-product.dto';
+import { PRODUCT_REPOSITORY_PORT } from '../product.tokens';
 
 @Injectable()
 export class ProductService {
   constructor(
-    @Inject('ProductRepositoryPort')
-    private readonly productRepository: ProductRepositoryPort
+    @Inject(PRODUCT_REPOSITORY_PORT)
+    private readonly productRepository: ProductRepositoryPort,
   ) {}
 
   async findAll(): Promise<ProductModel[]> {

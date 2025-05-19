@@ -46,9 +46,9 @@ export class ProductEntity {
     model.description = this.description;
     model.prep_time = this.prep_time;
     model.image_url = this.image_url;
-   // model.category_id = this.category_id;
-   // model.store_id = this.store_id;
-    model.create_at = this.createdAt;
+    // model.category_id = this.category_id;
+    // model.store_id = this.store_id;
+    model.created_at = this.createdAt; // Corrigido para manter consistência com o nome do campo
     return model;
   }
 
@@ -60,7 +60,7 @@ export class ProductEntity {
     if (dto.description) this.description = dto.description;
     if (dto.prep_time !== undefined) this.prep_time = dto.prep_time;
     if (dto.image_url) this.image_url = dto.image_url;
-   // if (dto.category_id !== undefined) this.category_id = dto.category_id;
-  //  if (dto.store_id !== undefined) this.store_id = dto.store_id;
+    // if (dto.category_id !== undefined) this.category_id = dto.category_id;
+    // if (dto.store_id !== undefined) this.store_id = dto.store_id;
   }
 }

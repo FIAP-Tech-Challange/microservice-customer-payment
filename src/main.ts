@@ -9,8 +9,9 @@ async function bootstrap() {
   app.enableVersioning({
     type: VersioningType.URI,
   });
+
   new SwaggerDoc().setupDocs(app);
-  
+
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();

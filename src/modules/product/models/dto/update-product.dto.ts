@@ -1,37 +1,28 @@
-import { IsNotEmpty, IsString, IsNumber, IsOptional, IsUrl, Min } from 'class-validator';
+import { IsOptional, IsString, IsNumber, IsUrl, Min, IsIn } from 'class-validator';
 
 export class UpdateProductDto {
-  @IsNotEmpty()
   @IsString()
-  name: string;
+  name?: string;
 
-  @IsNotEmpty()
-  @IsNumber({ allowNaN: false })
-  @Min(0)
-  price: number;
+  @IsNumber()
+  price?: number;
 
-  @IsOptional()
   @IsString()
+  @IsIn(['active', 'inactive'])
   status?: string;
 
-  @IsOptional()
   @IsString()
   description?: string;
 
-  @IsNotEmpty()
   @IsNumber()
-  @Min(0)
-  prep_time: number;
+  prep_time?: number;
 
-  @IsOptional()
   @IsUrl()
   image_url?: string;
 
-  @IsNotEmpty()
   @IsNumber()
-  category_id: number;
+  category_id?: number;
 
-  @IsNotEmpty()
   @IsNumber()
-  store_id: number;
+  store_id?: number;
 }
