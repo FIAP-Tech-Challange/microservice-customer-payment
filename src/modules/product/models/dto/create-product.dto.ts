@@ -10,7 +10,7 @@ export class CreateProductDto {
   price: number;
 
   @IsString()
-  @IsIn()
+  @IsIn(['active', 'inactive'])
   status?: string;
 
   @IsString()
