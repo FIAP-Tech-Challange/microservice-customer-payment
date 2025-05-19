@@ -16,5 +16,6 @@ import { StoreRepositoryTypeOrm } from './adapters/stores.repository.typeorm';
       useClass: StoreRepositoryTypeOrm,
     },
   ],
+  exports: [StoreService],
 })
 export class StoresModule {}

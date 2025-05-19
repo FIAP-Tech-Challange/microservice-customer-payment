@@ -15,7 +15,10 @@ export class StoreRepositoryTypeOrm implements StoreRepository {
   ) {}
 
   async findByCnpj(cnpj: string): Promise<Store | null> {
-    const store = await this.storeModel.findOne({ where: { cnpj } });
+    const store = await this.storeModel.findOne({
+      where: { cnpj },
+      relations: ['totems'],
+    });
 
     if (!store) {
       return null;
@@ -29,9 +32,9 @@ export class StoreRepositoryTypeOrm implements StoreRepository {
     await this.storeModel.save(storeModel);
   }
 
-  async findById(id: string): Promise<Store | null> {
+  async findByEmail(email: string): Promise<Store | null> {
     const store = await this.storeModel.findOne({
-      where: { id },
+      where: { email },
       relations: ['totems'],
     });
 

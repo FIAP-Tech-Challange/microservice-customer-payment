@@ -1,28 +1,33 @@
 import { Injectable } from '@nestjs/common';
-import { CreateStoreDto } from './dtos/create-store.dto';
 import { Store } from './entities/store.entity';
 import { StoreRepository } from './ports/stores.repository';
+import { CreateStoreDto } from './dtos/create-store.dto';
 
 @Injectable()
 export class StoreService {
   constructor(private readonly storeRepository: StoreRepository) {}
 
-  async createStore(createStoreDto: CreateStoreDto): Promise<Store> {
-    const existingStore = await this.storeRepository.findByCnpj(
-      createStoreDto.cnpj,
-    );
+  async create(dto: CreateStoreDto): Promise<Store> {
+    const [existingByEmail, existingByCnpj] = await Promise.all([
+      this.storeRepository.findByEmail(dto.email),
+      this.storeRepository.findByCnpj(dto.cnpj),
+    ]);
 
-    if (existingStore) {
+    if (existingByEmail) {
+      throw new Error('Store with this email already exists');
+    }
+
+    if (existingByCnpj) {
       throw new Error('Store with this CNPJ already exists');
     }
 
     const store = Store.create({
-      cnpj: createStoreDto.cnpj,
-      email: createStoreDto.email,
-      fantasyName: createStoreDto.fantasy_name,
-      name: createStoreDto.name,
-      phone: createStoreDto.phone,
-      plainPassword: createStoreDto.password,
+      cnpj: dto.cnpj,
+      email: dto.email,
+      fantasyName: dto.fantasy_name,
+      name: dto.name,
+      phone: dto.phone,
+      plainPassword: dto.password,
     });
 
     await this.storeRepository.create(store);
@@ -30,13 +35,7 @@ export class StoreService {
     return store;
   }
 
-  async findById(id: string): Promise<Store> {
-    const store = await this.storeRepository.findById(id);
-
-    if (!store) {
-      throw new Error('Store not found');
-    }
-
-    return store;
+  async findByEmail(email: string): Promise<Store | null> {
+    return this.storeRepository.findByEmail(email);
   }
 }

@@ -6,6 +6,7 @@ import databaseConfig from './infra/config/database.config';
 import { DatabaseModule } from './common/database/database.module';
 import { HealthModule } from './infra/health/health.module';
 import { StoresModule } from './modules/stores/stores.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { StoresModule } from './modules/stores/stores.module';
     HealthModule,
     DatabaseModule,
     StoresModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [],
