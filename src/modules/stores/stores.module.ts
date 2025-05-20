@@ -1,17 +1,21 @@
 import { Module } from '@nestjs/common';
-import { StoresController } from './stores.controller';
+import { StoresController } from './adapters/primary/stores.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { StoresRepositoryTypeorm } from './adapters/stores.repository.typeorm';
+import { StoresRepositoryTypeorm } from './adapters/secondary/stores.repository.typeorm';
 import { StoresService } from './stores.service';
 import { TotemEntity } from './models/entities/totem.entity';
 import { StoreEntity } from './models/entities/store.entity';
+import { STORE_REPOSITORY_PORT_KEY } from './ports/output/stores.repository.port';
 
 @Module({
   imports: [TypeOrmModule.forFeature([TotemEntity, StoreEntity])],
   controllers: [StoresController],
   providers: [
     StoresService,
-    { provide: 'StoresRepository', useClass: StoresRepositoryTypeorm },
+    {
+      provide: STORE_REPOSITORY_PORT_KEY,
+      useClass: StoresRepositoryTypeorm,
+    },
   ],
   exports: [StoresService],
 })

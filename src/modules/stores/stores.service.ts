@@ -1,16 +1,19 @@
 import { ConflictException, Inject, Injectable } from '@nestjs/common';
-import { StoresRepository } from './ports/stores.repository';
-import { CreateStoreDto } from './models/dtos/create-store.dto';
+import { CreateStoreInputDto } from './models/dtos/create-store.dto';
 import { StoreModel } from './models/domain/store.model';
+import {
+  STORE_REPOSITORY_PORT_KEY,
+  StoresRepositoryPort,
+} from './ports/output/stores.repository.port';
 
 @Injectable()
 export class StoresService {
   constructor(
-    @Inject('StoresRepository')
-    private storesRepository: StoresRepository,
+    @Inject(STORE_REPOSITORY_PORT_KEY)
+    private storesRepository: StoresRepositoryPort,
   ) {}
 
-  async create(dto: CreateStoreDto): Promise<StoreModel> {
+  async create(dto: CreateStoreInputDto): Promise<StoreModel> {
     const [existingByEmail, existingByCnpj] = await Promise.all([
       this.storesRepository.findByEmail(dto.email),
       this.storesRepository.findByCnpj(dto.cnpj),

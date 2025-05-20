@@ -10,7 +10,7 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async signIn(email: string, password: string) {
+  async login(email: string, password: string) {
     const store = await this.storesService.findByEmail(email);
 
     if (!store) {
@@ -23,8 +23,6 @@ export class AuthService {
 
     const payload: TokenDto = { storeId: store.id, email: store.email };
 
-    const token = await this.jwtService.signAsync(payload);
-
-    return { access_token: token };
+    return this.jwtService.signAsync(payload);
   }
 }

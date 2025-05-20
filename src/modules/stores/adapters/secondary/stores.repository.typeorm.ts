@@ -1,14 +1,14 @@
 import { InjectRepository } from '@nestjs/typeorm';
-import { StoreEntity } from '../models/entities/store.entity';
-import { StoresRepository } from '../ports/stores.repository';
+import { StoreEntity } from '../../models/entities/store.entity';
 import { Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
-import { StoreModel } from '../models/domain/store.model';
-import { TotemModel } from '../models/domain/totem.model';
-import { TotemEntity } from '../models/entities/totem.entity';
+import { StoreModel } from '../../models/domain/store.model';
+import { TotemModel } from '../../models/domain/totem.model';
+import { TotemEntity } from '../../models/entities/totem.entity';
+import { StoresRepositoryPort } from '../../ports/output/stores.repository.port';
 
 @Injectable()
-export class StoresRepositoryTypeorm implements StoresRepository {
+export class StoresRepositoryTypeorm implements StoresRepositoryPort {
   constructor(
     @InjectRepository(StoreEntity)
     private readonly storeEntity: Repository<StoreEntity>,
