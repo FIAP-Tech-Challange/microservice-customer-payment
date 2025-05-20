@@ -1,21 +1,21 @@
 import { InjectRepository } from '@nestjs/typeorm';
-import { Store } from '../entities/store.entity';
+import { StoreEntity } from '../models/entities/store.entity';
 import { StoresRepository } from '../ports/stores.repository';
-import { StoreModel } from 'src/common/database/models/store.model';
 import { Repository } from 'typeorm';
-import { TotemModel } from 'src/common/database/models/totem.model';
-import { Totem } from '../entities/totem.entity';
 import { Injectable } from '@nestjs/common';
+import { StoreModel } from '../models/domain/store.model';
+import { TotemModel } from '../models/domain/totem.model';
+import { TotemEntity } from '../models/entities/totem.entity';
 
 @Injectable()
 export class StoresRepositoryTypeorm implements StoresRepository {
   constructor(
-    @InjectRepository(StoreModel)
-    private readonly storeModel: Repository<StoreModel>,
+    @InjectRepository(StoreEntity)
+    private readonly storeEntity: Repository<StoreEntity>,
   ) {}
 
-  async findByCnpj(cnpj: string): Promise<Store | null> {
-    const store = await this.storeModel.findOne({
+  async findByCnpj(cnpj: string): Promise<StoreModel | null> {
+    const store = await this.storeEntity.findOne({
       where: { cnpj },
       relations: ['totems'],
     });
@@ -24,16 +24,15 @@ export class StoresRepositoryTypeorm implements StoresRepository {
       return null;
     }
 
-    return this.toEntity(store);
+    return this.toDomain(store);
   }
 
-  async create(store: Store): Promise<void> {
-    const storeModel = this.toModel(store);
-    await this.storeModel.save(storeModel);
+  async create(store: StoreModel): Promise<void> {
+    await this.storeEntity.save(this.toEntity(store));
   }
 
-  async findByEmail(email: string): Promise<Store | null> {
-    const store = await this.storeModel.findOne({
+  async findByEmail(email: string): Promise<StoreModel | null> {
+    const store = await this.storeEntity.findOne({
       where: { email },
       relations: ['totems'],
     });
@@ -42,11 +41,11 @@ export class StoresRepositoryTypeorm implements StoresRepository {
       return null;
     }
 
-    return this.toEntity(store);
+    return this.toDomain(store);
   }
 
-  async findById(id: string): Promise<Store | null> {
-    const store = await this.storeModel.findOne({
+  async findById(id: string): Promise<StoreModel | null> {
+    const store = await this.storeEntity.findOne({
       where: { id },
       relations: ['totems'],
     });
@@ -55,23 +54,23 @@ export class StoresRepositoryTypeorm implements StoresRepository {
       return null;
     }
 
-    return this.toEntity(store);
+    return this.toDomain(store);
   }
 
-  private toEntity(model: StoreModel): Store {
-    return Store.restore({
-      id: model.id,
-      cnpj: model.cnpj,
-      email: model.email,
-      fantasyName: model.fantasy_name,
-      name: model.name,
-      phone: model.phone,
-      passwordHash: model.password_hash,
-      salt: model.salt,
-      createdAt: model.created_at,
-      isActive: model.is_active,
-      totems: model.totems.map((totem) =>
-        Totem.restore({
+  private toDomain(entity: StoreEntity): StoreModel {
+    return StoreModel.restore({
+      id: entity.id,
+      cnpj: entity.cnpj,
+      email: entity.email,
+      fantasyName: entity.fantasy_name,
+      name: entity.name,
+      phone: entity.phone,
+      passwordHash: entity.password_hash,
+      salt: entity.salt,
+      createdAt: entity.created_at,
+      isActive: entity.is_active,
+      totems: entity.totems.map((totem) =>
+        TotemModel.restore({
           id: totem.id,
           name: totem.name,
           isActive: totem.is_active,
@@ -81,8 +80,8 @@ export class StoresRepositoryTypeorm implements StoresRepository {
     });
   }
 
-  private toModel(entity: Store): StoreModel {
-    const model = new StoreModel();
+  private toEntity(entity: StoreModel): StoreEntity {
+    const model = new StoreEntity();
     model.id = entity.id;
     model.cnpj = entity.cnpj;
     model.email = entity.email;
@@ -94,7 +93,7 @@ export class StoresRepositoryTypeorm implements StoresRepository {
     model.created_at = entity.createdAt;
     model.is_active = entity.isActive;
     model.totems = entity.totems.map((totem) => {
-      const totemModel = new TotemModel();
+      const totemModel = new TotemEntity();
       totemModel.id = totem.id;
       totemModel.name = totem.name;
       totemModel.is_active = totem.isActive;

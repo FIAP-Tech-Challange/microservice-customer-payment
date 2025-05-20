@@ -1,8 +1,8 @@
-import { Store } from '../entities/store.entity';
+import { StoreModel } from '../models/domain/store.model';
 
 export interface StoresRepository {
-  findByEmail(email: string): Promise<Store | null>;
-  findByCnpj(cnpj: string): Promise<Store | null>;
-  findById(id: string): Promise<Store | null>;
-  create(store: Store): Promise<void>;
+  findByEmail(email: string): Promise<StoreModel | null>;
+  findByCnpj(cnpj: string): Promise<StoreModel | null>;
+  findById(id: string): Promise<StoreModel | null>;
+  create(store: StoreModel): Promise<void>;
 }

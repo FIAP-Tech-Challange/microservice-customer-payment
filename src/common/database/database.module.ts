@@ -11,7 +11,6 @@ import { SQLiteConfigService } from './sqlite.config.service';
       imports: [],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
-        console.log('ConfigService', configService.get<string>('DB_TYPE'));
         return configService.get<string>('DB_TYPE') === 'sqlite'
           ? new SQLiteConfigService().createTypeOrmOptions()
           : new PostgresConfigService(configService).createTypeOrmOptions();

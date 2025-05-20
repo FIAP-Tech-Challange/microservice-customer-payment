@@ -1,15 +1,16 @@
 import { ConflictException, Inject, Injectable } from '@nestjs/common';
-import { Store } from './entities/store.entity';
 import { StoresRepository } from './ports/stores.repository';
-import { CreateStoreDto } from './dtos/create-store.dto';
+import { CreateStoreDto } from './models/dtos/create-store.dto';
+import { StoreModel } from './models/domain/store.model';
 
 @Injectable()
 export class StoresService {
   constructor(
-    @Inject('StoresRepository') private storesRepository: StoresRepository,
+    @Inject('StoresRepository')
+    private storesRepository: StoresRepository,
   ) {}
 
-  async create(dto: CreateStoreDto): Promise<Store> {
+  async create(dto: CreateStoreDto): Promise<StoreModel> {
     const [existingByEmail, existingByCnpj] = await Promise.all([
       this.storesRepository.findByEmail(dto.email),
       this.storesRepository.findByCnpj(dto.cnpj),
@@ -23,7 +24,7 @@ export class StoresService {
       throw new ConflictException('Store with this CNPJ already exists');
     }
 
-    const store = Store.create({
+    const store = StoreModel.create({
       cnpj: dto.cnpj,
       email: dto.email,
       fantasyName: dto.fantasy_name,
@@ -37,11 +38,11 @@ export class StoresService {
     return store;
   }
 
-  async findByEmail(email: string): Promise<Store | null> {
+  async findByEmail(email: string): Promise<StoreModel | null> {
     return this.storesRepository.findByEmail(email);
   }
 
-  async findById(id: string): Promise<Store | null> {
+  async findById(id: string): Promise<StoreModel | null> {
     return this.storesRepository.findById(id);
   }
 }

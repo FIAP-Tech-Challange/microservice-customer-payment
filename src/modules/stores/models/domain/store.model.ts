@@ -1,5 +1,5 @@
 import { randomUUID, pbkdf2Sync } from 'node:crypto';
-import { Totem } from './totem.entity';
+import { TotemModel } from './totem.model';
 
 interface StoreProps {
   id: string;
@@ -11,11 +11,11 @@ interface StoreProps {
   passwordHash: string;
   cnpj: string;
   isActive: boolean;
-  totems: Totem[];
+  totems: TotemModel[];
   createdAt: Date;
 }
 
-export class Store {
+export class StoreModel {
   id: string;
 
   // TODO: create CNPJ value object
@@ -33,7 +33,7 @@ export class Store {
   salt: string;
   passwordHash: string;
   isActive: boolean;
-  totems: Totem[] = [];
+  totems: TotemModel[] = [];
   createdAt: Date;
 
   private constructor(props: StoreProps) {
@@ -62,7 +62,7 @@ export class Store {
     this.isActive = true;
   }
 
-  addTotem(totem: Totem) {
+  addTotem(totem: TotemModel) {
     if (this.totems.find((t) => t.id === totem.id)) {
       throw new Error('Totem already exists');
     }
@@ -129,7 +129,7 @@ export class Store {
     cnpj: string;
     plainPassword: string;
     phone: string;
-  }): Store {
+  }): StoreModel {
     const id = randomUUID();
     const salt = randomUUID();
     const passwordHash = pbkdf2Sync(
@@ -140,7 +140,7 @@ export class Store {
       'sha512',
     ).toString('hex');
 
-    return new Store({
+    return new StoreModel({
       id,
       name: props.name,
       fantasyName: props.fantasyName,
@@ -155,7 +155,7 @@ export class Store {
     });
   }
 
-  static restore(props: StoreProps): Store {
-    return new Store(props);
+  static restore(props: StoreProps): StoreModel {
+    return new StoreModel(props);
   }
 }

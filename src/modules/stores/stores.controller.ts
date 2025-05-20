@@ -6,17 +6,17 @@ import {
   HttpStatus,
   Param,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { StoresService } from './stores.service';
-import { CreateStoreDto } from './dtos/create-store.dto';
-import { Store } from './entities/store.entity';
-import { Public } from '../auth/guards/public.guard';
+import { CreateStoreDto } from './models/dtos/create-store.dto';
+import { AuthGuard } from '../auth/guards/auth.guard';
+import { StoreModel } from './models/domain/store.model';
 
 @Controller('stores')
 export class StoresController {
   constructor(private readonly storeService: StoresService) {}
 
-  @Public()
   @HttpCode(HttpStatus.CREATED)
   @Post()
   async create(@Body() dto: CreateStoreDto): Promise<{ id: string }> {
@@ -24,9 +24,9 @@ export class StoresController {
     return { id: store.id };
   }
 
-  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthGuard)
   @Get(':id')
-  async getById(@Param('id') id: string): Promise<Store> {
+  async getById(@Param('id') id: string): Promise<StoreModel> {
     const store = await this.storeService.findById(id);
 
     if (!store) {

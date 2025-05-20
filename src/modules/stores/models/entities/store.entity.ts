@@ -1,8 +1,8 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
-import { TotemModel } from './totem.model';
+import { TotemEntity } from './totem.entity';
 
 @Entity('stores')
-export class StoreModel {
+export class StoreEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -33,9 +33,9 @@ export class StoreModel {
   @Column()
   created_at: Date;
 
-  @OneToMany(() => TotemModel, (totem) => totem.store, {
+  @OneToMany(() => TotemEntity, (totem) => totem.store, {
     cascade: true,
     eager: true,
   })
-  totems: TotemModel[];
+  totems: TotemEntity[];
 }

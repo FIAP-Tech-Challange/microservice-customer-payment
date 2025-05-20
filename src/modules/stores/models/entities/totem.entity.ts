@@ -1,8 +1,8 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
-import { StoreModel } from './store.model';
+import { StoreEntity } from './store.entity';
 
 @Entity('totems')
-export class TotemModel {
+export class TotemEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -18,8 +18,10 @@ export class TotemModel {
   @Column()
   created_at: Date;
 
-  @ManyToOne(() => StoreModel, (store) => store.totems, { onDelete: 'CASCADE' })
-  store: StoreModel;
+  @ManyToOne(() => StoreEntity, (store) => store.totems, {
+    onDelete: 'CASCADE',
+  })
+  store: StoreEntity;
 
   @Column()
   store_id: string;

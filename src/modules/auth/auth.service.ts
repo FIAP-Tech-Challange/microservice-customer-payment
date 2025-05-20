@@ -10,10 +10,7 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async signIn(
-    email: string,
-    password: string,
-  ): Promise<{ access_token: string }> {
+  async signIn(email: string, password: string) {
     const store = await this.storesService.findByEmail(email);
 
     if (!store) {

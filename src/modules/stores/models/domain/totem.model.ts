@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
-export class Totem {
+export class TotemModel {
   id: string;
   name: string;
   tokenAccess: string;
@@ -35,8 +35,8 @@ export class Totem {
     this.isActive = false;
   }
 
-  static create(props: { name: string }): Totem {
-    return new Totem({
+  static create(props: { name: string }): TotemModel {
+    return new TotemModel({
       id: randomUUID(),
       name: props.name,
       tokenAccess: randomUUID(),
@@ -49,8 +49,8 @@ export class Totem {
     name: string;
     tokenAccess: string;
     isActive: boolean;
-  }): Totem {
-    return new Totem({
+  }): TotemModel {
+    return new TotemModel({
       id: props.id,
       name: props.name,
       tokenAccess: props.tokenAccess,
