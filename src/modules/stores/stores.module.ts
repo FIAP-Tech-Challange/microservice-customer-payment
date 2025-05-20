@@ -6,9 +6,10 @@ import { StoresService } from './stores.service';
 import { TotemEntity } from './models/entities/totem.entity';
 import { StoreEntity } from './models/entities/store.entity';
 import { STORE_REPOSITORY_PORT_KEY } from './ports/output/stores.repository.port';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([TotemEntity, StoreEntity])],
+  imports: [JwtModule, TypeOrmModule.forFeature([TotemEntity, StoreEntity])],
   controllers: [StoresController],
   providers: [
     StoresService,

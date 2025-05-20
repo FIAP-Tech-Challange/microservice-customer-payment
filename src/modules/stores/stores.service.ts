@@ -1,10 +1,16 @@
-import { ConflictException, Inject, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateStoreInputDto } from './models/dtos/create-store.dto';
 import { StoreModel } from './models/domain/store.model';
 import {
   STORE_REPOSITORY_PORT_KEY,
   StoresRepositoryPort,
 } from './ports/output/stores.repository.port';
+import { TotemModel } from './models/domain/totem.model';
 
 @Injectable()
 export class StoresService {
@@ -36,9 +42,24 @@ export class StoresService {
       plainPassword: dto.password,
     });
 
-    await this.storesRepository.create(store);
+    await this.storesRepository.save(store);
 
     return store;
+  }
+
+  async createTotem(storeId: string, totemName: string): Promise<TotemModel> {
+    const store = await this.storesRepository.findById(storeId);
+
+    if (!store) {
+      throw new NotFoundException('Store not found');
+    }
+
+    const totem = TotemModel.create({ name: totemName });
+    store.addTotem(totem);
+
+    await this.storesRepository.save(store);
+
+    return totem;
   }
 
   async findByEmail(email: string): Promise<StoreModel | null> {

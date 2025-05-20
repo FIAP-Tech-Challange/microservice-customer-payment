@@ -12,6 +12,8 @@ export class StoresRepositoryTypeorm implements StoresRepositoryPort {
   constructor(
     @InjectRepository(StoreEntity)
     private readonly storeEntity: Repository<StoreEntity>,
+    @InjectRepository(TotemEntity)
+    private readonly totemEntity: Repository<TotemEntity>,
   ) {}
 
   async findByCnpj(cnpj: string): Promise<StoreModel | null> {
@@ -27,7 +29,7 @@ export class StoresRepositoryTypeorm implements StoresRepositoryPort {
     return this.toDomain(store);
   }
 
-  async create(store: StoreModel): Promise<void> {
+  async save(store: StoreModel): Promise<void> {
     await this.storeEntity.save(this.toEntity(store));
   }
 
