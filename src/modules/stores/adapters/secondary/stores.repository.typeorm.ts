@@ -77,32 +77,35 @@ export class StoresRepositoryTypeorm implements StoresRepositoryPort {
           name: totem.name,
           isActive: totem.is_active,
           tokenAccess: totem.token_access,
+          createdAt: totem.created_at,
         }),
       ),
     });
   }
 
   private toEntity(entity: StoreModel): StoreEntity {
-    const model = new StoreEntity();
-    model.id = entity.id;
-    model.cnpj = entity.cnpj;
-    model.email = entity.email;
-    model.fantasy_name = entity.fantasyName;
-    model.name = entity.name;
-    model.phone = entity.phone;
-    model.password_hash = entity.passwordHash;
-    model.salt = entity.salt;
-    model.created_at = entity.createdAt;
-    model.is_active = entity.isActive;
-    model.totems = entity.totems.map((totem) => {
-      const totemModel = new TotemEntity();
-      totemModel.id = totem.id;
-      totemModel.name = totem.name;
-      totemModel.is_active = totem.isActive;
-      totemModel.token_access = totem.tokenAccess;
-      return totemModel;
+    const storeEntity = new StoreEntity();
+    storeEntity.id = entity.id;
+    storeEntity.cnpj = entity.cnpj;
+    storeEntity.email = entity.email;
+    storeEntity.fantasy_name = entity.fantasyName;
+    storeEntity.name = entity.name;
+    storeEntity.phone = entity.phone;
+    storeEntity.password_hash = entity.passwordHash;
+    storeEntity.salt = entity.salt;
+    storeEntity.created_at = entity.createdAt;
+    storeEntity.is_active = entity.isActive;
+    storeEntity.totems = entity.totems.map((totem) => {
+      const totemEntity = new TotemEntity();
+      totemEntity.id = totem.id;
+      totemEntity.store_id = storeEntity.id;
+      totemEntity.name = totem.name;
+      totemEntity.is_active = totem.isActive;
+      totemEntity.token_access = totem.tokenAccess;
+      totemEntity.created_at = totem.createdAt;
+      return totemEntity;
     });
 
-    return model;
+    return storeEntity;
   }
 }

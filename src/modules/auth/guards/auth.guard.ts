@@ -7,10 +7,14 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { TokenDto } from '../models/dtos/token.dto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(private jwtService: JwtService) {}
+  constructor(
+    private jwtService: JwtService,
+    private configService: ConfigService,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request: Request = context.switchToHttp().getRequest<Request>();
@@ -21,7 +25,9 @@ export class AuthGuard implements CanActivate {
     }
 
     try {
-      const payload: TokenDto = await this.jwtService.verifyAsync(token);
+      const payload: TokenDto = await this.jwtService.verifyAsync(token, {
+        secret: this.configService.get<string>('JWT_SECRET'),
+      });
 
       request['storeId'] = payload.storeId;
       request['email'] = payload.email;

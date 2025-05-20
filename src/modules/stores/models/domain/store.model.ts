@@ -1,5 +1,6 @@
 import { randomUUID, pbkdf2Sync } from 'node:crypto';
 import { TotemModel } from './totem.model';
+import { ConflictException } from '@nestjs/common';
 
 interface StoreProps {
   id: string;
@@ -63,9 +64,21 @@ export class StoreModel {
   }
 
   addTotem(totem: TotemModel) {
-    if (this.totems.find((t) => t.id === totem.id)) {
-      throw new Error('Totem already exists');
-    }
+    this.totems.forEach((t) => {
+      if (t.name === totem.name) {
+        throw new ConflictException('Totem with this name already exists');
+      }
+
+      if (t.tokenAccess === totem.tokenAccess) {
+        throw new ConflictException(
+          'Totem with this token access already exists',
+        );
+      }
+
+      if (t.id === totem.id) {
+        throw new ConflictException('Totem with this id already exists');
+      }
+    });
     this.totems.push(totem);
   }
 

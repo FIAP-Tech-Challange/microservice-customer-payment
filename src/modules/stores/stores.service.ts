@@ -19,7 +19,7 @@ export class StoresService {
     private storesRepository: StoresRepositoryPort,
   ) {}
 
-  async create(dto: CreateStoreInputDto): Promise<StoreModel> {
+  async create(dto: CreateStoreInputDto) {
     const [existingByEmail, existingByCnpj] = await Promise.all([
       this.storesRepository.findByEmail(dto.email),
       this.storesRepository.findByCnpj(dto.cnpj),
@@ -47,12 +47,8 @@ export class StoresService {
     return store;
   }
 
-  async createTotem(storeId: string, totemName: string): Promise<TotemModel> {
-    const store = await this.storesRepository.findById(storeId);
-
-    if (!store) {
-      throw new NotFoundException('Store not found');
-    }
+  async createTotem(storeId: string, totemName: string) {
+    const store = await this.findById(storeId);
 
     const totem = TotemModel.create({ name: totemName });
     store.addTotem(totem);
@@ -62,11 +58,23 @@ export class StoresService {
     return totem;
   }
 
-  async findByEmail(email: string): Promise<StoreModel | null> {
-    return this.storesRepository.findByEmail(email);
+  async findByEmail(email: string) {
+    const store = await this.storesRepository.findByEmail(email);
+
+    if (!store) {
+      throw new NotFoundException('Store not found');
+    }
+
+    return store;
   }
 
-  async findById(id: string): Promise<StoreModel | null> {
-    return this.storesRepository.findById(id);
+  async findById(id: string) {
+    const store = await this.storesRepository.findById(id);
+
+    if (!store) {
+      throw new NotFoundException('Store not found');
+    }
+
+    return store;
   }
 }

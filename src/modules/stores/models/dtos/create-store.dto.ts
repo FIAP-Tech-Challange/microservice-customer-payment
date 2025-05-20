@@ -6,7 +6,3 @@ export interface CreateStoreInputDto {
   fantasy_name: string;
   phone: string;
 }
-
-export interface CreateStoreOutputDto {
-  id: string;
-}

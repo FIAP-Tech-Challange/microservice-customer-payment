@@ -11,18 +11,18 @@ export class AuthService {
   ) {}
 
   async login(email: string, password: string) {
-    const store = await this.storesService.findByEmail(email);
+    try {
+      const store = await this.storesService.findByEmail(email);
 
-    if (!store) {
+      if (!store.verifyPassword(password)) {
+        throw new UnauthorizedException('Incorrect password');
+      }
+
+      const payload: TokenDto = { storeId: store.id, email: store.email };
+
+      return this.jwtService.signAsync(payload);
+    } catch {
       throw new UnauthorizedException('Email or password is incorrect');
     }
-
-    if (!store.verifyPassword(password)) {
-      throw new UnauthorizedException('Email or password is incorrect');
-    }
-
-    const payload: TokenDto = { storeId: store.id, email: store.email };
-
-    return this.jwtService.signAsync(payload);
   }
 }
