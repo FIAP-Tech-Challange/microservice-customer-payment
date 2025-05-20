@@ -1,1 +1,82 @@
-{"openapi":"3.0.0","paths":{"/":{"get":{"operationId":"AppController_getHello","parameters":[],"responses":{"200":{"description":""}},"tags":["App"]}},"/customers":{"post":{"operationId":"CustomerController_create","parameters":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/CreateCustomerDto"}}}},"responses":{"201":{"description":""}},"tags":["Customer"]},"get":{"operationId":"CustomerController_findAll","parameters":[],"responses":{"200":{"description":""}},"tags":["Customer"]}},"/customers/{id}":{"get":{"operationId":"CustomerController_findOne","parameters":[{"name":"id","required":true,"in":"path","schema":{"type":"number"}}],"responses":{"200":{"description":""}},"tags":["Customer"]},"patch":{"operationId":"CustomerController_update","parameters":[{"name":"id","required":true,"in":"path","schema":{"type":"number"}}],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpdateCustomerDto"}}}},"responses":{"200":{"description":""}},"tags":["Customer"]},"delete":{"operationId":"CustomerController_remove","parameters":[{"name":"id","required":true,"in":"path","schema":{"type":"number"}}],"responses":{"200":{"description":""}},"tags":["Customer"]}}},"info":{"title":"API Tech Challenge - Phase One","description":"This application provides data from the cafeteria to customers and employees.","version":"1.0.0","contact":{}},"tags":[],"servers":[],"components":{"schemas":{"CreateCustomerDto":{"type":"object","properties":{}},"UpdateCustomerDto":{"type":"object","properties":{}}}}}
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/v1/customers/cpf": {
+      "get": {
+        "operationId": "CustomerController_findByCpf_v1",
+        "parameters": [
+          {
+            "name": "cpf",
+            "required": true,
+            "in": "query",
+            "description": "Customer CPF (with or without formatting)",
+            "schema": { "example": "123.456.789-01", "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "The customer was found successfully" },
+          "400": { "description": "Invalid CPF format" },
+          "404": { "description": "Customer not found" }
+        },
+        "summary": "Find a customer by CPF",
+        "tags": ["customers"]
+      }
+    },
+    "/v1/customers": {
+      "post": {
+        "operationId": "CustomerController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateCustomerDto" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The customer has been successfully created"
+          },
+          "400": { "description": "Invalid input data" },
+          "409": { "description": "Customer with this CPF already exists" }
+        },
+        "summary": "Create a new customer",
+        "tags": ["customers"]
+      }
+    }
+  },
+  "info": {
+    "title": "API Tech Challenge - Phase One",
+    "description": "This application provides data from the cafeteria to customers and employees.",
+    "version": "1.0.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "schemas": {
+      "CreateCustomerDto": {
+        "type": "object",
+        "properties": {
+          "cpf": {
+            "type": "string",
+            "description": "Customer CPF (with or without formatting)",
+            "example": "123.456.789-01"
+          },
+          "name": {
+            "type": "string",
+            "description": "Customer name",
+            "example": "John Doe"
+          },
+          "email": {
+            "type": "string",
+            "description": "Customer email",
+            "example": "john.doe@example.com"
+          }
+        },
+        "required": ["cpf", "name", "email"]
+      }
+    }
+  }
+}
