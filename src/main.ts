@@ -5,6 +5,7 @@ import {
   ValidationPipe,
   BadRequestException,
 } from '@nestjs/common';
+
 import { SwaggerDoc } from './docs/swagger.docs';
 
 async function bootstrap() {
@@ -37,6 +38,17 @@ async function bootstrap() {
   });
 
   new SwaggerDoc().setupDocs(app);
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
+    }),
+  );
 
   await app.listen(process.env.PORT ?? 3000);
 }

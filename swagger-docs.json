@@ -44,6 +44,125 @@
         "summary": "Create a new customer",
         "tags": ["customers"]
       }
+    },
+    "/v1/payment": {
+      "post": {
+        "operationId": "PaymentController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "description": "Payment data",
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreatePaymentDto" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Payment created successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PaymentResponseDto" }
+              }
+            }
+          },
+          "400": {
+            "description": "Payment has not been created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/BadRequestException" }
+              }
+            }
+          }
+        },
+        "tags": ["Payment"]
+      }
+    },
+    "/v1/payment/{id}": {
+      "get": {
+        "operationId": "PaymentController_findById_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Payment ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payment found successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PaymentResponseDto" }
+              }
+            }
+          },
+          "404": {
+            "description": "Payment not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/NotFoundException" }
+              }
+            }
+          }
+        },
+        "tags": ["Payment"]
+      }
+    },
+    "/v1/payment/{id}/status": {
+      "patch": {
+        "operationId": "PaymentController_updateStatus_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Payment ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Payment status data",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStatusPaymentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Payment status updated successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PaymentResponseDto" }
+              }
+            }
+          },
+          "400": {
+            "description": "Payment status has not been updated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/BadRequestException" }
+              }
+            }
+          },
+          "404": {
+            "description": "Payment not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/NotFoundException" }
+              }
+            }
+          }
+        },
+        "tags": ["Payment"]
+      }
     }
   },
   "info": {
@@ -56,26 +175,91 @@
   "servers": [],
   "components": {
     "schemas": {
-      "CreateCustomerDto": {
+      "CreatePaymentDto": {
         "type": "object",
         "properties": {
-          "cpf": {
-            "type": "string",
-            "description": "Customer CPF (with or without formatting)",
-            "example": "123.456.789-01"
-          },
-          "name": {
-            "type": "string",
-            "description": "Customer name",
-            "example": "John Doe"
-          },
-          "email": {
-            "type": "string",
-            "description": "Customer email",
-            "example": "john.doe@example.com"
+          "orderId": { "type": "string", "description": "The ID of the Order" },
+          "storeId": { "type": "string", "description": "The ID of the Store" },
+          "total": {
+            "type": "number",
+            "description": "The total amount of the payment"
           }
         },
-        "required": ["cpf", "name", "email"]
+        "required": ["orderId", "storeId", "total"]
+      },
+      "PaymentResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the payment"
+          },
+          "orderId": {
+            "type": "string",
+            "description": "Unique identifier for the order associated with the payment"
+          },
+          "storeId": {
+            "type": "string",
+            "description": "Unique identifier for the store associated with the payment"
+          },
+          "paymentType": {
+            "type": "string",
+            "enum": ["QrCode", "Pix", "Dinheiro", "Cartão"],
+            "description": "Type of payment"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["P", "A", "R", "C"],
+            "description": "Status of the payment"
+          },
+          "total": {
+            "type": "number",
+            "description": "Total amount of the payment"
+          },
+          "externalId": {
+            "type": "string",
+            "description": "Unique identifier for the payment in the external system"
+          },
+          "qrCode": {
+            "type": "string",
+            "description": "QR code for the payment"
+          },
+          "plataform": {
+            "type": "string",
+            "enum": ["Mercado Pago", "Stripe", "Fake Provider"],
+            "description": "Platform used for the payment"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Date and time when the payment was created"
+          }
+        },
+        "required": [
+          "id",
+          "orderId",
+          "storeId",
+          "paymentType",
+          "status",
+          "total",
+          "externalId",
+          "qrCode",
+          "plataform",
+          "createdAt"
+        ]
+      },
+      "BadRequestException": { "type": "object", "properties": {} },
+      "NotFoundException": { "type": "object", "properties": {} },
+      "UpdateStatusPaymentDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "The status of the payment",
+            "enum": ["P", "A", "R", "C"]
+          }
+        },
+        "required": ["status"]
       }
     }
   }
