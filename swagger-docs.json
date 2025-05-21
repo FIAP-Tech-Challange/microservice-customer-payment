@@ -10,11 +10,18 @@
             "required": true,
             "in": "query",
             "description": "Customer CPF (with or without formatting)",
-            "schema": { "example": "123.456.789-01", "type": "string" }
+            "schema": { "example": "905.108.520-68", "type": "string" }
           }
         ],
         "responses": {
-          "200": { "description": "The customer was found successfully" },
+          "200": {
+            "description": "The customer was found successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CustomerResponseDto" }
+              }
+            }
+          },
           "400": { "description": "Invalid CPF format" },
           "404": { "description": "Customer not found" }
         },
@@ -36,7 +43,12 @@
         },
         "responses": {
           "201": {
-            "description": "The customer has been successfully created"
+            "description": "The customer has been successfully created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CustomerResponseDto" }
+              }
+            }
           },
           "400": { "description": "Invalid input data" },
           "409": { "description": "Customer with this CPF already exists" }
@@ -260,6 +272,53 @@
           }
         },
         "required": ["status"]
+      },
+      "CreateCustomerDto": {
+        "type": "object",
+        "properties": {
+          "cpf": {
+            "type": "string",
+            "description": "Customer CPF (with or without formatting)",
+            "example": "905.108.520-68"
+          },
+          "name": {
+            "type": "string",
+            "description": "Customer name",
+            "example": "John Doe"
+          },
+          "email": {
+            "type": "string",
+            "description": "Customer email",
+            "example": "john.doe@example.com"
+          }
+        },
+        "required": ["cpf", "name", "email"]
+      },
+      "CustomerResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the customer",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "cpf": {
+            "type": "string",
+            "description": "Customer CPF (with or without formatting)",
+            "example": "905.108.520-68"
+          },
+          "name": {
+            "type": "string",
+            "description": "Customer name",
+            "example": "John Doe"
+          },
+          "email": {
+            "type": "string",
+            "description": "Customer email",
+            "example": "john.doe@example.com"
+          }
+        },
+        "required": ["id", "cpf", "name", "email"]
       }
     }
   }

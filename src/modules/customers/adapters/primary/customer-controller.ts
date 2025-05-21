@@ -29,6 +29,7 @@ export class CustomerController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'The customer was found successfully',
+    type: CustomerResponseDto,
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
@@ -60,6 +61,7 @@ export class CustomerController {
   @ApiResponse({
     status: HttpStatus.CREATED,
     description: 'The customer has been successfully created',
+    type: CustomerResponseDto,
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
