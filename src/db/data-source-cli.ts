@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import { PaymentEntity } from 'src/modules/payment/models/entities/payment.entity';
 import { DataSource, DataSourceOptions } from 'typeorm';
 
 const dataSourceOptions: DataSourceOptions = {
@@ -8,11 +9,10 @@ const dataSourceOptions: DataSourceOptions = {
   username: process.env.DB_PG_USER,
   password: process.env.DB_PG_PASSWORD,
   database: process.env.DB_PG_NAME,
-  entities: [],
+  entities: [PaymentEntity],
   migrations: [__dirname + '/migrations/*.{js,ts}'],
   synchronize: false,
 };
 
 const dataSource = new DataSource(dataSourceOptions);
-
-export default dataSource;
+module.exports = dataSource;
