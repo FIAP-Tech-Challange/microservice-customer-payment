@@ -1,0 +1,39 @@
+import {
+  Entity,
+  Column,
+  CreateDateColumn,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+
+@Entity('payment')
+export class PaymentEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ nullable: false })
+  order_id: string;
+
+  @Column({ nullable: false })
+  store_id: string;
+
+  @Column({ nullable: false })
+  payment_type: string;
+
+  @Column({ nullable: false })
+  status: string;
+
+  @Column({ type: 'int', nullable: false })
+  total: number;
+
+  @Column({ type: 'varchar', nullable: false })
+  external_id: string;
+
+  @Column({ type: 'varchar', nullable: false })
+  qr_code: string;
+
+  @Column({ nullable: false })
+  plataform: string;
+
+  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  created_at: Date;
+}
