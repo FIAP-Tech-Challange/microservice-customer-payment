@@ -3,7 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { CustomerController } from '../../../../src/modules/customers/adapters/primary/customer-controller';
 import { CustomerInputPort } from '../../../../src/modules/customers/ports/input/customer.port';
 import { CUSTOMER_INPUT_PORT } from '../../../../src/modules/customers/customers.tokens';
-import { CustomerModel } from '../../../../src/modules/customers/models/customer.model';
+import { CustomerModel } from '../../../../src/modules/customers/models/domain/customer.model';
 import { CreateCustomerDto } from '../../../../src/modules/customers/models/dto/create-customer.dto';
 import { FindCustomerByCpfDto } from '../../../../src/modules/customers/models/dto/find-customer-by-cpf.dto';
 import { BadRequestException } from '@nestjs/common';
@@ -39,11 +39,14 @@ describe('CustomerController', () => {
         cpf: '902.136.910-94',
       };
 
-      const mockCustomer = new CustomerModel();
-      mockCustomer.id = '1';
-      mockCustomer.cpf = '90213691094';
-      mockCustomer.name = 'Test Customer';
-      mockCustomer.email = 'test@example.com';
+      const mockCustomer = CustomerModel.fromProps({
+        id: '1',
+        cpf: '90213691094',
+        name: 'Test Customer',
+        email: 'test@example.com',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
 
       const findByCpfMock = mockCustomerInputPort.findByCpf;
       findByCpfMock.mockResolvedValue(mockCustomer);
@@ -64,31 +67,34 @@ describe('CustomerController', () => {
         cpf: '123.456.789-00',
       };
 
-      const findByCpfMock = mockCustomerInputPort.findByCpf;
-      findByCpfMock.mockRejectedValue(
-        new BadRequestException('Invalid CPF format'),
-      );
+      const error = new BadRequestException('Invalid CPF format');
+      mockCustomerInputPort.findByCpf.mockRejectedValue(error);
 
       await expect(controller.findByCpf(findCustomerDto)).rejects.toThrow(
-        BadRequestException,
+        error,
       );
-      expect(findByCpfMock).toHaveBeenCalledWith(findCustomerDto.cpf);
+      expect(mockCustomerInputPort.findByCpf).toHaveBeenCalledWith(
+        findCustomerDto.cpf,
+      );
     });
   });
 
   describe('create', () => {
-    it('should create and return a customer when valid data is provided', async () => {
+    it('should create a customer when valid data is provided', async () => {
       const createCustomerDto: CreateCustomerDto = {
         cpf: '902.136.910-94',
         name: 'Test Customer',
         email: 'test@example.com',
       };
 
-      const mockCustomer = new CustomerModel();
-      mockCustomer.id = '1';
-      mockCustomer.cpf = '90213691094';
-      mockCustomer.name = 'Test Customer';
-      mockCustomer.email = 'test@example.com';
+      const mockCustomer = CustomerModel.fromProps({
+        id: '1',
+        cpf: '90213691094',
+        name: 'Test Customer',
+        email: 'test@example.com',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
 
       mockCustomerInputPort.create.mockResolvedValue(mockCustomer);
 
@@ -112,13 +118,10 @@ describe('CustomerController', () => {
         email: 'test@example.com',
       };
 
-      mockCustomerInputPort.create.mockRejectedValue(
-        new BadRequestException('Invalid CPF format'),
-      );
+      const error = new BadRequestException('Invalid CPF format');
+      mockCustomerInputPort.create.mockRejectedValue(error);
 
-      await expect(controller.create(createCustomerDto)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(controller.create(createCustomerDto)).rejects.toThrow(error);
       expect(mockCustomerInputPort.create).toHaveBeenCalledWith(
         createCustomerDto,
       );
