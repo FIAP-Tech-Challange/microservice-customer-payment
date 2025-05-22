@@ -12,7 +12,7 @@ import {
 import { StoresService } from '../../stores.service';
 import { StoresPort } from '../../ports/input/stores.port';
 import { CreateStoreInputDto } from '../../models/dtos/create-store.dto';
-import { AuthGuard } from 'src/modules/auth/guards/auth.guard';
+import { StoreGuard } from 'src/modules/auth/guards/auth.guard';
 import { SimplifiedStoreDto } from '../../models/dtos/simplified-store.dto';
 import { RequestWithStoreId } from 'src/modules/auth/models/dtos/request.dto';
 
@@ -27,7 +27,7 @@ export class StoresController implements StoresPort {
     return { id: store.id };
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(StoreGuard)
   @HttpCode(HttpStatus.CREATED)
   @Post('totems')
   async createTotem(
@@ -39,7 +39,7 @@ export class StoresController implements StoresPort {
     return { id: totem.id };
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(StoreGuard)
   @Post('totems/:totemId/inactivate')
   async inactivateTotem(
     @Req() req: RequestWithStoreId,
@@ -49,7 +49,7 @@ export class StoresController implements StoresPort {
     await this.storeService.inactivateTotem(storeId, totemId);
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(StoreGuard)
   @Get()
   async findById(@Req() req: RequestWithStoreId): Promise<SimplifiedStoreDto> {
     const storeId = req.storeId;

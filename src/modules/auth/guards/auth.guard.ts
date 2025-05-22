@@ -10,7 +10,7 @@ import { TokenDto } from '../models/dtos/token.dto';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
-export class AuthGuard implements CanActivate {
+export class StoreGuard implements CanActivate {
   constructor(
     private jwtService: JwtService,
     private configService: ConfigService,
