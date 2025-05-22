@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
-import { TokenDto } from '../models/dtos/token.dto';
+import { StoreTokenInterface } from '../models/dtos/token.dto';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
@@ -25,9 +25,12 @@ export class StoreGuard implements CanActivate {
     }
 
     try {
-      const payload: TokenDto = await this.jwtService.verifyAsync(token, {
-        secret: this.configService.get<string>('JWT_SECRET'),
-      });
+      const payload: StoreTokenInterface = await this.jwtService.verifyAsync(
+        token,
+        {
+          secret: this.configService.get<string>('JWT_SECRET'),
+        },
+      );
 
       request['storeId'] = payload.storeId;
     } catch {

@@ -12,9 +12,13 @@ import {
 import { StoresService } from '../../stores.service';
 import { StoresPort } from '../../ports/input/stores.port';
 import { CreateStoreInputDto } from '../../models/dtos/create-store.dto';
-import { StoreGuard } from 'src/modules/auth/guards/auth.guard';
-import { SimplifiedStoreDto } from '../../models/dtos/simplified-store.dto';
-import { RequestWithStoreId } from 'src/modules/auth/models/dtos/request.dto';
+import { StoreGuard } from 'src/modules/auth/guards/store.guard';
+import {
+  RequestFromStore,
+  RequestFromTotem,
+} from 'src/modules/auth/models/dtos/request.dto';
+import { StoreMapper } from '../../models/store.mapper';
+import { TotemGuard } from 'src/modules/auth/guards/totem.guard';
 
 @Controller('stores')
 export class StoresController implements StoresPort {
@@ -31,7 +35,7 @@ export class StoresController implements StoresPort {
   @HttpCode(HttpStatus.CREATED)
   @Post('totems')
   async createTotem(
-    @Req() req: RequestWithStoreId,
+    @Req() req: RequestFromStore,
     @Body('totemName') totemName: string,
   ) {
     const storeId = req.storeId;
@@ -42,7 +46,7 @@ export class StoresController implements StoresPort {
   @UseGuards(StoreGuard)
   @Post('totems/:totemId/inactivate')
   async inactivateTotem(
-    @Req() req: RequestWithStoreId,
+    @Req() req: RequestFromStore,
     @Param('totemId') totemId: string,
   ): Promise<void> {
     const storeId = req.storeId;
@@ -51,23 +55,21 @@ export class StoresController implements StoresPort {
 
   @UseGuards(StoreGuard)
   @Get()
-  async findById(@Req() req: RequestWithStoreId): Promise<SimplifiedStoreDto> {
+  async findById(@Req() req: RequestFromStore) {
     const storeId = req.storeId;
     const store = await this.storeService.findById(storeId);
+    return StoreMapper.fromDomainToSimplifiedStoreDto(store);
+  }
+
+  @UseGuards(TotemGuard)
+  @Get('totems/ping')
+  pingFromTotem(@Req() req: RequestFromTotem) {
+    const { totemAccessToken, totemId, storeId } = req;
+
     return {
-      id: store.id,
-      name: store.name,
-      fantasyName: store.fantasyName,
-      email: store.email,
-      phone: store.phone,
-      cnpj: store.cnpj,
-      isActive: store.isActive,
-      totems: store.totems.map((t) => ({
-        id: t.id,
-        name: t.name,
-        tokenAccess: t.tokenAccess,
-        isActive: t.isActive,
-      })),
+      totemAccessToken,
+      totemId,
+      storeId,
     };
   }
 }

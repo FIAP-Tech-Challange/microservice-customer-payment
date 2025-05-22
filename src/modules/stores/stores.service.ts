@@ -78,6 +78,17 @@ export class StoresService {
     return store;
   }
 
+  async findByTotemAccessToken(tokenAccess: string) {
+    const store =
+      await this.storesRepository.findByTotemAccessToken(tokenAccess);
+
+    if (!store) {
+      throw new NotFoundException('Store not found');
+    }
+
+    return store;
+  }
+
   async inactivateTotem(storeId: string, totemId: string) {
     const store = await this.findById(storeId);
 

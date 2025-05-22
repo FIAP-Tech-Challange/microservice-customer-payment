@@ -5,6 +5,7 @@ export interface StoresRepositoryPort {
   findByCnpj(cnpj: string): Promise<StoreModel | null>;
   findById(id: string): Promise<StoreModel | null>;
   save(store: StoreModel): Promise<void>;
+  findByTotemAccessToken(tokenAccess: string): Promise<StoreModel | null>;
 }
 
 export const STORE_REPOSITORY_PORT_KEY = Symbol('StoresRepositoryPort');

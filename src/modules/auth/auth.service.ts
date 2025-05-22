@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { StoresService } from '../stores/stores.service';
 import { JwtService } from '@nestjs/jwt';
-import { TokenDto } from './models/dtos/token.dto';
+import { StoreTokenInterface } from './models/dtos/token.dto';
 
 @Injectable()
 export class AuthService {
@@ -18,7 +18,7 @@ export class AuthService {
         throw new UnauthorizedException('Incorrect password');
       }
 
-      const payload: TokenDto = { storeId: store.id, email: store.email };
+      const payload: StoreTokenInterface = { storeId: store.id, email: store.email };
 
       return this.jwtService.signAsync(payload);
     } catch {
