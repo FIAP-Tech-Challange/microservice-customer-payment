@@ -1,9 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CustomerEntity } from '../../models/entities/customer.entity';
 import { CustomerRepositoryPort } from '../../ports/output/customer-repository.port';
-import { CustomerModel } from '../../models/customer.model';
+import { CustomerModel } from '../../models/domain/customer.model';
 
 @Injectable()
 export class CustomerRepositoryAdapter implements CustomerRepositoryPort {
@@ -22,10 +22,17 @@ export class CustomerRepositoryAdapter implements CustomerRepositoryPort {
   }
 
   async create(customerData: Partial<CustomerModel>): Promise<CustomerModel> {
+    const customerModel = CustomerModel.create({
+      cpf: customerData.cpf!,
+      name: customerData.name!,
+      email: customerData.email!,
+    });
+
     const customer = new CustomerEntity();
-    customer.cpf = customerData.cpf!;
-    customer.name = customerData.name!;
-    customer.email = customerData.email!;
+    customer.id = customerModel.id;
+    customer.cpf = customerModel.cpf;
+    customer.name = customerModel.name;
+    customer.email = customerModel.email;
 
     const savedCustomer = await this.customerRepository.save(customer);
     return savedCustomer.toModel();

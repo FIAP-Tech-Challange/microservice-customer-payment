@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CustomerRepositoryPort } from '../ports/output/customer-repository.port';
-import { CustomerModel } from '../models/customer.model';
+import { CustomerModel } from '../models/domain/customer.model';
 import { CreateCustomerDto } from '../models/dto/create-customer.dto';
 import { CUSTOMER_REPOSITORY_PORT } from '../customers.tokens';
 import { CustomerInputPort } from '../ports/input/customer.port';

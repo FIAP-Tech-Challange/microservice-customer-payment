@@ -5,7 +5,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { CustomerModel } from '../customer.model';
+import { CustomerModel } from '../domain/customer.model';
 
 @Entity('customers')
 export class CustomerEntity {
@@ -28,14 +28,14 @@ export class CustomerEntity {
   updatedAt: Date;
 
   toModel(): CustomerModel {
-    const model = new CustomerModel();
-    model.id = this.id;
-    model.cpf = this.cpf;
-    model.name = this.name;
-    model.email = this.email;
-    model.created_at = this.createdAt;
-    model.updated_at = this.updatedAt;
-    return model;
+    return CustomerModel.fromProps({
+      id: this.id,
+      cpf: this.cpf,
+      name: this.name,
+      email: this.email,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+    });
   }
 
   updateFromModel(model: Partial<CustomerModel>): void {
