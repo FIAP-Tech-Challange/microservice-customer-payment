@@ -13,6 +13,7 @@ import {
   imports: [TypeOrmModule.forFeature([CustomerEntity])],
   controllers: [CustomerController],
   providers: [
+    CustomerService,
     {
       provide: CUSTOMER_REPOSITORY_PORT,
       useClass: CustomerRepositoryAdapter,

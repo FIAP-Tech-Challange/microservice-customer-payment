@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import { Test, TestingModule } from '@nestjs/testing';
 import { CustomerController } from '../../../../src/modules/customers/adapters/primary/customer-controller';
-import { CustomerInputPort } from '../../../../src/modules/customers/ports/input/customer.port';
-import { CUSTOMER_INPUT_PORT } from '../../../../src/modules/customers/customers.tokens';
+import { CustomerService } from '../../../../src/modules/customers/services/customer.service';
 import { CustomerModel } from '../../../../src/modules/customers/models/domain/customer.model';
 import { CreateCustomerDto } from '../../../../src/modules/customers/models/dto/create-customer.dto';
 import { FindCustomerByCpfDto } from '../../../../src/modules/customers/models/dto/find-customer-by-cpf.dto';
@@ -10,22 +9,20 @@ import { BadRequestException } from '@nestjs/common';
 
 describe('CustomerController', () => {
   let controller: CustomerController;
-  let mockCustomerInputPort: jest.Mocked<CustomerInputPort>;
+  let mockCustomerService: jest.Mocked<CustomerService>;
 
   beforeEach(async () => {
-    mockCustomerInputPort = {
-      findByCpf: jest
-        .fn()
-        .mockImplementation(async () => Promise.resolve(null)),
-      create: jest.fn().mockImplementation(async () => Promise.resolve(null)),
-    } as jest.Mocked<CustomerInputPort>;
+    mockCustomerService = {
+      findByCpf: jest.fn().mockResolvedValue(null),
+      create: jest.fn().mockResolvedValue(null),
+    } as unknown as jest.Mocked<CustomerService>;
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [CustomerController],
       providers: [
         {
-          provide: CUSTOMER_INPUT_PORT,
-          useValue: mockCustomerInputPort,
+          provide: CustomerService,
+          useValue: mockCustomerService,
         },
       ],
     }).compile();
@@ -48,7 +45,7 @@ describe('CustomerController', () => {
         updatedAt: new Date(),
       });
 
-      const findByCpfMock = mockCustomerInputPort.findByCpf;
+      const findByCpfMock = mockCustomerService.findByCpf;
       findByCpfMock.mockResolvedValue(mockCustomer);
 
       const result = await controller.findByCpf(findCustomerDto);
@@ -68,12 +65,12 @@ describe('CustomerController', () => {
       };
 
       const error = new BadRequestException('Invalid CPF format');
-      mockCustomerInputPort.findByCpf.mockRejectedValue(error);
+      mockCustomerService.findByCpf.mockRejectedValue(error);
 
       await expect(controller.findByCpf(findCustomerDto)).rejects.toThrow(
         error,
       );
-      expect(mockCustomerInputPort.findByCpf).toHaveBeenCalledWith(
+      expect(mockCustomerService.findByCpf).toHaveBeenCalledWith(
         findCustomerDto.cpf,
       );
     });
@@ -96,11 +93,11 @@ describe('CustomerController', () => {
         updatedAt: new Date(),
       });
 
-      mockCustomerInputPort.create.mockResolvedValue(mockCustomer);
+      mockCustomerService.create.mockResolvedValue(mockCustomer);
 
       const result = await controller.create(createCustomerDto);
 
-      expect(mockCustomerInputPort.create).toHaveBeenCalledWith(
+      expect(mockCustomerService.create).toHaveBeenCalledWith(
         createCustomerDto,
       );
       expect(result).toEqual({
@@ -119,10 +116,10 @@ describe('CustomerController', () => {
       };
 
       const error = new BadRequestException('Invalid CPF format');
-      mockCustomerInputPort.create.mockRejectedValue(error);
+      mockCustomerService.create.mockRejectedValue(error);
 
       await expect(controller.create(createCustomerDto)).rejects.toThrow(error);
-      expect(mockCustomerInputPort.create).toHaveBeenCalledWith(
+      expect(mockCustomerService.create).toHaveBeenCalledWith(
         createCustomerDto,
       );
     });

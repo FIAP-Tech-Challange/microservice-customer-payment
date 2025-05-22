@@ -10,9 +10,10 @@ import { CustomerModel } from '../models/domain/customer.model';
 import { CreateCustomerDto } from '../models/dto/create-customer.dto';
 import { CUSTOMER_REPOSITORY_PORT } from '../customers.tokens';
 import { validateCPF } from '../utils/cpf-validator';
+import { CustomerInputPort } from '../ports/input/customer.port';
 
 @Injectable()
-export class CustomerService {
+export class CustomerService implements CustomerInputPort {
   constructor(
     @Inject(CUSTOMER_REPOSITORY_PORT)
     private readonly customerRepository: CustomerRepositoryPort,

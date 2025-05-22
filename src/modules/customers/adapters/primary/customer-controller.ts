@@ -6,22 +6,17 @@ import {
   HttpStatus,
   Query,
   Version,
-  Inject,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { CustomerInputPort } from '../../ports/input/customer.port';
 import { CreateCustomerDto } from '../../models/dto/create-customer.dto';
 import { FindCustomerByCpfDto } from '../../models/dto/find-customer-by-cpf.dto';
 import { CustomerResponseDto } from '../../models/dto/customer-response.dto';
-import { CUSTOMER_INPUT_PORT } from '../../customers.tokens';
+import { CustomerService } from '../../services/customer.service';
 
 @ApiTags('customers')
 @Controller('customers')
 export class CustomerController {
-  constructor(
-    @Inject(CUSTOMER_INPUT_PORT)
-    private readonly customerInputPort: CustomerInputPort,
-  ) {}
+  constructor(private readonly customerService: CustomerService) {}
 
   @Get('/cpf')
   @Version('1')
@@ -42,17 +37,13 @@ export class CustomerController {
   async findByCpf(
     @Query() findCustomerDto: FindCustomerByCpfDto,
   ): Promise<CustomerResponseDto> {
-    const customer = await this.customerInputPort.findByCpf(
-      findCustomerDto.cpf,
-    );
-
-    const response = new CustomerResponseDto();
-    response.id = customer.id;
-    response.cpf = customer.cpf;
-    response.name = customer.name;
-    response.email = customer.email;
-
-    return response;
+    const customer = await this.customerService.findByCpf(findCustomerDto.cpf);
+    return {
+      id: customer.id,
+      cpf: customer.cpf,
+      name: customer.name,
+      email: customer.email,
+    };
   }
 
   @Post()
@@ -74,14 +65,12 @@ export class CustomerController {
   async create(
     @Body() createCustomerDto: CreateCustomerDto,
   ): Promise<CustomerResponseDto> {
-    const customer = await this.customerInputPort.create(createCustomerDto);
-
-    const response = new CustomerResponseDto();
-    response.id = customer.id;
-    response.cpf = customer.cpf;
-    response.name = customer.name;
-    response.email = customer.email;
-
-    return response;
+    const customer = await this.customerService.create(createCustomerDto);
+    return {
+      id: customer.id,
+      cpf: customer.cpf,
+      name: customer.name,
+      email: customer.email,
+    };
   }
 }
