@@ -8,6 +8,8 @@ import databaseConfig from './infra/config/database.config';
 import { PaymentModule } from './modules/payment/payment.module';
 import paidMarketConfig from './infra/config/paid-market.config';
 import { DatabaseModule } from './common/database/database.module';
+import { StoresModule } from './modules/stores/stores.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
   imports: [
@@ -19,6 +21,8 @@ import { DatabaseModule } from './common/database/database.module';
     DatabaseModule,
     CustomersModule,
     PaymentModule,
+    StoresModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [],
