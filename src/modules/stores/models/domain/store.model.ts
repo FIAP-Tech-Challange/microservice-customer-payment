@@ -82,12 +82,14 @@ export class StoreModel {
     this.totems.push(totem);
   }
 
-  removeTotem(totemId: string) {
-    const totemIndex = this.totems.findIndex((t) => t.id === totemId);
-    if (totemIndex === -1) {
-      throw new Error('Totem not found');
+  inactivateTotem(totemId: string) {
+    const totem = this.totems.find((t) => t.id === totemId);
+
+    if (!totem) {
+      throw new ConflictException('Totem not found');
     }
-    this.totems.splice(totemIndex, 1);
+
+    totem.inactivate();
   }
 
   verifyPassword(plainPassword: string): boolean {

@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Param,
   Post,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { StoresService } from '../../stores.service';
@@ -13,6 +14,7 @@ import { StoresPort } from '../../ports/input/stores.port';
 import { CreateStoreInputDto } from '../../models/dtos/create-store.dto';
 import { AuthGuard } from 'src/modules/auth/guards/auth.guard';
 import { SimplifiedStoreDto } from '../../models/dtos/simplified-store.dto';
+import { RequestWithStoreId } from 'src/modules/auth/models/dtos/request.dto';
 
 @Controller('stores')
 export class StoresController implements StoresPort {
@@ -27,20 +29,30 @@ export class StoresController implements StoresPort {
 
   @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.CREATED)
-  @Post(':storeId/totems')
+  @Post('totems')
   async createTotem(
-    @Param('storeId') storeId: string,
+    @Req() req: RequestWithStoreId,
     @Body('totemName') totemName: string,
   ) {
+    const storeId = req.storeId;
     const totem = await this.storeService.createTotem(storeId, totemName);
     return { id: totem.id };
   }
 
   @UseGuards(AuthGuard)
-  @Get(':storeId')
-  async findById(
-    @Param('storeId') storeId: string,
-  ): Promise<SimplifiedStoreDto> {
+  @Post('totems/:totemId/inactivate')
+  async inactivateTotem(
+    @Req() req: RequestWithStoreId,
+    @Param('totemId') totemId: string,
+  ): Promise<void> {
+    const storeId = req.storeId;
+    await this.storeService.inactivateTotem(storeId, totemId);
+  }
+
+  @UseGuards(AuthGuard)
+  @Get()
+  async findById(@Req() req: RequestWithStoreId): Promise<SimplifiedStoreDto> {
+    const storeId = req.storeId;
     const store = await this.storeService.findById(storeId);
     return {
       id: store.id,

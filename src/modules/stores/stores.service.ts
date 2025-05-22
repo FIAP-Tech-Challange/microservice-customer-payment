@@ -77,4 +77,12 @@ export class StoresService {
 
     return store;
   }
+
+  async inactivateTotem(storeId: string, totemId: string) {
+    const store = await this.findById(storeId);
+
+    store.inactivateTotem(totemId);
+
+    await this.storesRepository.save(store);
+  }
 }

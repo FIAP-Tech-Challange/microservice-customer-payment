@@ -27,7 +27,8 @@ export class TotemModel {
     if (!this.id) throw new Error('Id is required');
     if (!this.name) throw new Error('Name is required');
     if (!this.tokenAccess) throw new Error('Token access is required');
-    if (!this.isActive) throw new Error('Is active is required');
+    if (this.isActive !== !!this.isActive)
+      throw new Error('Is active is required');
     if (!this.createdAt) throw new Error('Created at is required');
   }
 

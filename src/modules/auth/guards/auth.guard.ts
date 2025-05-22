@@ -30,7 +30,6 @@ export class AuthGuard implements CanActivate {
       });
 
       request['storeId'] = payload.storeId;
-      request['email'] = payload.email;
     } catch {
       throw new UnauthorizedException('Invalid token');
     }
