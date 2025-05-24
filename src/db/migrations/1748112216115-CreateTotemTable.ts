@@ -5,7 +5,9 @@ import {
   TableForeignKey,
 } from 'typeorm';
 
-export class CreateTotem20250521221100 implements MigrationInterface {
+export class CreateTotemTable1748112216115 implements MigrationInterface {
+  name = 'CreateTotemTable1748112216115';
+
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(
       new Table({
