@@ -24,12 +24,12 @@ export class NotificationEntity {
   @Column()
   error_message: string;
 
-  @Column()
-  sent_at: Date;
+  @Column({ nullable: true })
+  sent_at: Date | null;
 
   @Column()
   created_at: Date;
 
-  @Column()
-  updated_at: Date;
+  @Column({ nullable: true })
+  updated_at: Date | null;
 }

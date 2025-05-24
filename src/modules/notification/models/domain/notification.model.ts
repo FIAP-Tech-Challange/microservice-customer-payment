@@ -17,10 +17,10 @@ interface NotificationProps {
   destinationToken: string;
   message: string;
   status: NotificationStatus;
-  errorMessage?: string;
-  sentAt?: Date;
+  errorMessage: string | null;
+  sentAt: Date | null;
   createdAt: Date;
-  updatedAt?: Date;
+  updatedAt: Date | null;
 }
 
 export class NotificationModel {
@@ -111,6 +111,9 @@ export class NotificationModel {
       message,
       status: NotificationStatus.PENDING,
       createdAt: new Date(),
+      errorMessage: null,
+      sentAt: null,
+      updatedAt: null,
     });
   }
 
