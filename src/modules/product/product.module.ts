@@ -11,12 +11,12 @@ import { PRODUCT_INPUT_PORT, PRODUCT_REPOSITORY_PORT } from './product.tokens';
   controllers: [ProductController],
   providers: [
     {
-      provide: PRODUCT_REPOSITORY_PORT, // Porta de saída
-      useClass: ProductRepositoryAdapter, // Implementação da porta de saída
+      provide: PRODUCT_REPOSITORY_PORT,
+      useClass: ProductRepositoryAdapter,
     },
     {
-      provide: PRODUCT_INPUT_PORT, // Porta de entrada
-      useClass: ProductService, // Implementação da porta de entrada
+      provide: PRODUCT_INPUT_PORT,
+      useClass: ProductService,
     },
   ],
 })

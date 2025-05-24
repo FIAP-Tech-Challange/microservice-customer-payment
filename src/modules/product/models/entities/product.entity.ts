@@ -1,15 +1,21 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
-import { ProductModel } from '../product.model';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { ProductModel } from '../domain/product.model';
 
 @Entity('products')
 export class ProductEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
-  @Column()
+  @Column({ nullable: false })
   name: string;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2 })
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: false })
   price: string;
 
   @Column({ type: 'varchar', nullable: true })
@@ -18,16 +24,16 @@ export class ProductEntity {
   @Column({ type: 'text', nullable: true })
   description: string;
 
-  @Column({ type: 'int' })
+  @Column({ type: 'int', nullable: false })
   prep_time: number;
 
   @Column({ type: 'varchar', nullable: true })
   image_url: string;
 
-  @Column({ type: 'int' })
+  @Column({ type: 'int', nullable: false })
   category_id: number;
 
-  @Column({ type: 'int' })
+  @Column({ type: 'int', nullable: false })
   store_id: number;
 
   @CreateDateColumn({ name: 'created_at' })
@@ -36,31 +42,28 @@ export class ProductEntity {
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
-  // Método para converter a entidade em modelo
   toModel(): ProductModel {
-    const model = new ProductModel();
-    model.id = this.id;
-    model.name = this.name;
-    model.price = this.price;
-    model.status = this.status;
-    model.description = this.description;
-    model.prep_time = this.prep_time;
-    model.image_url = this.image_url;
-    // model.category_id = this.category_id;
-    // model.store_id = this.store_id;
-    model.created_at = this.createdAt; // Corrigido para manter consistência com o nome do campo
-    return model;
+    return ProductModel.fromProps({
+      id: this.id,
+      name: this.name,
+      price: parseFloat(this.price),
+      status: this.status,
+      description: this.description,
+      prep_time: this.prep_time,
+      image_url: this.image_url,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+    });
   }
 
-  // Método para atualizar a entidade a partir de um DTO
-  updateFromDto(dto: Partial<ProductModel>): void {
-    if (dto.name) this.name = dto.name;
-    if (dto.price) this.price = dto.price;
-    if (dto.status) this.status = dto.status;
-    if (dto.description) this.description = dto.description;
-    if (dto.prep_time !== undefined) this.prep_time = dto.prep_time;
-    if (dto.image_url) this.image_url = dto.image_url;
-    // if (dto.category_id !== undefined) this.category_id = dto.category_id;
-    // if (dto.store_id !== undefined) this.store_id = dto.store_id;
+  updateFromModel(model: Partial<ProductModel>): void {
+    if (model.name) this.name = model.name;
+    if (model.price !== undefined) this.price = model.price.toString();
+    if (model.status) this.status = model.status;
+    if (model.description) this.description = model.description;
+    if (model.prep_time !== undefined) this.prep_time = model.prep_time;
+    if (model.image_url) this.image_url = model.image_url;
+    //if (model.category_id !== undefined) this.category_id = model.category_id;
+    //if (model.store_id !== undefined) this.store_id = model.store_id;
   }
 }

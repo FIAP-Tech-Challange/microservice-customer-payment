@@ -1,69 +1,61 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ProductRepositoryPort } from '../../ports/output/product-repository.port';
 import { ProductEntity } from '../../models/entities/product.entity';
-import { ProductModel } from '../../models/product.model';
+import { ProductRepositoryPort } from '../../ports/output/product-repository.port';
+import { ProductModel } from '../../models/domain/product.model';
 
 @Injectable()
 export class ProductRepositoryAdapter implements ProductRepositoryPort {
   constructor(
     @InjectRepository(ProductEntity)
-    private productRepository: Repository<ProductEntity>,
+    private readonly productRepository: Repository<ProductEntity>,
   ) {}
 
   async findAll(): Promise<ProductModel[]> {
     const products = await this.productRepository.find();
     return products.map(product => product.toModel());
   }
+  
+  update(id: number, product: Partial<ProductModel>): Promise<ProductModel> {
+    throw new Error('Method not implemented.');
+  }
+  delete(id: number): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
 
   async findById(id: number): Promise<ProductModel> {
-    const product = await this.productRepository.findOne({ where: { id } });
+    const product = await this.productRepository.findOne({
+      where: { id: id.toString() },
+    });
+
     if (!product) {
-      throw new NotFoundException(`Product with ID ${id} not found`);
+      throw new Error(`Product with id ${id} not found`);
     }
+
     return product.toModel();
   }
 
   async create(productData: Partial<ProductModel>): Promise<ProductModel> {
+    const productModel = ProductModel.create({
+      name: productData.name!,
+      price: productData.price!,
+      status: productData.status || 'inactive',
+      description: productData.description || '',
+      prep_time: productData.prep_time!,
+      image_url: productData.image_url || '',
+    });
+
     const product = new ProductEntity();
-    product.name = productData.name!;
-    product.price = productData.price!.toString();
-    product.status = productData.status || '';
-    product.description = productData.description || '';
-    product.prep_time = productData.prep_time!;
-    product.image_url = productData.image_url || '';
-    //product.category_id = productData.category_id!;
-    //product.store_id = productData.store_id!;
+    product.id = productModel.id.toString();
+    product.name = productModel.name;
+    product.price = productModel.price.toString();
+    product.status = productModel.status;
+    product.description = productModel.description;
+    product.prep_time = productModel.prep_time;
+    product.image_url = productModel.image_url;
 
     const savedProduct = await this.productRepository.save(product);
     return savedProduct.toModel();
-  }
-
-  async update(id: number, productData: Partial<ProductModel>): Promise<ProductModel> {
-    const product = await this.productRepository.findOne({ where: { id } });
-    if (!product) {
-      throw new NotFoundException(`Product with ID ${id} not found`);
-    }
-
-    if (productData.name) product.name = productData.name;
-    if (productData.price) product.price = productData.price.toString();
-    if (productData.status !== undefined) product.status = productData.status;
-    if (productData.description !== undefined) product.description = productData.description;
-    if (productData.prep_time !== undefined) product.prep_time = productData.prep_time;
-    if (productData.image_url !== undefined) product.image_url = productData.image_url;
-    //if (productData.category_id !== undefined) product.category_id = productData.category_id;
-    //if (productData.store_id !== undefined) product.store_id = productData.store_id;
-
-    const updatedProduct = await this.productRepository.save(product);
-    return updatedProduct.toModel();
-  }
-
-  async delete(id: number): Promise<void> {
-    const product = await this.productRepository.findOne({ where: { id } });
-    if (!product) {
-      throw new NotFoundException(`Product with ID ${id} not found`);
-    }
-    await this.productRepository.delete(id);
   }
 }
