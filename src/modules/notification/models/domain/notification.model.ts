@@ -17,10 +17,10 @@ interface NotificationProps {
   destinationToken: string;
   message: string;
   status: NotificationStatus;
-  errorMessage: string | null;
-  sentAt: Date | null;
+  errorMessage?: string;
+  sentAt?: Date;
   createdAt: Date;
-  updatedAt: Date | null;
+  updatedAt?: Date;
 }
 
 export class NotificationModel {
@@ -29,10 +29,10 @@ export class NotificationModel {
   destinationToken: string;
   message: string;
   status: NotificationStatus;
-  errorMessage: string;
-  sentAt: Date | null;
+  errorMessage?: string;
+  sentAt?: Date;
   createdAt: Date;
-  updatedAt: Date | null;
+  updatedAt?: Date;
 
   private constructor(props: NotificationProps) {
     this.id = props.id;
@@ -40,10 +40,10 @@ export class NotificationModel {
     this.destinationToken = props.destinationToken;
     this.message = props.message;
     this.status = props.status;
-    this.errorMessage = props.errorMessage || '';
-    this.sentAt = props.sentAt || null;
+    this.errorMessage = props.errorMessage || undefined;
+    this.sentAt = props.sentAt || undefined;
     this.createdAt = props.createdAt;
-    this.updatedAt = props.updatedAt || null;
+    this.updatedAt = props.updatedAt || undefined;
 
     this.validate();
   }
@@ -111,9 +111,7 @@ export class NotificationModel {
       message,
       status: NotificationStatus.PENDING,
       createdAt: new Date(),
-      errorMessage: null,
-      sentAt: null,
-      updatedAt: null,
+      updatedAt: new Date(),
     });
   }
 

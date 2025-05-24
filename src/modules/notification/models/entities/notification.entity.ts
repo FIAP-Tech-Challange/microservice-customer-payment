@@ -9,7 +9,7 @@ export class NotificationEntity {
   @PrimaryColumn('uuid')
   id: string;
 
-  @Column({ type: 'enum', enum: NotificationChannel })
+  @Column({ type: 'simple-enum', enum: NotificationChannel })
   channel: NotificationChannel;
 
   @Column()
@@ -18,18 +18,18 @@ export class NotificationEntity {
   @Column()
   message: string;
 
-  @Column({ type: 'enum', enum: NotificationStatus })
+  @Column({ type: 'simple-enum', enum: NotificationStatus })
   status: NotificationStatus;
 
-  @Column()
-  error_message: string;
+  @Column({ nullable: true })
+  error_message?: string;
 
   @Column({ nullable: true })
-  sent_at: Date | null;
+  sent_at?: Date;
 
   @Column()
   created_at: Date;
 
   @Column({ nullable: true })
-  updated_at: Date | null;
+  updated_at?: Date;
 }

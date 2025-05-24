@@ -1,4 +1,4 @@
-import { Inject } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import {
   SendNotificationDto,
   SendNotificationResponse,
@@ -10,6 +10,7 @@ import {
 import { NotificationModel } from './models/domain/notification.model';
 import { NotificationChannelFactory } from './adapters/secondary/notification.channel.factory';
 
+@Injectable()
 export class NotificationService {
   constructor(
     @Inject(NOTIFICATION_REPOSITORY_PORT_KEY)
