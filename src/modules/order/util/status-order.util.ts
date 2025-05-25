@@ -5,6 +5,8 @@ export const statusOptionsMessage = Object.entries(OrderStatusEnum)
   .join(', ');
 
 export const getStatusName = (value: string) => {
-  const entry = Object.entries(OrderStatusEnum).find(([val]) => val === value);
+  const entry = Object.entries(OrderStatusEnum).find(
+    ([, enumValue]) => (enumValue as string) === value,
+  );
   return entry ? entry[0] : undefined;
 };

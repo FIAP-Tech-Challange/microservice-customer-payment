@@ -28,6 +28,7 @@ import { OrderResponseDto } from '../../models/dto/order-response.dto';
 import { OrderPaginationDto } from '../../models/dto/order-pagination.dto';
 import { statusOptionsMessage } from '../../util/status-order.util';
 import { OrderIdDto } from '../../models/dto/order-id.dto';
+import { UpdateOrderStatusDto } from '../../models/dto/update-order-status.dto';
 
 @ApiTags('Order')
 @Controller({
@@ -142,9 +143,9 @@ export class OrderController implements OrderInputPort {
   @Patch('status/:id')
   updateStatus(
     @Param() params: OrderIdDto,
-    @Body('status') status: OrderStatusEnum,
+    @Body() body: UpdateOrderStatusDto,
   ): Promise<OrderModel> {
-    return this.orderService.updateStatus(params.id, status);
+    return this.orderService.updateStatus(params.id, body.status);
   }
 
   @ApiResponse({
