@@ -89,7 +89,6 @@ describe('PaymentService', () => {
       const createPaymentDto: CreatePaymentDto = {
         orderId: 'order-123',
         storeId: 'store-123',
-        total: 99.99,
       };
 
       const mockQrCodeResponse = {
@@ -109,7 +108,6 @@ describe('PaymentService', () => {
 
       expect(paymentProviderPort.createQrCode).toHaveBeenCalledWith({
         orderId: createPaymentDto.orderId,
-        total: createPaymentDto.total,
         title: `order_${createPaymentDto.orderId}`,
       });
       expect(paymentRepositoryPort.savePayment).toHaveBeenCalled();
@@ -120,7 +118,6 @@ describe('PaymentService', () => {
       const createPaymentDto: CreatePaymentDto = {
         orderId: 'order-123',
         storeId: 'store-123',
-        total: 99.99,
       };
 
       const mockQrCodeResponse = {
@@ -159,7 +156,6 @@ describe('PaymentService', () => {
       const createPaymentDto: CreatePaymentDto = {
         orderId: 'order-123',
         storeId: 'store-123',
-        total: 99.99,
       };
 
       const mockQrCodeResponse = {
