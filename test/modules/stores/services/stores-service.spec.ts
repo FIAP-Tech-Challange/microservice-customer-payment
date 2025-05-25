@@ -5,10 +5,12 @@ import { StoreModel } from '../../../../src/modules/stores/models/domain/store.m
 import { TotemModel } from '../../../../src/modules/stores/models/domain/totem.model';
 import { StoresRepositoryPort } from '../../../../src/modules/stores/ports/output/stores.repository.port';
 import { CreateStoreInputDto } from '../../../../src/modules/stores/models/dtos/create-store.dto';
+import { NotificationService } from '../../../../src/modules/notification/notification.service';
 
 describe('StoresService', () => {
   let service: StoresService;
   let storesRepository: jest.Mocked<StoresRepositoryPort>;
+  let notificationService: jest.Mocked<NotificationService>;
 
   beforeEach(() => {
     storesRepository = {
@@ -19,7 +21,11 @@ describe('StoresService', () => {
       save: jest.fn(),
     };
 
-    service = new StoresService(storesRepository);
+    notificationService = {
+      sendNotification: jest.fn().mockResolvedValue(undefined),
+    } as unknown as jest.Mocked<NotificationService>;
+
+    service = new StoresService(storesRepository, notificationService);
   });
 
   describe('create', () => {
