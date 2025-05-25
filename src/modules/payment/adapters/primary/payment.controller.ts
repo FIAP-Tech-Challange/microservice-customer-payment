@@ -42,7 +42,7 @@ export class PaymentController implements PaymentInputPort {
   @Post()
   async create(
     @Body() createPaymentDto: CreatePaymentDto,
-  ): Promise<PaymentModel> {
+  ): Promise<PaymentModel | null> {
     return this.paymentService.savePayment(createPaymentDto);
   }
 
@@ -92,7 +92,7 @@ export class PaymentController implements PaymentInputPort {
   async updateStatus(
     @Param('id') id: string,
     @Body() dto: UpdateStatusPaymentDto,
-  ): Promise<PaymentModel> {
+  ): Promise<PaymentModel | null> {
     return this.paymentService.updateStatus(id, dto.status);
   }
 }

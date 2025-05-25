@@ -11,9 +11,10 @@ import {
 } from './payment.tokens';
 import { ConfigService } from '@nestjs/config';
 import { FakePaymentProvider } from './adapters/secondary/fake-payment.adapter';
+import { OrderModule } from '../order/order.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([PaymentEntity])],
+  imports: [TypeOrmModule.forFeature([PaymentEntity]), OrderModule],
   controllers: [PaymentController],
   providers: [
     PaymentService,

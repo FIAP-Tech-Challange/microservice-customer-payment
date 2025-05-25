@@ -17,17 +17,27 @@ async function bootstrap() {
       whitelist: true,
       forbidNonWhitelisted: true,
       exceptionFactory: (errors) => {
-        const result = {};
-        errors.forEach((error) => {
-          if (error.constraints) {
-            result[error.property] = Object.values(error.constraints).join(
-              ', ',
-            );
-          }
-        });
+        const formatErrors = (errors: any[]): Record<string, any> => {
+          const result: Record<string, any> = {};
+
+          errors.forEach((error) => {
+            if (error.constraints) {
+              result[error.property] = Object.values(
+                error.constraints as { [key: string]: string },
+              ).join(', ');
+            }
+
+            if (Array.isArray(error.children) && error.children.length > 0) {
+              result[error.property] = formatErrors(error.children as any[]);
+            }
+          });
+
+          return result;
+        };
+
         return new BadRequestException({
           message: 'Validation failed',
-          errors: result,
+          errors: formatErrors(errors),
         });
       },
     }),
