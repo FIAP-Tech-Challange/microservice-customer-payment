@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { ConflictException } from '@nestjs/common';
 import { StoreModel } from '../../../../src/modules/stores/models/domain/store.model';
 import { TotemModel } from '../../../../src/modules/stores/models/domain/totem.model';
@@ -149,6 +150,58 @@ describe('StoreModel', () => {
         'Totem with this name already exists',
       );
     });
+
+    it('should throw error when adding a totem with same id', () => {
+      const store = StoreModel.create({
+        name: 'Store Name',
+        fantasyName: 'Fantasy Name',
+        email: 'email@example.com',
+        cnpj: '12345678901234',
+        plainPassword: 'password123',
+        phone: '11999999999',
+      });
+
+      const totem1 = TotemModel.create({ name: 'Totem 1' });
+      store.addTotem(totem1);
+
+      // Mock a totem with the same ID but different name
+      const sameIdTotem = TotemModel.create({ name: 'Different Name' });
+      // Override the ID to be the same
+      Object.defineProperty(sameIdTotem, 'id', { value: totem1.id });
+
+      expect(() => store.addTotem(sameIdTotem)).toThrow(ConflictException);
+      expect(() => store.addTotem(sameIdTotem)).toThrow(
+        'Totem with this id already exists',
+      );
+    });
+
+    it('should throw error when adding a totem with same token access', () => {
+      const store = StoreModel.create({
+        name: 'Store Name',
+        fantasyName: 'Fantasy Name',
+        email: 'email@example.com',
+        cnpj: '12345678901234',
+        plainPassword: 'password123',
+        phone: '11999999999',
+      });
+
+      const totem1 = TotemModel.create({ name: 'Totem 1' });
+      store.addTotem(totem1);
+
+      // Mock a totem with the same token access but different name and id
+      const sameTokenTotem = TotemModel.create({ name: 'Different Name' });
+      // Override the token access to be the same
+      Object.defineProperty(sameTokenTotem, 'tokenAccess', {
+        value: totem1.tokenAccess,
+        writable: true,
+        configurable: true,
+      });
+
+      expect(() => store.addTotem(sameTokenTotem)).toThrow(ConflictException);
+      expect(() => store.addTotem(sameTokenTotem)).toThrow(
+        'Totem with this token access already exists',
+      );
+    });
   });
 
   describe('inactivateTotem', () => {
@@ -221,6 +274,75 @@ describe('StoreModel', () => {
       store.inactivate();
 
       expect(store.isActive).toBe(false);
+    });
+  });
+
+  describe('validation during restore', () => {
+    it('should validate all required fields during restore', () => {
+      // Base properties for a valid store
+      const baseProps = {
+        id: 'test-id',
+        name: 'Store Name',
+        fantasyName: 'Fantasy Name',
+        email: 'email@example.com',
+        cnpj: '12345678901234',
+        salt: 'test-salt',
+        passwordHash: 'hashed-password',
+        phone: '11999999999',
+        isActive: true,
+        totems: [],
+        createdAt: new Date(),
+      };
+
+      // Test validation for ID
+      expect(() => StoreModel.restore({ ...baseProps, id: '' })).toThrow(
+        'ID is required',
+      );
+
+      // Test validation for name
+      expect(() => StoreModel.restore({ ...baseProps, name: '' })).toThrow(
+        'Name is required',
+      );
+
+      // Test validation for email
+      expect(() => StoreModel.restore({ ...baseProps, email: '' })).toThrow(
+        'Email is required',
+      );
+
+      // Test validation for cnpj
+      expect(() => StoreModel.restore({ ...baseProps, cnpj: '' })).toThrow(
+        'CNPJ is required',
+      );
+
+      // Test validation for salt
+      expect(() => StoreModel.restore({ ...baseProps, salt: '' })).toThrow(
+        'Salt is required',
+      );
+
+      // Test validation for passwordHash
+      expect(() =>
+        StoreModel.restore({ ...baseProps, passwordHash: '' }),
+      ).toThrow('Password hash is required');
+
+      // Test validation for fantasyName
+      expect(() =>
+        StoreModel.restore({ ...baseProps, fantasyName: '' }),
+      ).toThrow('Fantasy name is required');
+
+      // Test validation for phone
+      expect(() => StoreModel.restore({ ...baseProps, phone: '' })).toThrow(
+        'Phone is required',
+      );
+
+      // Test validation for totems
+      expect(() =>
+        StoreModel.restore({ ...baseProps, totems: null as any }),
+      ).toThrow('Totems is required');
+
+      // Test validation for isActive
+      expect(() =>
+        StoreModel.restore({ ...baseProps, isActive: null as any }),
+      ).toThrow('Is active must be a boolean');
     });
   });
 });
