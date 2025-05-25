@@ -10,10 +10,10 @@ export class PaymentEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ nullable: false })
+  @Column({ type: 'uuid', nullable: false })
   order_id: string;
 
-  @Column({ nullable: false })
+  @Column({ type: 'uuid', nullable: false })
   store_id: string;
 
   @Column({ nullable: false })
@@ -22,7 +22,15 @@ export class PaymentEntity {
   @Column({ nullable: false })
   status: string;
 
-  @Column({ type: 'int', nullable: false })
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    transformer: {
+      to: (value: number) => value,
+      from: (value: string) => parseFloat(value),
+    },
+  })
   total: number;
 
   @Column({ type: 'varchar', nullable: false })
@@ -34,6 +42,6 @@ export class PaymentEntity {
   @Column({ nullable: false })
   plataform: string;
 
-  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @CreateDateColumn({ default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;
 }

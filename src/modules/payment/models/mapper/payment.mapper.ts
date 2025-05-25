@@ -13,7 +13,7 @@ export class PaymentMapper {
       storeId: entity.store_id,
       paymentType: entity.payment_type as PaymentTypeEnum,
       status: entity.status as PaymentStatusEnum,
-      total: entity.total,
+      total: parseFloat(entity.total.toFixed(2)),
       externalId: entity.external_id,
       qrCode: entity.qr_code,
       plataform: entity.plataform as PaymentPlataformEnum,

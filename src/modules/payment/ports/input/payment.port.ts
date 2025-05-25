@@ -4,10 +4,10 @@ import { PaymentIdDto } from '../../models/dto/payment-id.dto';
 import { UpdateStatusPaymentDto } from '../../models/dto/update-status-payment.dto';
 
 export interface PaymentInputPort {
-  create(createPaymentDto: CreatePaymentDto): Promise<PaymentModel>;
+  create(createPaymentDto: CreatePaymentDto): Promise<PaymentModel | null>;
   findById(id: PaymentIdDto): Promise<PaymentModel>;
   updateStatus(
     id: string,
     status: UpdateStatusPaymentDto,
-  ): Promise<PaymentModel>;
+  ): Promise<PaymentModel | null>;
 }
