@@ -20,7 +20,6 @@ describe('PaymentController', () => {
     storeId: 'store-123',
     paymentType: PaymentTypeEnum.PIX,
     status: PaymentStatusEnum.PENDING,
-    total: 99.99,
     externalId: 'ext-123',
     qrCode: 'qr-code-data',
     plataform: PaymentPlataformEnum.MP,
@@ -53,7 +52,6 @@ describe('PaymentController', () => {
       const createPaymentDto: CreatePaymentDto = {
         orderId: 'order-123',
         storeId: 'store-123',
-        total: 99.99,
       };
 
       jest.spyOn(paymentService, 'savePayment').mockResolvedValue(mockPayment);
@@ -68,7 +66,6 @@ describe('PaymentController', () => {
       const createPaymentDto: CreatePaymentDto = {
         orderId: 'order-123',
         storeId: 'store-123',
-        total: 99.99,
       };
 
       const error = new BadRequestException('Error creating payment');
