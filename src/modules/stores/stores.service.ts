@@ -11,12 +11,15 @@ import {
   StoresRepositoryPort,
 } from './ports/output/stores.repository.port';
 import { TotemModel } from './models/domain/totem.model';
+import { NotificationService } from '../notification/notification.service';
+import { NotificationChannel } from '../notification/models/domain/notification.model';
 
 @Injectable()
 export class StoresService {
   constructor(
     @Inject(STORE_REPOSITORY_PORT_KEY)
     private storesRepository: StoresRepositoryPort,
+    private notificationService: NotificationService,
   ) {}
 
   async create(dto: CreateStoreInputDto) {
@@ -43,6 +46,12 @@ export class StoresService {
     });
 
     await this.storesRepository.save(store);
+
+    await this.notificationService.sendNotification({
+      channel: NotificationChannel.EMAIL,
+      destination_token: store.email,
+      message: `Welcome to our service, ${store.name}!`,
+    });
 
     return store;
   }

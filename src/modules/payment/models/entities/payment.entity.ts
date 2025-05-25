@@ -34,6 +34,6 @@ export class PaymentEntity {
   @Column({ nullable: false })
   plataform: string;
 
-  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @CreateDateColumn({ default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;
 }
