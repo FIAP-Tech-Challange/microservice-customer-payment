@@ -10,6 +10,7 @@ import paidMarketConfig from './infra/config/paid-market.config';
 import { DatabaseModule } from './common/database/database.module';
 import { StoresModule } from './modules/stores/stores.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { OrderModule } from './modules/order/order.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { AuthModule } from './modules/auth/auth.module';
     PaymentModule,
     StoresModule,
     AuthModule,
+    OrderModule,
   ],
   controllers: [],
   providers: [],

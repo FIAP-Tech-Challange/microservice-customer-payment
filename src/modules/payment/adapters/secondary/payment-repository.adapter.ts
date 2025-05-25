@@ -33,11 +33,11 @@ export class PaymentRepositoryAdapter implements PaymentRepositoryPort {
   async updateStatus(
     id: string,
     status: PaymentStatusEnum,
-  ): Promise<PaymentModel> {
+  ): Promise<PaymentModel | null> {
     const payment = await this.paymentRepository.findOne({ where: { id } });
 
     if (!payment) {
-      throw new NotFoundException(`Payment id ${id} not found`);
+      return null;
     }
     payment.status = status;
     const paymentModel = await this.paymentRepository.save(payment);
