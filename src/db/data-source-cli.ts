@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { ProductEntity } from '../modules/product/models/entities/product.entity';
+import { ProductEntity } from 'src/modules/product/models/entities/product.entity';
 import { DataSource, DataSourceOptions } from 'typeorm';
 
 const dataSourceOptions: DataSourceOptions = {
@@ -9,9 +9,7 @@ const dataSourceOptions: DataSourceOptions = {
   username: process.env.DB_PG_USER,
   password: process.env.DB_PG_PASSWORD,
   database: process.env.DB_PG_NAME,
-  entities: [
-    ProductEntity
-  ],
+  entities: [ProductEntity],
   migrations: [__dirname + '/migrations/*.{js,ts}'],
   synchronize: false,
 };
