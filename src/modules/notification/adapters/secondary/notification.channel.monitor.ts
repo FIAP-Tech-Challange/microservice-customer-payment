@@ -4,9 +4,12 @@ import { NotificationChannelPort } from '../../ports/output/notification.channel
 export class NotificationChannelMonitor implements NotificationChannelPort {
   sendNotification(
     destinationToken: string,
+    message: string,
   ): Promise<SendNotificationResponse> {
     // Simulate sending a monitor notification
-    console.log(`Sending monitor notification to ${destinationToken}`);
+    console.log(
+      `Sending monitor notification to ${destinationToken}. Message: ${message}`,
+    );
     return Promise.resolve({ success: true });
   }
 }

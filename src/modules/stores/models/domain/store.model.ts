@@ -3,13 +3,14 @@ import { TotemModel } from './totem.model';
 import { ConflictException } from '@nestjs/common';
 import { CNPJ } from './cnpj.vo';
 import { Email } from 'src/shared/domain/email.vo';
+import { BrazilianPhone } from 'src/shared/domain/brazilian-phone.vo';
 
 interface StoreProps {
   id: string;
   name: string;
   fantasyName: string;
   email: Email;
-  phone: string;
+  phone: BrazilianPhone;
   salt: string;
   passwordHash: string;
   cnpj: CNPJ;
@@ -24,9 +25,7 @@ export class StoreModel {
   name: string;
   fantasyName: string;
   email: Email;
-
-  // TODO: create phone value object
-  phone: string;
+  phone: BrazilianPhone;
 
   // TODO: create password value object
   salt: string;
@@ -141,7 +140,7 @@ export class StoreModel {
     email: Email;
     cnpj: CNPJ;
     plainPassword: string;
-    phone: string;
+    phone: BrazilianPhone;
   }): StoreModel {
     const id = randomUUID();
     const salt = randomUUID();

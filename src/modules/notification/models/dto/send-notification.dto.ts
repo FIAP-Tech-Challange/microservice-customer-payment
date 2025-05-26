@@ -1,8 +1,11 @@
-import { NotificationChannel } from '../domain/notification.model';
+import {
+  NotificationChannel,
+  NotificationDestinationToken,
+} from '../domain/notification.model';
 
 export interface SendNotificationDto {
   channel: NotificationChannel;
-  destination_token: string;
+  destination_token: NotificationDestinationToken;
   message: string;
 }
 

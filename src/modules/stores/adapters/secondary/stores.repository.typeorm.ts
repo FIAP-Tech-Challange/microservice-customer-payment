@@ -6,6 +6,8 @@ import { StoreModel } from '../../models/domain/store.model';
 import { TotemEntity } from '../../models/entities/totem.entity';
 import { StoresRepositoryPort } from '../../ports/output/stores.repository.port';
 import { StoreMapper } from '../../models/store.mapper';
+import { Email } from 'src/shared/domain/email.vo';
+import { CNPJ } from '../../models/domain/cnpj.vo';
 
 @Injectable()
 export class StoresRepositoryTypeorm implements StoresRepositoryPort {
@@ -16,9 +18,9 @@ export class StoresRepositoryTypeorm implements StoresRepositoryPort {
     private readonly totemEntity: Repository<TotemEntity>,
   ) {}
 
-  async findByCnpj(cnpj: string) {
+  async findByCnpj(cnpj: CNPJ) {
     const store = await this.storeEntity.findOne({
-      where: { cnpj },
+      where: { cnpj: cnpj.toString() },
       relations: ['totems'],
     });
 
@@ -33,9 +35,9 @@ export class StoresRepositoryTypeorm implements StoresRepositoryPort {
     await this.storeEntity.save(StoreMapper.toEntity(store));
   }
 
-  async findByEmail(email: string) {
+  async findByEmail(email: Email) {
     const store = await this.storeEntity.findOne({
-      where: { email },
+      where: { email: email.toString() },
       relations: ['totems'],
     });
 
