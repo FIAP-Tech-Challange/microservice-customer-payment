@@ -4,6 +4,7 @@ import {
   Injectable,
   Logger,
   NotFoundException,
+  forwardRef,
 } from '@nestjs/common';
 import { OrderRepositoryPort } from '../ports/output/order.repository';
 import { ORDER_REPOSITORY_PORT } from '../order.tokens';
@@ -14,6 +15,7 @@ import { OrderStatusEnum } from '../models/enum/order-status.enum';
 import { OrderRequestParamsDto } from '../models/dto/order-request-params.dto';
 import { OrderPaginationDto } from '../models/dto/order-pagination.dto';
 import { getStatusName } from '../util/status-order.util';
+import { CustomerService } from '../../customers/services/customer.service';
 
 @Injectable()
 export class OrderService {
@@ -22,6 +24,8 @@ export class OrderService {
   constructor(
     @Inject(ORDER_REPOSITORY_PORT)
     private readonly orderRepositoryPort: OrderRepositoryPort,
+    @Inject(forwardRef(() => CustomerService))
+    private readonly customerService: CustomerService,
   ) {}
 
   create(dto: CreateOrderDto): Promise<OrderModel> {
@@ -162,6 +166,49 @@ export class OrderService {
       this.logger.error(`Order with id ${order.id} not found after deletion`);
       throw new NotFoundException(`Order with id ${order.id} not found`);
     }
-    return orderUpdated;
+  }
+
+  async updateCustomerId(
+    orderId: string,
+    customerId: string,
+  ): Promise<OrderModel> {
+    this.logger.log(`Updating customer ID for order ${orderId}`);
+
+    const customer = await this.customerService.findById(customerId);
+    if (!customer) {
+      this.logger.error(`Customer with ID ${customerId} not found`);
+      throw new BadRequestException(`Customer with ID ${customerId} not found`);
+    }
+
+    const order = await this.orderRepositoryPort.findById(orderId);
+    if (!order) {
+      this.logger.error(`Order with id ${orderId} not found`);
+      throw new NotFoundException(`Order with id ${orderId} not found`);
+    }
+
+    if (
+      (order.status as OrderStatusEnum) === OrderStatusEnum.CANCELED ||
+      (order.status as OrderStatusEnum) === OrderStatusEnum.FINISHED
+    ) {
+      this.logger.error(
+        `Cannot update customer ID for order ${orderId} with status ${getStatusName(order.status as OrderStatusEnum)}`,
+      );
+      throw new BadRequestException(
+        `Cannot update customer ID for order with status ${getStatusName(order.status as OrderStatusEnum)}`,
+      );
+    }
+
+    order.customerId = customerId;
+
+    const updatedOrder = await this.orderRepositoryPort.updateOrder(order);
+    if (!updatedOrder) {
+      this.logger.error(`Failed to update customer ID for order ${orderId}`);
+      throw new BadRequestException(
+        `Failed to update customer ID for order ${orderId}`,
+      );
+    }
+
+    this.logger.log(`Customer ID updated successfully for order ${orderId}`);
+    return updatedOrder;
   }
 }

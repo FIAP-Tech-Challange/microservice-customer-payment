@@ -4,6 +4,7 @@ import { OrderIdDto } from '../../models/dto/order-id.dto';
 import { OrderPaginationDto } from '../../models/dto/order-pagination.dto';
 import { OrderRequestParamsDto } from '../../models/dto/order-request-params.dto';
 import { UpdateOrderStatusDto } from '../../models/dto/update-order-status.dto';
+import { UpdateCustomerIdDto } from '../../models/dto/update-customer-id.dto';
 
 export interface OrderInputPort {
   create(createOrderDto: CreateOrderDto): Promise<OrderModel>;
@@ -15,4 +16,8 @@ export interface OrderInputPort {
   ): Promise<OrderModel>;
   delete(id: OrderIdDto): Promise<void>;
   deleteOrderItem(orderItemId: string): Promise<OrderModel | void>;
+  updateCustomerId(
+    id: string,
+    updateCustomerIdDto: UpdateCustomerIdDto,
+  ): Promise<OrderModel>;
 }

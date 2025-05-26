@@ -29,6 +29,7 @@ import { OrderPaginationDto } from '../../models/dto/order-pagination.dto';
 import { statusOptionsMessage } from '../../util/status-order.util';
 import { OrderIdDto } from '../../models/dto/order-id.dto';
 import { UpdateOrderStatusDto } from '../../models/dto/update-order-status.dto';
+import { UpdateCustomerIdDto } from '../../models/dto/update-customer-id.dto';
 
 @ApiTags('Order')
 @Controller({
@@ -190,5 +191,37 @@ export class OrderController implements OrderInputPort {
     orderItemId: string,
   ): Promise<OrderModel | void> {
     return this.orderService.deleteOrderItem(orderItemId);
+  }
+
+  @ApiResponse({
+    status: 200,
+    description: 'Customer ID updated successfully',
+    type: OrderResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Cannot update customer ID due to order status',
+    type: BadRequestException,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Order not found',
+    type: NotFoundException,
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Order ID',
+    type: String,
+    required: true,
+  })
+  @Patch(':id/customer')
+  async updateCustomerId(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() updateCustomerIdDto: UpdateCustomerIdDto,
+  ): Promise<OrderModel> {
+    return this.orderService.updateCustomerId(
+      id,
+      updateCustomerIdDto.customerId,
+    );
   }
 }
