@@ -59,4 +59,16 @@ export class CustomerService implements CustomerInputPort {
       email: createCustomerDto.email,
     });
   }
+
+  async findById(id: string): Promise<CustomerModel> {
+    const customer = await this.customerRepository.findById(id);
+    if (!customer) {
+      throw new NotFoundException(`Customer with ID ${id} not found`);
+    }
+    return customer;
+  }
+
+  async findAll(): Promise<CustomerModel[]> {
+    return this.customerRepository.findAll();
+  }
 }

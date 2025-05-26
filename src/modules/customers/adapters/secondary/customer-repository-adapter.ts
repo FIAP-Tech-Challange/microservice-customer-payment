@@ -37,4 +37,20 @@ export class CustomerRepositoryAdapter implements CustomerRepositoryPort {
     const savedCustomer = await this.customerRepository.save(customer);
     return savedCustomer.toModel();
   }
+
+  async findById(id: string): Promise<CustomerModel | null> {
+    const customer = await this.customerRepository.findOne({
+      where: { id },
+    });
+
+    return customer ? customer.toModel() : null;
+  }
+
+  async findAll(): Promise<CustomerModel[]> {
+    const customers = await this.customerRepository.find({
+      order: { name: 'ASC' },
+    });
+
+    return customers.map((customer) => customer.toModel());
+  }
 }
