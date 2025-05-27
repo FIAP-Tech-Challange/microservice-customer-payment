@@ -11,6 +11,7 @@ import { CreateCustomerDto } from '../models/dto/create-customer.dto';
 import { CUSTOMER_REPOSITORY_PORT } from '../customers.tokens';
 import { validateCPF } from '../utils/cpf-validator';
 import { CustomerInputPort } from '../ports/input/customer.port';
+import { Email } from 'src/shared/domain/email.vo';
 
 @Injectable()
 export class CustomerService implements CustomerInputPort {
@@ -53,10 +54,14 @@ export class CustomerService implements CustomerInputPort {
       throw new ConflictException('Customer with this CPF already exists');
     }
 
-    return this.customerRepository.create({
+    const customer = CustomerModel.create({
       cpf: cleanCpf,
       name: createCustomerDto.name,
-      email: createCustomerDto.email,
+      email: new Email(createCustomerDto.email),
     });
+
+    await this.customerRepository.create(customer);
+
+    return customer;
   }
 }

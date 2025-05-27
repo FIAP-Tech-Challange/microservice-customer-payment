@@ -1,8 +1,10 @@
+import { Email } from 'src/shared/domain/email.vo';
+
 interface CustomerProps {
   id: string;
   cpf: string;
   name: string;
-  email: string;
+  email: Email;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -11,7 +13,7 @@ export class CustomerModel {
   id: string;
   cpf: string;
   name: string;
-  email: string;
+  email: Email;
   created_at: Date;
   updated_at: Date;
 

@@ -6,6 +6,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { CustomerModel } from '../domain/customer.model';
+import { Email } from 'src/shared/domain/email.vo';
 
 @Entity('customers')
 export class CustomerEntity {
@@ -32,7 +33,7 @@ export class CustomerEntity {
       id: this.id,
       cpf: this.cpf,
       name: this.name,
-      email: this.email,
+      email: new Email(this.email),
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
     });
@@ -41,6 +42,6 @@ export class CustomerEntity {
   updateFromModel(model: Partial<CustomerModel>): void {
     if (model.cpf) this.cpf = model.cpf;
     if (model.name) this.name = model.name;
-    if (model.email) this.email = model.email;
+    if (model.email) this.email = model.email.toString();
   }
 }

@@ -21,20 +21,13 @@ export class CustomerRepositoryAdapter implements CustomerRepositoryPort {
     return customer ? customer.toModel() : null;
   }
 
-  async create(customerData: Partial<CustomerModel>): Promise<CustomerModel> {
-    const customerModel = CustomerModel.create({
-      cpf: customerData.cpf!,
-      name: customerData.name!,
-      email: customerData.email!,
-    });
+  async create(customer: CustomerModel): Promise<void> {
+    const entity = new CustomerEntity();
+    entity.id = customer.id;
+    entity.cpf = customer.cpf;
+    entity.name = customer.name;
+    entity.email = customer.email.toString();
 
-    const customer = new CustomerEntity();
-    customer.id = customerModel.id;
-    customer.cpf = customerModel.cpf;
-    customer.name = customerModel.name;
-    customer.email = customerModel.email;
-
-    const savedCustomer = await this.customerRepository.save(customer);
-    return savedCustomer.toModel();
+    await this.customerRepository.save(entity);
   }
 }
