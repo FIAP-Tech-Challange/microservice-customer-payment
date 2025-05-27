@@ -13,6 +13,7 @@ export class ProductMapper {
     productEntity.image_url = productModel.image_url;
     productEntity.created_at = productModel.created_at;
     productEntity.updated_at = productModel.updated_at;
+    productEntity.store_id = productModel.store_id;
 
     return productEntity;
   }

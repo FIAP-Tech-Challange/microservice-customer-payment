@@ -7,6 +7,7 @@ import { InMemoryProductRepository } from './adapters/product.repository.in-memo
 describe('ProductService (integration, in-memory)', () => {
   let service: ProductService;
   let repo: InMemoryProductRepository;
+  const storeId = 'test-store-id';
 
   beforeEach(() => {
     repo = new InMemoryProductRepository();
@@ -22,7 +23,7 @@ describe('ProductService (integration, in-memory)', () => {
       image_url: 'img.png',
     };
 
-    const product = await service.create(dto);
+    const product = await service.create(dto, storeId);
     expect(product).toBeInstanceOf(ProductModel);
     expect(product.name).toBe(dto.name);
 
@@ -32,20 +33,26 @@ describe('ProductService (integration, in-memory)', () => {
   });
 
   it('should find all products', async () => {
-    const productA = await service.create({
-      name: 'Name1234',
-      description: '',
-      price: 1,
-      prep_time: 1,
-      image_url: '',
-    });
-    const productB = await service.create({
-      name: 'Name5678',
-      description: '',
-      price: 2,
-      prep_time: 2,
-      image_url: '',
-    });
+    const productA = await service.create(
+      {
+        name: 'Name1234',
+        description: '',
+        price: 1,
+        prep_time: 1,
+        image_url: '',
+      },
+      storeId,
+    );
+    const productB = await service.create(
+      {
+        name: 'Name5678',
+        description: '',
+        price: 2,
+        prep_time: 2,
+        image_url: '',
+      },
+      storeId,
+    );
     const all = await service.findAll();
     expect(all.length).toBe(2);
     expect(all[0]).toBe(productA);
@@ -53,26 +60,32 @@ describe('ProductService (integration, in-memory)', () => {
   });
 
   it('should find product by id', async () => {
-    const p = await service.create({
-      name: 'FindMe',
-      description: '',
-      price: 1,
-      prep_time: 1,
-      image_url: '',
-    });
+    const p = await service.create(
+      {
+        name: 'FindMe',
+        description: '',
+        price: 1,
+        prep_time: 1,
+        image_url: '',
+      },
+      storeId,
+    );
     const found = await service.findById(p.id);
     expect(found).toBeDefined();
     expect(found.id).toBe(p.id);
   });
 
   it('should update a product', async () => {
-    const p = await service.create({
-      name: 'Old',
-      description: 'desc',
-      price: 1,
-      prep_time: 1,
-      image_url: '',
-    });
+    const p = await service.create(
+      {
+        name: 'Old',
+        description: 'desc',
+        price: 1,
+        prep_time: 1,
+        image_url: '',
+      },
+      storeId,
+    );
     const update: UpdateProductDto = {
       name: 'New',
       description: 'newdesc',
@@ -87,13 +100,16 @@ describe('ProductService (integration, in-memory)', () => {
   });
 
   it('should remove a product', async () => {
-    const p = await service.create({
-      name: 'ToDelete',
-      description: '',
-      price: 1,
-      prep_time: 1,
-      image_url: '',
-    });
+    const p = await service.create(
+      {
+        name: 'ToDelete',
+        description: '',
+        price: 1,
+        prep_time: 1,
+        image_url: '',
+      },
+      storeId,
+    );
     await service.remove(p.id);
     expect((await repo.findAll()).length).toBe(0);
   });

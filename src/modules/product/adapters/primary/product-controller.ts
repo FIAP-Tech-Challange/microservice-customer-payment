@@ -7,12 +7,16 @@ import {
   Param,
   Delete,
   HttpStatus,
+  UseGuards,
+  Request,
 } from '@nestjs/common';
 import { CreateProductDto } from '../../models/dto/create-product.dto';
 import { UpdateProductDto } from '../../models/dto/update-product.dto';
 import { ProductInputPort } from '../../ports/input/product.port';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ProductService } from '../../services/product.service';
+import { StoreGuard } from 'src/modules/auth/guards/store.guard';
+import { RequestFromStore } from 'src/modules/auth/models/dtos/request.dto';
 
 @ApiTags('products')
 @Controller('products')
@@ -20,6 +24,7 @@ export class ProductController implements ProductInputPort {
   constructor(private readonly productService: ProductService) {}
 
   @Post()
+  @UseGuards(StoreGuard)
   @ApiOperation({ summary: 'Create a new product' })
   @ApiResponse({
     status: HttpStatus.CREATED,
@@ -30,8 +35,12 @@ export class ProductController implements ProductInputPort {
     status: HttpStatus.BAD_REQUEST,
     description: 'Invalid input data',
   })
-  async create(@Body() createProductDto: CreateProductDto) {
-    return this.productService.create(createProductDto);
+  async create(
+    @Body() createProductDto: CreateProductDto,
+    @Request() req: RequestFromStore,
+  ) {
+    const storeId = req.storeId;
+    return this.productService.create(createProductDto, storeId);
   }
 
   @Get()

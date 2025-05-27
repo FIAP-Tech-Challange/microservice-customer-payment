@@ -8,6 +8,7 @@ describe('ProductModel', () => {
       prep_time: 10,
       description: 'A nice product',
       image_url: 'http://img.com/1.png',
+      store_id: 'some-store-id',
     });
     expect(product).toBeInstanceOf(ProductModel);
     expect(product.name).toBe('Test Product');
@@ -26,6 +27,7 @@ describe('ProductModel', () => {
         name: 'ab',
         price: 100,
         prep_time: 10,
+        store_id: 'some-store-id',
       }),
     ).toThrow('Name is too short, must be at least 3 characters');
   });
@@ -36,6 +38,7 @@ describe('ProductModel', () => {
         name: 'a'.repeat(256),
         price: 100,
         prep_time: 10,
+        store_id: 'some-store-id',
       }),
     ).toThrow('Name must be less than 255 characters');
   });
@@ -47,6 +50,7 @@ describe('ProductModel', () => {
         price: 100,
         prep_time: 10,
         description: 'a'.repeat(501),
+        store_id: 'some-store-id',
       }),
     ).toThrow('Description must be less than 500 characters');
   });
@@ -57,6 +61,7 @@ describe('ProductModel', () => {
         name: 'Valid Name',
         price: 0,
         prep_time: 10,
+        store_id: 'some-store-id',
       }),
     ).toThrow('Price must be a positive number');
   });
@@ -67,6 +72,7 @@ describe('ProductModel', () => {
         name: 'Valid Name',
         price: 10,
         prep_time: 0,
+        store_id: 'some-store-id',
       }),
     ).toThrow('Preparation time must be a positive number');
   });
@@ -78,6 +84,7 @@ describe('ProductModel', () => {
       prep_time: 5,
       description: 'desc',
       image_url: 'img.png',
+      store_id: 'some-store-id',
     });
     const oldUpdatedAt = product.updated_at;
     product.changeValues({

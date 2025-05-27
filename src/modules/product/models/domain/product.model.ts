@@ -8,6 +8,7 @@ interface ProductProps {
   image_url: string | undefined;
   created_at: Date;
   updated_at: Date;
+  store_id: string;
 }
 
 export class ProductModel {
@@ -20,6 +21,7 @@ export class ProductModel {
   private _image_url: string | undefined;
   private _created_at: Date;
   private _updated_at: Date;
+  private _store_id: string;
 
   private constructor(props: ProductProps) {
     this._id = props.id;
@@ -31,6 +33,7 @@ export class ProductModel {
     this._image_url = props.image_url;
     this._created_at = props.created_at;
     this._updated_at = props.updated_at;
+    this._store_id = props.store_id;
     this.validate();
   }
 
@@ -61,8 +64,13 @@ export class ProductModel {
   get updated_at(): Date {
     return this._updated_at;
   }
+  get store_id(): string {
+    return this._store_id;
+  }
 
-  changeValues(props: Omit<ProductProps, 'id' | 'created_at' | 'updated_at'>) {
+  changeValues(
+    props: Omit<ProductProps, 'id' | 'created_at' | 'updated_at' | 'store_id'>,
+  ) {
     this._name = props.name;
     this._price = props.price;
     this._is_active = props.is_active;
@@ -95,12 +103,16 @@ export class ProductModel {
     if (this._prep_time <= 0) {
       throw new Error('Preparation time must be a positive number');
     }
+    if (!this._store_id) {
+      throw new Error('Store ID is required');
+    }
   }
 
   static create(props: {
     prep_time: number;
     price: number;
     name: string;
+    store_id: string;
     description?: string;
     image_url?: string;
   }): ProductModel {
@@ -114,6 +126,7 @@ export class ProductModel {
       is_active: true,
       created_at: new Date(),
       updated_at: new Date(),
+      store_id: props.store_id,
     });
   }
 

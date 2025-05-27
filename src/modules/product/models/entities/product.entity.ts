@@ -4,8 +4,10 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   PrimaryColumn,
+  ManyToOne,
 } from 'typeorm';
 import { ProductModel } from '../domain/product.model';
+import { StoreEntity } from 'src/modules/stores/models/entities/store.entity';
 
 @Entity('products')
 export class ProductEntity {
@@ -38,8 +40,11 @@ export class ProductEntity {
   @Column({ nullable: true })
   image_url?: string;
 
-  @Column({ type: 'uuid', nullable: false })
-  category_id: string;
+  @ManyToOne(() => StoreEntity, (store) => store.products, {
+    onDelete: 'CASCADE',
+    nullable: false,
+  })
+  store: StoreEntity;
 
   @Column({ type: 'uuid', nullable: false })
   store_id: string;
@@ -61,6 +66,7 @@ export class ProductEntity {
       image_url: this.image_url,
       created_at: this.created_at,
       updated_at: this.updated_at,
+      store_id: this.store_id,
     });
   }
 }

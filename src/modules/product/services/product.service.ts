@@ -21,7 +21,10 @@ export class ProductService {
     return this.productRepository.findAll();
   }
 
-  async create(createProductDto: CreateProductDto): Promise<ProductModel> {
+  async create(
+    createProductDto: CreateProductDto,
+    storeId: string,
+  ): Promise<ProductModel> {
     let product: ProductModel;
 
     try {
@@ -31,6 +34,7 @@ export class ProductService {
         price: createProductDto.price,
         prep_time: createProductDto.prep_time,
         image_url: createProductDto.image_url,
+        store_id: storeId,
       });
     } catch (error) {
       throw new BadRequestException(`Invalid product data: ${error.message}`);

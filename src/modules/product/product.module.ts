@@ -5,9 +5,10 @@ import { ProductRepositoryTypeORM } from './adapters/secondary/product-repositor
 import { ProductService } from './services/product.service';
 import { ProductEntity } from './models/entities/product.entity';
 import { PRODUCT_REPOSITORY_PORT } from './product.tokens';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ProductEntity])],
+  imports: [TypeOrmModule.forFeature([ProductEntity]), JwtModule],
   controllers: [ProductController],
   providers: [
     ProductService,
@@ -16,5 +17,6 @@ import { PRODUCT_REPOSITORY_PORT } from './product.tokens';
       useClass: ProductRepositoryTypeORM,
     },
   ],
+  exports: [ProductService],
 })
 export class ProductModule {}
