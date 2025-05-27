@@ -1,9 +1,10 @@
 import { OrderStatusEnum } from '../enum/order-status.enum';
 import { OrderItemModel } from './order-item.model';
+import { CustomerInOrderModel } from './customer.model';
 
 interface OrderProps {
   id: string;
-  customerId?: string | undefined;
+  customer?: CustomerInOrderModel | undefined;
   status: string;
   totalPrice?: number | undefined;
   storeId: string;
@@ -13,7 +14,7 @@ interface OrderProps {
 }
 export class OrderModel {
   id: string;
-  customerId?: string;
+  customer?: CustomerInOrderModel;
   status: string;
   totalPrice?: number;
   storeId: string;
@@ -23,7 +24,7 @@ export class OrderModel {
 
   private constructor(props: OrderProps) {
     this.id = props.id;
-    this.customerId = props.customerId ?? undefined;
+    this.customer = props.customer ?? undefined;
     this.status = props.status;
     this.totalPrice = props.totalPrice ?? 0;
     this.storeId = props.storeId;

@@ -6,8 +6,9 @@ import {
   HttpStatus,
   Query,
   Version,
+  Param,
 } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags, ApiParam } from '@nestjs/swagger';
 import { CreateCustomerDto } from '../../models/dto/create-customer.dto';
 import { FindCustomerByCpfDto } from '../../models/dto/find-customer-by-cpf.dto';
 import { CustomerResponseDto } from '../../models/dto/customer-response.dto';
@@ -72,5 +73,51 @@ export class CustomerController {
       name: customer.name,
       email: customer.email.toString(),
     };
+  }
+
+  @Get('/:id')
+  @Version('1')
+  @ApiOperation({ summary: 'Find a customer by ID' })
+  @ApiParam({
+    name: 'id',
+    required: true,
+    description: 'Customer ID',
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'The customer was found successfully',
+    type: CustomerResponseDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Customer not found',
+  })
+  async findById(@Param('id') id: string): Promise<CustomerResponseDto> {
+    const customer = await this.customerService.findById(id);
+    return {
+      id: customer.id,
+      cpf: customer.cpf.format(),
+      name: customer.name,
+      email: customer.email.toString(),
+    };
+  }
+
+  @Get()
+  @Version('1')
+  @ApiOperation({ summary: 'List all customers' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Customers list retrieved successfully',
+    type: [CustomerResponseDto],
+  })
+  async findAll(): Promise<CustomerResponseDto[]> {
+    const customers = await this.customerService.findAll();
+    return customers.map((customer) => ({
+      id: customer.id,
+      cpf: customer.cpf.format(),
+      name: customer.name,
+      email: customer.email.toString(),
+    }));
   }
 }

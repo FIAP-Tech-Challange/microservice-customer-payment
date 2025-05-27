@@ -15,4 +15,5 @@ export interface OrderInputPort {
   ): Promise<OrderModel>;
   delete(id: OrderIdDto): Promise<void>;
   deleteOrderItem(orderItemId: string): Promise<OrderModel | void>;
+  updateCustomerId(id: string, customerId: string): Promise<OrderModel>;
 }

@@ -4,6 +4,7 @@ import {
   Injectable,
   Logger,
   NotFoundException,
+  forwardRef,
 } from '@nestjs/common';
 import { OrderRepositoryPort } from '../ports/output/order.repository';
 import { ORDER_REPOSITORY_PORT } from '../order.tokens';
@@ -14,6 +15,7 @@ import { OrderStatusEnum } from '../models/enum/order-status.enum';
 import { OrderRequestParamsDto } from '../models/dto/order-request-params.dto';
 import { OrderPaginationDto } from '../models/dto/order-pagination.dto';
 import { getStatusName } from '../util/status-order.util';
+import { CustomerService } from '../../customers/services/customer.service';
 
 @Injectable()
 export class OrderService {
@@ -22,11 +24,12 @@ export class OrderService {
   constructor(
     @Inject(ORDER_REPOSITORY_PORT)
     private readonly orderRepositoryPort: OrderRepositoryPort,
+    @Inject(forwardRef(() => CustomerService))
+    private readonly customerService: CustomerService,
   ) {}
 
   create(dto: CreateOrderDto): Promise<OrderModel> {
     const order = OrderModel.create({
-      customerId: dto.customerId,
       storeId: dto.storeId,
       totemId: dto.totemId,
     });
@@ -84,15 +87,13 @@ export class OrderService {
     }
 
     if (
-      orderCurrent.status === (OrderStatusEnum.FINISHED as string) ||
-      orderCurrent.status === (OrderStatusEnum.CANCELED as string)
+      orderCurrent.status === (OrderStatusEnum.RECEIVED as string) ||
+      orderCurrent.status === (OrderStatusEnum.IN_PROGRESS as string)
     ) {
-      throw new BadRequestException(
-        `Order with id ${id} cannot be updated, order is CANCELED or FINISHED`,
-      );
+      return this.orderRepositoryPort.updateStatus(id, status);
+    } else {
+      throw new BadRequestException(`Order with id ${id} cannot be updated`);
     }
-
-    return this.orderRepositoryPort.updateStatus(id, status);
   }
 
   async delete(id: string): Promise<void> {
@@ -162,6 +163,66 @@ export class OrderService {
       this.logger.error(`Order with id ${order.id} not found after deletion`);
       throw new NotFoundException(`Order with id ${order.id} not found`);
     }
-    return orderUpdated;
+  }
+
+  async updateCustomerId(
+    orderId: string,
+    customerId: string,
+  ): Promise<OrderModel> {
+    this.logger.log(`Updating customer ID for order ${orderId}`);
+
+    // Get the customer data to associate
+    const customer = await this.customerService.findById(customerId);
+    if (!customer) {
+      this.logger.error(`Customer with ID ${customerId} not found`);
+      throw new BadRequestException(`Customer with ID ${customerId} not found`);
+    }
+
+    // Find order
+    const order = await this.orderRepositoryPort.findById(orderId);
+    if (!order) {
+      this.logger.error(`Order with id ${orderId} not found`);
+      throw new NotFoundException(`Order with id ${orderId} not found`);
+    }
+
+    // Check if order already has a customer associated
+    if (order.customer) {
+      this.logger.error(
+        `Order ${orderId} already has a customer associated (${order.customer.id})`,
+      );
+      throw new BadRequestException(`Order already has a customer associated`);
+    }
+
+    // Check if order status is CANCELED or FINISHED
+    if (
+      (order.status as OrderStatusEnum) === OrderStatusEnum.CANCELED ||
+      (order.status as OrderStatusEnum) === OrderStatusEnum.FINISHED
+    ) {
+      this.logger.error(
+        `Cannot update customer ID for order ${orderId} with status ${getStatusName(order.status as OrderStatusEnum)}`,
+      );
+      throw new BadRequestException(
+        `Cannot update customer ID for order with status ${getStatusName(order.status as OrderStatusEnum)}`,
+      );
+    }
+
+    // Update customer data
+    order.customer = {
+      id: customer.id,
+      cpf: customer.cpf.toString(),
+      name: customer.name,
+      email: customer.email.toString(),
+    };
+
+    const updatedOrder = await this.orderRepositoryPort.updateOrder(order);
+    if (!updatedOrder) {
+      this.logger.error(`Failed to update customer ID for order ${orderId}`);
+      throw new BadRequestException(
+        `Failed to update customer ID for order ${orderId}`,
+      );
+    }
+
+    this.logger.log(`Customer ID updated successfully for order ${orderId}`);
+    return updatedOrder;
   }
 }

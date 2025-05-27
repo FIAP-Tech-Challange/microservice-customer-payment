@@ -5,14 +5,6 @@ import { Type } from 'class-transformer';
 
 export class CreateOrderDto {
   @ApiProperty({
-    description: 'ID of the customer placing the order',
-    required: false,
-  })
-  @IsOptional()
-  @IsUUID()
-  customerId?: string;
-
-  @ApiProperty({
     description: 'ID of the store where the order is placed',
   })
   @IsOptional()
