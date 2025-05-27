@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import { ProductEntity } from 'src/modules/product/models/entities/product.entity';
 import { PaymentEntity } from 'src/modules/payment/models/entities/payment.entity';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { CustomerEntity } from '../modules/customers/models/entities/customer.entity';
@@ -15,6 +16,7 @@ const dataSourceOptions: DataSourceOptions = {
   password: process.env.DB_PG_PASSWORD,
   database: process.env.DB_PG_NAME,
   entities: [
+    ProductEntity,
     CustomerEntity,
     PaymentEntity,
     StoreEntity,

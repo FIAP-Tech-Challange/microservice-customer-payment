@@ -51,7 +51,7 @@ export class OrderRepositoryAdapter implements OrderRepositoryPort {
       skip: (page - 1) * limit,
       take: limit,
       where: status ? { status } : {},
-      relations: ['order_items'],
+      relations: ['order_items', 'customer'],
       order: { created_at: 'DESC' },
     });
 
@@ -76,7 +76,7 @@ export class OrderRepositoryAdapter implements OrderRepositoryPort {
   async findById(id: string): Promise<OrderModel | null> {
     const order = await this.orderRepository.findOne({
       where: { id },
-      relations: ['order_items'],
+      relations: ['order_items', 'customer'],
     });
     if (order) {
       return OrderMapper.toDomain(order, order.order_items);
@@ -90,7 +90,7 @@ export class OrderRepositoryAdapter implements OrderRepositoryPort {
   ): Promise<OrderModel | null> {
     const order = await this.orderRepository.findOne({
       where: { id },
-      relations: ['order_items'],
+      relations: ['order_items', 'customer'],
     });
 
     if (!order) {
@@ -105,15 +105,15 @@ export class OrderRepositoryAdapter implements OrderRepositoryPort {
   async updateOrder(order: Partial<OrderModel>): Promise<OrderModel | null> {
     const orderSaved = await this.orderRepository.findOne({
       where: { id: order.id },
-      relations: ['order_items'],
+      relations: ['order_items', 'customer'],
     });
 
     if (!orderSaved) {
       return null;
     }
 
-    if (order.customerId) {
-      orderSaved.customer_id = order.customerId;
+    if (order.customer) {
+      orderSaved.customer_id = order.customer.id;
     }
 
     if (order.totalPrice) {
@@ -140,7 +140,7 @@ export class OrderRepositoryAdapter implements OrderRepositoryPort {
   async findOrderItem(orderItemId: string): Promise<OrderModel | null> {
     const orderItem = await this.orderItemRepository.findOne({
       where: { id: orderItemId },
-      relations: ['order'],
+      relations: ['order', 'order.customer'],
     });
     if (!orderItem) {
       return null;

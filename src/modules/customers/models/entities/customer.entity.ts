@@ -6,6 +6,8 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { CustomerModel } from '../domain/customer.model';
+import { Email } from 'src/shared/domain/email.vo';
+import { CPF } from 'src/shared/domain/cpf.vo';
 
 @Entity('customers')
 export class CustomerEntity {
@@ -30,17 +32,17 @@ export class CustomerEntity {
   toModel(): CustomerModel {
     return CustomerModel.fromProps({
       id: this.id,
-      cpf: this.cpf,
+      cpf: new CPF(this.cpf),
       name: this.name,
-      email: this.email,
+      email: new Email(this.email),
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
     });
   }
 
   updateFromModel(model: Partial<CustomerModel>): void {
-    if (model.cpf) this.cpf = model.cpf;
+    if (model.cpf) this.cpf = model.cpf.toString();
     if (model.name) this.name = model.name;
-    if (model.email) this.email = model.email;
+    if (model.email) this.email = model.email.toString();
   }
 }

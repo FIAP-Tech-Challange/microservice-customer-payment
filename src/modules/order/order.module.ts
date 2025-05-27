@@ -5,10 +5,14 @@ import { OrderEntity } from './models/entities/order.entity';
 import { OrderItemEntity } from './models/entities/order-item.entity';
 import { OrderService } from './services/order.service';
 import { OrderRepositoryAdapter } from './adapters/secondary/order-repository.adapter';
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
+import { CustomersModule } from '../customers/customers.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([OrderEntity, OrderItemEntity])],
+  imports: [
+    TypeOrmModule.forFeature([OrderEntity, OrderItemEntity]),
+    forwardRef(() => CustomersModule),
+  ],
   controllers: [OrderController],
   providers: [
     OrderService,
