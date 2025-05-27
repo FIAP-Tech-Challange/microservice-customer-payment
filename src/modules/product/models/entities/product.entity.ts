@@ -15,7 +15,15 @@ export class ProductEntity {
   @Column({ nullable: false })
   name: string;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: false })
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    transformer: {
+      to: (value: number) => value,
+      from: (value: string) => parseFloat(value),
+    },
+  })
   price: string;
 
   @Column({ type: 'varchar', nullable: true })
@@ -30,11 +38,11 @@ export class ProductEntity {
   @Column({ type: 'varchar', nullable: true })
   image_url: string;
 
-  @Column({ type: 'int', nullable: false })
-  category_id: number;
+  @Column({ type: 'uuid', nullable: false })
+  category_id: string;
 
-  @Column({ type: 'int', nullable: false })
-  store_id: number;
+  @Column({ type: 'uuid', nullable: false })
+  store_id: string;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
