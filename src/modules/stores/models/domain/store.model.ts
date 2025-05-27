@@ -1,16 +1,19 @@
 import { randomUUID, pbkdf2Sync } from 'node:crypto';
 import { TotemModel } from './totem.model';
 import { ConflictException } from '@nestjs/common';
+import { CNPJ } from './cnpj.vo';
+import { Email } from 'src/shared/domain/email.vo';
+import { BrazilianPhone } from 'src/shared/domain/brazilian-phone.vo';
 
 interface StoreProps {
   id: string;
   name: string;
   fantasyName: string;
-  email: string;
-  phone: string;
+  email: Email;
+  phone: BrazilianPhone;
   salt: string;
   passwordHash: string;
-  cnpj: string;
+  cnpj: CNPJ;
   isActive: boolean;
   totems: TotemModel[];
   createdAt: Date;
@@ -18,17 +21,11 @@ interface StoreProps {
 
 export class StoreModel {
   id: string;
-
-  // TODO: create CNPJ value object
-  cnpj: string;
+  cnpj: CNPJ;
   name: string;
   fantasyName: string;
-
-  // TODO: create email value object
-  email: string;
-
-  // TODO: create phone value object
-  phone: string;
+  email: Email;
+  phone: BrazilianPhone;
 
   // TODO: create password value object
   salt: string;
@@ -108,8 +105,8 @@ export class StoreModel {
     if (!this.name) {
       throw new Error('Name is required');
     }
-    if (!this.email) {
-      throw new Error('Email is required');
+    if (!(this.email instanceof Email)) {
+      throw new Error('Email must be an Email value object');
     }
     if (!this.salt) {
       throw new Error('Salt is required');
@@ -120,8 +117,8 @@ export class StoreModel {
     if (!this.id) {
       throw new Error('ID is required');
     }
-    if (!this.cnpj) {
-      throw new Error('CNPJ is required');
+    if (!(this.cnpj instanceof CNPJ)) {
+      throw new Error('CNPJ must be a CNPJ value object');
     }
     if (!this.fantasyName) {
       throw new Error('Fantasy name is required');
@@ -140,10 +137,10 @@ export class StoreModel {
   static create(props: {
     name: string;
     fantasyName: string;
-    email: string;
-    cnpj: string;
+    email: Email;
+    cnpj: CNPJ;
     plainPassword: string;
-    phone: string;
+    phone: BrazilianPhone;
   }): StoreModel {
     const id = randomUUID();
     const salt = randomUUID();

@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { CustomerEntity } from '../../models/entities/customer.entity';
 import { CustomerRepositoryPort } from '../../ports/output/customer-repository.port';
 import { CustomerModel } from '../../models/domain/customer.model';
+import { CPF } from 'src/shared/domain/cpf.vo';
 
 @Injectable()
 export class CustomerRepositoryAdapter implements CustomerRepositoryPort {
@@ -12,30 +13,22 @@ export class CustomerRepositoryAdapter implements CustomerRepositoryPort {
     private readonly customerRepository: Repository<CustomerEntity>,
   ) {}
 
-  async findByCpf(cpf: string): Promise<CustomerModel | null> {
-    const cleanCpf = cpf.replace(/\D/g, '');
+  async findByCpf(cpf: CPF): Promise<CustomerModel | null> {
     const customer = await this.customerRepository.findOne({
-      where: { cpf: cleanCpf },
+      where: { cpf: cpf.toString() },
     });
 
     return customer ? customer.toModel() : null;
   }
 
-  async create(customerData: Partial<CustomerModel>): Promise<CustomerModel> {
-    const customerModel = CustomerModel.create({
-      cpf: customerData.cpf!,
-      name: customerData.name!,
-      email: customerData.email!,
-    });
+  async create(customer: CustomerModel): Promise<void> {
+    const entity = new CustomerEntity();
+    entity.id = customer.id;
+    entity.cpf = customer.cpf.toString();
+    entity.name = customer.name;
+    entity.email = customer.email.toString();
 
-    const customer = new CustomerEntity();
-    customer.id = customerModel.id;
-    customer.cpf = customerModel.cpf;
-    customer.name = customerModel.name;
-    customer.email = customerModel.email;
-
-    const savedCustomer = await this.customerRepository.save(customer);
-    return savedCustomer.toModel();
+    await this.customerRepository.save(entity);
   }
 
   async findById(id: string): Promise<CustomerModel | null> {

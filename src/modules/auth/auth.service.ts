@@ -18,7 +18,10 @@ export class AuthService {
         throw new UnauthorizedException('Incorrect password');
       }
 
-      const payload: StoreTokenInterface = { storeId: store.id, email: store.email };
+      const payload: StoreTokenInterface = {
+        storeId: store.id,
+        email: store.email.toString(),
+      };
 
       return this.jwtService.signAsync(payload);
     } catch {
