@@ -15,7 +15,8 @@ const dataSourceOptions: DataSourceOptions = {
   username: process.env.DB_PG_USER,
   password: process.env.DB_PG_PASSWORD,
   database: process.env.DB_PG_NAME,
-  entities: [ProductEntity,
+  entities: [
+    ProductEntity,
     CustomerEntity,
     PaymentEntity,
     StoreEntity,

@@ -209,9 +209,9 @@ export class OrderService {
     // Update customer data
     order.customer = {
       id: customer.id,
-      cpf: customer.cpf,
+      cpf: customer.cpf.toString(),
       name: customer.name,
-      email: customer.email,
+      email: customer.email.toString(),
     };
 
     const updatedOrder = await this.orderRepositoryPort.updateOrder(order);
