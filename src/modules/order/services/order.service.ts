@@ -30,7 +30,6 @@ export class OrderService {
 
   create(dto: CreateOrderDto): Promise<OrderModel> {
     const order = OrderModel.create({
-      customerId: dto.customerId,
       storeId: dto.storeId,
       totemId: dto.totemId,
     });
@@ -88,15 +87,13 @@ export class OrderService {
     }
 
     if (
-      orderCurrent.status === (OrderStatusEnum.FINISHED as string) ||
-      orderCurrent.status === (OrderStatusEnum.CANCELED as string)
+      orderCurrent.status === (OrderStatusEnum.RECEIVED as string) ||
+      orderCurrent.status === (OrderStatusEnum.IN_PROGRESS as string)
     ) {
-      throw new BadRequestException(
-        `Order with id ${id} cannot be updated, order is CANCELED or FINISHED`,
-      );
+      return this.orderRepositoryPort.updateStatus(id, status);
+    } else {
+      throw new BadRequestException(`Order with id ${id} cannot be updated`);
     }
-
-    return this.orderRepositoryPort.updateStatus(id, status);
   }
 
   async delete(id: string): Promise<void> {
@@ -174,18 +171,29 @@ export class OrderService {
   ): Promise<OrderModel> {
     this.logger.log(`Updating customer ID for order ${orderId}`);
 
+    // Get the customer data to associate
     const customer = await this.customerService.findById(customerId);
     if (!customer) {
       this.logger.error(`Customer with ID ${customerId} not found`);
       throw new BadRequestException(`Customer with ID ${customerId} not found`);
     }
 
+    // Find order
     const order = await this.orderRepositoryPort.findById(orderId);
     if (!order) {
       this.logger.error(`Order with id ${orderId} not found`);
       throw new NotFoundException(`Order with id ${orderId} not found`);
     }
 
+    // Check if order already has a customer associated
+    if (order.customer) {
+      this.logger.error(
+        `Order ${orderId} already has a customer associated (${order.customer.id})`,
+      );
+      throw new BadRequestException(`Order already has a customer associated`);
+    }
+
+    // Check if order status is CANCELED or FINISHED
     if (
       (order.status as OrderStatusEnum) === OrderStatusEnum.CANCELED ||
       (order.status as OrderStatusEnum) === OrderStatusEnum.FINISHED
@@ -198,7 +206,13 @@ export class OrderService {
       );
     }
 
-    order.customerId = customerId;
+    // Update customer data
+    order.customer = {
+      id: customer.id,
+      cpf: customer.cpf,
+      name: customer.name,
+      email: customer.email,
+    };
 
     const updatedOrder = await this.orderRepositoryPort.updateOrder(order);
     if (!updatedOrder) {

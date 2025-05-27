@@ -29,7 +29,6 @@ import { OrderPaginationDto } from '../../models/dto/order-pagination.dto';
 import { statusOptionsMessage } from '../../util/status-order.util';
 import { OrderIdDto } from '../../models/dto/order-id.dto';
 import { UpdateOrderStatusDto } from '../../models/dto/update-order-status.dto';
-import { UpdateCustomerIdDto } from '../../models/dto/update-customer-id.dto';
 
 @ApiTags('Order')
 @Controller({
@@ -217,11 +216,8 @@ export class OrderController implements OrderInputPort {
   @Patch(':id/customer')
   async updateCustomerId(
     @Param('id', new ParseUUIDPipe()) id: string,
-    @Body() updateCustomerIdDto: UpdateCustomerIdDto,
+    @Body('customerId') customerId: string,
   ): Promise<OrderModel> {
-    return this.orderService.updateCustomerId(
-      id,
-      updateCustomerIdDto.customerId,
-    );
+    return this.orderService.updateCustomerId(id, customerId);
   }
 }

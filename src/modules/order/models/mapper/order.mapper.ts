@@ -1,5 +1,6 @@
 import { OrderItemModel } from '../domain/order-item.model';
 import { OrderModel } from '../domain/order.model';
+import { CustomerInOrderModel } from '../domain/customer.model';
 import { OrderItemEntity } from '../entities/order-item.entity';
 import { OrderEntity } from '../entities/order.entity';
 import { OrderStatusEnum } from '../enum/order-status.enum';
@@ -24,9 +25,20 @@ export class OrderMapper {
       );
     }
 
+    // Create customer object if available
+    let customerObj: CustomerInOrderModel | undefined = undefined;
+    if (entity.customer) {
+      customerObj = {
+        id: entity.customer.id,
+        cpf: entity.customer.cpf,
+        name: entity.customer.name,
+        email: entity.customer.email,
+      };
+    }
+
     return OrderModel.fromProps({
       id: entity.id,
-      customerId: entity.customer_id ?? undefined,
+      customer: customerObj,
       status: entity.status as OrderStatusEnum,
       totalPrice: parseFloat(entity.total_price.toFixed(2)),
       storeId: entity.store_id,
@@ -39,7 +51,7 @@ export class OrderMapper {
   static toEntity(model: OrderModel): OrderEntity {
     const entity = new OrderEntity();
     entity.id = model.id;
-    entity.customer_id = model.customerId ?? null;
+    entity.customer_id = model.customer?.id ?? null;
     entity.status = model.status;
     entity.total_price = model.totalPrice ?? 0;
     entity.store_id = model.storeId;

@@ -4,8 +4,11 @@ import {
   CreateDateColumn,
   PrimaryGeneratedColumn,
   OneToMany,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 import { OrderItemEntity } from './order-item.entity';
+import { CustomerEntity } from '../../../customers/models/entities/customer.entity';
 
 @Entity('order')
 export class OrderEntity {
@@ -14,6 +17,10 @@ export class OrderEntity {
 
   @Column({ type: 'uuid', nullable: true })
   customer_id: string | null;
+
+  @ManyToOne(() => CustomerEntity)
+  @JoinColumn({ name: 'customer_id' })
+  customer: CustomerEntity;
 
   @Column({ type: 'varchar', nullable: false })
   status: string;

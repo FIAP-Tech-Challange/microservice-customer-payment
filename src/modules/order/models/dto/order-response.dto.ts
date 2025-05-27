@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNumber, IsString } from 'class-validator';
 import { OrderItemResponseDto } from './order-item-response.dto';
+import { CustomerOrderDto } from './customer-order.dto';
 
 export class OrderResponseDto {
   @ApiProperty({
@@ -10,11 +11,11 @@ export class OrderResponseDto {
   id: string;
 
   @ApiProperty({
-    description: 'Unique identifier for the customer',
+    description: 'Customer information',
     required: false,
+    type: CustomerOrderDto,
   })
-  @IsString()
-  customerId?: string;
+  customer?: CustomerOrderDto;
 
   @ApiProperty({
     description: 'Status of the order',
