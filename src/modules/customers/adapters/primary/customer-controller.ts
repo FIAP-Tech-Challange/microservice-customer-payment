@@ -97,9 +97,9 @@ export class CustomerController {
     const customer = await this.customerService.findById(id);
     return {
       id: customer.id,
-      cpf: customer.cpf,
+      cpf: customer.cpf.format(),
       name: customer.name,
-      email: customer.email,
+      email: customer.email.toString(),
     };
   }
 
@@ -115,9 +115,9 @@ export class CustomerController {
     const customers = await this.customerService.findAll();
     return customers.map((customer) => ({
       id: customer.id,
-      cpf: customer.cpf,
+      cpf: customer.cpf.format(),
       name: customer.name,
-      email: customer.email,
+      email: customer.email.toString(),
     }));
   }
 }
