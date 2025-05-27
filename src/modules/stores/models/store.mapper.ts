@@ -1,18 +1,21 @@
+import { Email } from 'src/shared/domain/email.vo';
+import { CNPJ } from './domain/cnpj.vo';
 import { StoreModel } from './domain/store.model';
 import { TotemModel } from './domain/totem.model';
 import { SimplifiedStoreDto } from './dtos/simplified-store.dto';
 import { StoreEntity } from './entities/store.entity';
 import { TotemEntity } from './entities/totem.entity';
+import { BrazilianPhone } from 'src/shared/domain/brazilian-phone.vo';
 
 export class StoreMapper {
   static toDomain(entity: StoreEntity) {
     return StoreModel.restore({
       id: entity.id,
-      cnpj: entity.cnpj,
-      email: entity.email,
+      cnpj: new CNPJ(entity.cnpj),
+      email: new Email(entity.email),
       fantasyName: entity.fantasy_name,
       name: entity.name,
-      phone: entity.phone,
+      phone: new BrazilianPhone(entity.phone),
       passwordHash: entity.password_hash,
       salt: entity.salt,
       createdAt: entity.created_at,
@@ -32,11 +35,11 @@ export class StoreMapper {
   static toEntity(entity: StoreModel) {
     const storeEntity = new StoreEntity();
     storeEntity.id = entity.id;
-    storeEntity.cnpj = entity.cnpj;
-    storeEntity.email = entity.email;
+    storeEntity.cnpj = entity.cnpj.toString();
+    storeEntity.email = entity.email.toString();
     storeEntity.fantasy_name = entity.fantasyName;
     storeEntity.name = entity.name;
-    storeEntity.phone = entity.phone;
+    storeEntity.phone = entity.phone.toString();
     storeEntity.password_hash = entity.passwordHash;
     storeEntity.salt = entity.salt;
     storeEntity.created_at = entity.createdAt;
@@ -60,9 +63,9 @@ export class StoreMapper {
       id: store.id,
       name: store.name,
       fantasyName: store.fantasyName,
-      email: store.email,
-      phone: store.phone,
-      cnpj: store.cnpj,
+      email: store.email.toString(),
+      phone: store.phone.toString(),
+      cnpj: store.cnpj.toString(),
       isActive: store.isActive,
       totems: store.totems.map((t) => ({
         id: t.id,
