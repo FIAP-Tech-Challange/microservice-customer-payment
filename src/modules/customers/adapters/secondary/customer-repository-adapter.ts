@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { CustomerEntity } from '../../models/entities/customer.entity';
 import { CustomerRepositoryPort } from '../../ports/output/customer-repository.port';
 import { CustomerModel } from '../../models/domain/customer.model';
+import { CPF } from 'src/shared/domain/cpf.vo';
 
 @Injectable()
 export class CustomerRepositoryAdapter implements CustomerRepositoryPort {
@@ -12,10 +13,9 @@ export class CustomerRepositoryAdapter implements CustomerRepositoryPort {
     private readonly customerRepository: Repository<CustomerEntity>,
   ) {}
 
-  async findByCpf(cpf: string): Promise<CustomerModel | null> {
-    const cleanCpf = cpf.replace(/\D/g, '');
+  async findByCpf(cpf: CPF): Promise<CustomerModel | null> {
     const customer = await this.customerRepository.findOne({
-      where: { cpf: cleanCpf },
+      where: { cpf: cpf.toString() },
     });
 
     return customer ? customer.toModel() : null;
@@ -24,7 +24,7 @@ export class CustomerRepositoryAdapter implements CustomerRepositoryPort {
   async create(customer: CustomerModel): Promise<void> {
     const entity = new CustomerEntity();
     entity.id = customer.id;
-    entity.cpf = customer.cpf;
+    entity.cpf = customer.cpf.toString();
     entity.name = customer.name;
     entity.email = customer.email.toString();
 

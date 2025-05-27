@@ -40,9 +40,9 @@ export class CustomerController {
     const customer = await this.customerService.findByCpf(findCustomerDto.cpf);
     return {
       id: customer.id,
-      cpf: customer.cpf,
+      cpf: customer.cpf.format(),
       name: customer.name,
-      email: customer.email,
+      email: customer.email.toString(),
     };
   }
 
@@ -68,9 +68,9 @@ export class CustomerController {
     const customer = await this.customerService.create(createCustomerDto);
     return {
       id: customer.id,
-      cpf: customer.cpf,
+      cpf: customer.cpf.format(),
       name: customer.name,
-      email: customer.email,
+      email: customer.email.toString(),
     };
   }
 }

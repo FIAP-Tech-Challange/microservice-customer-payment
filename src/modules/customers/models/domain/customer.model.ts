@@ -1,8 +1,9 @@
+import { CPF } from 'src/shared/domain/cpf.vo';
 import { Email } from 'src/shared/domain/email.vo';
 
 interface CustomerProps {
   id: string;
-  cpf: string;
+  cpf: CPF;
   name: string;
   email: Email;
   createdAt: Date;
@@ -11,7 +12,7 @@ interface CustomerProps {
 
 export class CustomerModel {
   id: string;
-  cpf: string;
+  cpf: CPF;
   name: string;
   email: Email;
   created_at: Date;
@@ -24,6 +25,7 @@ export class CustomerModel {
     this.email = props.email;
     this.created_at = props.createdAt;
     this.updated_at = props.updatedAt;
+    this.validate();
   }
 
   private validate() {
@@ -35,6 +37,9 @@ export class CustomerModel {
     }
     if (!this.name) {
       throw new Error('Name is required');
+    }
+    if (this.name.length < 3) {
+      throw new Error('Name must be at least 3 characters long');
     }
     if (!this.email) {
       throw new Error('Email is required');
@@ -50,13 +55,11 @@ export class CustomerModel {
       createdAt: new Date(),
       updatedAt: new Date(),
     });
-    customer.validate();
     return customer;
   }
 
   static fromProps(props: CustomerProps): CustomerModel {
     const model = new CustomerModel(props);
-    model.validate();
     return model;
   }
 }

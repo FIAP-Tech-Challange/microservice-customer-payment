@@ -7,10 +7,8 @@ export class BrazilianPhone {
   }
 
   private static cleanAndValidate(rawPhone: string): string {
-    // Remove all non-digit characters
     const digitsOnly = rawPhone.replace(/\D/g, '');
 
-    // Validate length and patterns
     const isValid =
       // Regular 11-digit format (DDD + number)
       /^(\d{2})(9\d{8})$/.test(digitsOnly) || // Mobile
@@ -23,11 +21,12 @@ export class BrazilianPhone {
       throw new Error('Invalid Brazilian phone number');
     }
 
-    // Convert to full international format (55 + DDD + number)
-    return digitsOnly.length === 11 ? `55${digitsOnly}` : digitsOnly;
+    if (digitsOnly.length === 11 || digitsOnly.length === 10) {
+      return `55${digitsOnly}`;
+    }
+    return digitsOnly;
   }
 
-  // Format: +55 (11) 98765-4321
   public format(): string {
     const ddd = this.digits.substring(2, 4);
     const prefix = this.digits.substring(4, 9);
@@ -35,14 +34,8 @@ export class BrazilianPhone {
     return `+55 (${ddd}) ${prefix}-${suffix}`;
   }
 
-  // Raw digits with country code: 5511987654321
   public toString(): string {
     return this.digits;
-  }
-
-  // Check if mobile (has 9 after DDD)
-  public isMobile(): boolean {
-    return this.digits.charAt(4) === '9';
   }
 
   public equals(other: BrazilianPhone): boolean {
