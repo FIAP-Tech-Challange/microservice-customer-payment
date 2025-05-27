@@ -18,7 +18,7 @@ import {
   RequestFromTotem,
 } from 'src/modules/auth/models/dtos/request.dto';
 import { StoreMapper } from '../../models/store.mapper';
-import { TotemGuard } from 'src/modules/auth/guards/totem.guard';
+import { StoreOrTotemGuard } from 'src/modules/auth/guards/store-or-totem.guard';
 
 @Controller('stores')
 export class StoresController implements StoresPort {
@@ -61,7 +61,7 @@ export class StoresController implements StoresPort {
     return StoreMapper.fromDomainToSimplifiedStoreDto(store);
   }
 
-  @UseGuards(TotemGuard)
+  @UseGuards(StoreOrTotemGuard)
   @Get('totems/ping')
   pingFromTotem(@Req() req: RequestFromTotem) {
     const { totemAccessToken, totemId, storeId } = req;
