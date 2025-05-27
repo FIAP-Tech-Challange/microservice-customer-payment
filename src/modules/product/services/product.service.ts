@@ -17,8 +17,8 @@ export class ProductService {
     private readonly productRepository: ProductRepositoryPort,
   ) {}
 
-  async findAll(): Promise<ProductModel[]> {
-    return this.productRepository.findAll();
+  async findAll(storeId: string): Promise<ProductModel[]> {
+    return this.productRepository.findAll(storeId);
   }
 
   async create(
@@ -45,16 +45,16 @@ export class ProductService {
     return product;
   }
 
-  async remove(id: string): Promise<void> {
-    const product = await this.findById(id);
+  async remove(id: string, storeId: string): Promise<void> {
+    const product = await this.findById(id, storeId);
 
     await this.productRepository.delete(product);
   }
 
-  async findById(id: string): Promise<ProductModel> {
+  async findById(id: string, storeId: string): Promise<ProductModel> {
     const product = await this.productRepository.findById(id);
 
-    if (!product) {
+    if (!product || product.store_id !== storeId) {
       throw new NotFoundException(`Product with ID ${id} not found`);
     }
 
@@ -64,8 +64,9 @@ export class ProductService {
   async update(
     id: string,
     updateProductDto: UpdateProductDto,
+    storeId: string,
   ): Promise<ProductModel> {
-    const product = await this.findById(id);
+    const product = await this.findById(id, storeId);
 
     product.changeValues({
       description: updateProductDto.description,

@@ -44,16 +44,19 @@ export class ProductController implements ProductInputPort {
   }
 
   @Get()
+  @UseGuards(StoreGuard)
   @ApiOperation({ summary: 'Retrieve all products' })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'List of products retrieved successfully',
   })
-  async findAll() {
-    return await this.productService.findAll();
+  async findAll(@Request() req: RequestFromStore) {
+    const storeId = req.storeId;
+    return await this.productService.findAll(storeId);
   }
 
   @Get(':id')
+  @UseGuards(StoreGuard)
   @ApiOperation({ summary: 'Retrieve a product by ID' })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -63,11 +66,13 @@ export class ProductController implements ProductInputPort {
     status: HttpStatus.NOT_FOUND,
     description: 'Product not found',
   })
-  async findById(@Param('id') id: string) {
-    return this.productService.findById(id);
+  async findById(@Param('id') id: string, @Request() req: RequestFromStore) {
+    const storeId = req.storeId;
+    return this.productService.findById(id, storeId);
   }
 
   @Patch(':id')
+  @UseGuards(StoreGuard)
   @ApiOperation({ summary: 'Update a product by ID' })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -84,11 +89,14 @@ export class ProductController implements ProductInputPort {
   async update(
     @Param('id') id: string,
     @Body() updateProductDto: UpdateProductDto,
+    @Request() req: RequestFromStore,
   ) {
-    return this.productService.update(id, updateProductDto);
+    const storeId = req.storeId;
+    return this.productService.update(id, updateProductDto, storeId);
   }
 
   @Delete(':id')
+  @UseGuards(StoreGuard)
   @ApiOperation({ summary: 'Delete a product by ID' })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -98,7 +106,8 @@ export class ProductController implements ProductInputPort {
     status: HttpStatus.NOT_FOUND,
     description: 'Product not found',
   })
-  async remove(@Param('id') id: string) {
-    await this.productService.remove(id);
+  async remove(@Param('id') id: string, @Request() req: RequestFromStore) {
+    const storeId = req.storeId;
+    await this.productService.remove(id, storeId);
   }
 }

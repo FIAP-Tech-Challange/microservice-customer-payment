@@ -4,12 +4,16 @@ import { CreateProductDto } from '../../models/dto/create-product.dto';
 import { UpdateProductDto } from '../../models/dto/update-product.dto';
 
 export interface ProductInputPort {
-  findById(id: string): Promise<ProductModel>;
-  findAll(): Promise<ProductModel[]>;
+  findById(id: string, req: RequestFromStore): Promise<ProductModel>;
+  findAll(req: RequestFromStore): Promise<ProductModel[]>;
   create(
     createProductDto: CreateProductDto,
     req: RequestFromStore,
   ): Promise<ProductModel>;
-  update(id: string, updateProductDto: UpdateProductDto): Promise<ProductModel>;
-  remove(id: string): Promise<void>;
+  update(
+    id: string,
+    updateProductDto: UpdateProductDto,
+    req: RequestFromStore,
+  ): Promise<ProductModel>;
+  remove(id: string, req: RequestFromStore): Promise<void>;
 }

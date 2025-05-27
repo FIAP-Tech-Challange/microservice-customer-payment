@@ -4,8 +4,8 @@ import { ProductRepositoryPort } from 'src/modules/product/ports/output/product-
 export class InMemoryProductRepository implements ProductRepositoryPort {
   private products: ProductModel[] = [];
 
-  async findAll(): Promise<ProductModel[]> {
-    return Promise.resolve(this.products);
+  async findAll(storeId: string) {
+    return Promise.resolve(this.products.filter((p) => p.store_id === storeId));
   }
 
   async create(product: ProductModel): Promise<void> {
