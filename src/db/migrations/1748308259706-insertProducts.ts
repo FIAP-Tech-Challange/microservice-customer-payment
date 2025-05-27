@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class InsertProducts1748306724937 implements MigrationInterface {
-  name? = 'InsertProducts1748306724937';
+export class InsertProducts1748308206453 implements MigrationInterface {
+  name? = 'InsertProducts1748308206453';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     const CATEGORY_UUIDS = {
