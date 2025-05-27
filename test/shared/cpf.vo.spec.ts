@@ -1,4 +1,4 @@
-import { CPF } from './cpf.vo';
+import { CPF } from '../../src/shared/domain/cpf.vo';
 
 describe('CPF Value Object', () => {
   it('should create a valid CPF', () => {
