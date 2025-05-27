@@ -7,21 +7,17 @@ import {
   Param,
   Delete,
   HttpStatus,
-  Inject,
 } from '@nestjs/common';
 import { CreateProductDto } from '../../models/dto/create-product.dto';
 import { UpdateProductDto } from '../../models/dto/update-product.dto';
 import { ProductInputPort } from '../../ports/input/product.port';
-import { PRODUCT_INPUT_PORT } from '../../product.tokens';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ProductService } from '../../services/product.service';
 
 @ApiTags('products')
 @Controller('products')
-export class ProductController {
-  constructor(
-    @Inject(PRODUCT_INPUT_PORT)
-    private readonly productInputPort: ProductInputPort,
-  ) {}
+export class ProductController implements ProductInputPort {
+  constructor(private readonly productService: ProductService) {}
 
   @Post()
   @ApiOperation({ summary: 'Create a new product' })
@@ -35,7 +31,7 @@ export class ProductController {
     description: 'Invalid input data',
   })
   async create(@Body() createProductDto: CreateProductDto) {
-    return await this.productInputPort.create(createProductDto);
+    return this.productService.create(createProductDto);
   }
 
   @Get()
@@ -45,7 +41,7 @@ export class ProductController {
     description: 'List of products retrieved successfully',
   })
   async findAll() {
-    return await this.productInputPort.findAll();
+    return await this.productService.findAll();
   }
 
   @Get(':id')
@@ -58,6 +54,9 @@ export class ProductController {
     status: HttpStatus.NOT_FOUND,
     description: 'Product not found',
   })
+  async findById(@Param('id') id: string) {
+    return this.productService.findById(id);
+  }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update a product by ID' })
@@ -74,10 +73,10 @@ export class ProductController {
     description: 'Product not found',
   })
   async update(
-    @Param('id') id: number,
+    @Param('id') id: string,
     @Body() updateProductDto: UpdateProductDto,
   ) {
-    return await this.productInputPort.update(id, updateProductDto);
+    return this.productService.update(id, updateProductDto);
   }
 
   @Delete(':id')
@@ -90,7 +89,7 @@ export class ProductController {
     status: HttpStatus.NOT_FOUND,
     description: 'Product not found',
   })
-  async remove(@Param('id') id: number) {
-    return await this.productInputPort.remove(id);
+  async remove(@Param('id') id: string) {
+    await this.productService.remove(id);
   }
 }
