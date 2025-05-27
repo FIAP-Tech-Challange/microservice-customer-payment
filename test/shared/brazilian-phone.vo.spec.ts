@@ -1,4 +1,4 @@
-import { BrazilianPhone } from './brazilian-phone.vo';
+import { BrazilianPhone } from '../../src/shared/domain/brazilian-phone.vo';
 
 describe('BrazilianPhone Value Object', () => {
   it('should create a valid mobile phone (local format)', () => {

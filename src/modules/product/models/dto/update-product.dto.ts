@@ -1,4 +1,11 @@
-import { IsOptional, IsString, IsNumber, IsUrl, IsIn, Min } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsNumber,
+  IsUrl,
+  Min,
+  IsBoolean,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UpdateProductDto {
@@ -9,7 +16,7 @@ export class UpdateProductDto {
   })
   @IsOptional()
   @IsString()
-  name?: string;
+  name: string;
 
   @ApiProperty({
     description: 'Product price',
@@ -19,18 +26,16 @@ export class UpdateProductDto {
   @IsOptional()
   @IsNumber()
   @Min(0)
-  price?: number;
+  price: number;
 
   @ApiProperty({
     description: 'Product status',
-    example: 'active',
+    example: true,
     required: false,
-    enum: ['active', 'inactive'],
   })
   @IsOptional()
-  @IsString()
-  @IsIn(['active', 'inactive'])
-  status?: string;
+  @IsBoolean()
+  is_active: boolean;
 
   @ApiProperty({
     description: 'Product description',
@@ -49,7 +54,7 @@ export class UpdateProductDto {
   @IsOptional()
   @IsNumber()
   @Min(0)
-  prep_time?: number;
+  prep_time: number;
 
   @ApiProperty({
     description: 'URL of the product image',
@@ -59,22 +64,4 @@ export class UpdateProductDto {
   @IsOptional()
   @IsUrl()
   image_url?: string;
-
-  @ApiProperty({
-    description: 'Category ID of the product',
-    example: 1,
-    required: false,
-  })
-  @IsOptional()
-  @IsNumber()
-  category_id?: number;
-
-  @ApiProperty({
-    description: 'Store ID where the product is available',
-    example: 1,
-    required: false,
-  })
-  @IsOptional()
-  @IsNumber()
-  store_id?: number;
 }

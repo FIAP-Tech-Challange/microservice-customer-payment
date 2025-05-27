@@ -1,9 +1,9 @@
 import { ProductModel } from '../../models/domain/product.model';
 
 export interface ProductRepositoryPort {
+  findById(id: string): Promise<ProductModel | null>;
   findAll(): Promise<ProductModel[]>;
-  findById(id: number): Promise<ProductModel | null>;
-  create(product: Partial<ProductModel>): Promise<ProductModel>;
-  update(id: number, product: Partial<ProductModel>): Promise<ProductModel>;
-  delete(id: number): Promise<void>;
+  create(product: ProductModel): Promise<void>;
+  update(product: ProductModel): Promise<void>;
+  delete(product: ProductModel): Promise<void>;
 }

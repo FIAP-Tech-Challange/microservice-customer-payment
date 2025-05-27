@@ -9,84 +9,75 @@ import { ProductModel } from '../models/domain/product.model';
 import { CreateProductDto } from '../models/dto/create-product.dto';
 import { UpdateProductDto } from '../models/dto/update-product.dto';
 import { PRODUCT_REPOSITORY_PORT } from '../product.tokens';
-import { ProductInputPort } from '../ports/input/product.port';
 
 @Injectable()
-export class ProductService implements ProductInputPort {
+export class ProductService {
   constructor(
     @Inject(PRODUCT_REPOSITORY_PORT)
     private readonly productRepository: ProductRepositoryPort,
   ) {}
-  async remove(id: number): Promise<void> {
-    if (!id || id <= 0) {
-      throw new BadRequestException('Invalid product ID');
-    }
-
-    const existingProduct = await this.productRepository.findById(id);
-    if (!existingProduct) {
-      throw new NotFoundException(`Product with ID ${id} not found`);
-    }
-
-    await this.productRepository.delete(id);
-  }
-
-  async findById(id: number): Promise<ProductModel> {
-    if (!id || id <= 0) {
-      throw new BadRequestException('Invalid product ID');
-    }
-
-    const product = await this.productRepository.findById(id);
-    if (!product) {
-      throw new NotFoundException(`Product with ID ${id} not found`);
-    }
-    return product;
-  }
 
   async findAll(): Promise<ProductModel[]> {
     return this.productRepository.findAll();
   }
 
-  async create(createProductDto: CreateProductDto): Promise<ProductModel> {
-    if (!createProductDto.name || createProductDto.name.length < 3) {
-      throw new BadRequestException('Product name must be at least 3 characters long');
+  async create(
+    createProductDto: CreateProductDto,
+    storeId: string,
+  ): Promise<ProductModel> {
+    let product: ProductModel;
+
+    try {
+      product = ProductModel.create({
+        name: createProductDto.name,
+        description: createProductDto.description,
+        price: createProductDto.price,
+        prep_time: createProductDto.prep_time,
+        image_url: createProductDto.image_url,
+        store_id: storeId,
+      });
+    } catch (error) {
+      throw new BadRequestException(`Invalid product data: ${error.message}`);
     }
 
-    if (createProductDto.price == null || createProductDto.price <= 0) {
-      throw new BadRequestException('Product price must be greater than 0');
-    }
+    await this.productRepository.create(product);
 
-    return this.productRepository.create({
-      ...createProductDto,
-      price: createProductDto.price,
-    });
+    return product;
   }
 
-  async update(id: number, updateProductDto: UpdateProductDto): Promise<ProductModel> {
-    if (!id || id <= 0) {
-      throw new BadRequestException('Invalid product ID');
-    }
+  async remove(id: string): Promise<void> {
+    const product = await this.findById(id);
 
-    const existingProduct = await this.productRepository.findById(id);
-    if (!existingProduct) {
+    await this.productRepository.delete(product);
+  }
+
+  async findById(id: string): Promise<ProductModel> {
+    const product = await this.productRepository.findById(id);
+
+    if (!product) {
       throw new NotFoundException(`Product with ID ${id} not found`);
     }
 
-    return this.productRepository.update(id, {
-      ...updateProductDto,
+    return product;
+  }
+
+  async update(
+    id: string,
+    updateProductDto: UpdateProductDto,
+  ): Promise<ProductModel> {
+    const product = await this.findById(id);
+
+    product.changeValues({
+      description: updateProductDto.description,
+      image_url: updateProductDto.image_url,
+      is_active: updateProductDto.is_active,
+      name: updateProductDto.name,
+      prep_time: updateProductDto.prep_time,
       price: updateProductDto.price,
     });
-  }
 
-  async delete(id: number): Promise<void> {
-    if (!id || id <= 0) {
-      throw new BadRequestException('Invalid product ID');
-    }
+    await this.productRepository.update(product);
 
-    const existingProduct = await this.productRepository.findById(id);
-    if (!existingProduct) {
-      throw new NotFoundException(`Product with ID ${id} not found`);
-    }
-
-    await this.productRepository.delete(id);
+    return product;
   }
 }
