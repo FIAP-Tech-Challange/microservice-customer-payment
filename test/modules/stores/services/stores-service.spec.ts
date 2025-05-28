@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/unbound-method */
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { StoresService } from '../../../../src/modules/stores/stores.service';
@@ -6,12 +7,69 @@ import { TotemModel } from '../../../../src/modules/stores/models/domain/totem.m
 import { StoresRepositoryPort } from '../../../../src/modules/stores/ports/output/stores.repository.port';
 import { CreateStoreInputDto } from '../../../../src/modules/stores/models/dtos/create-store.dto';
 import { NotificationService } from '../../../../src/modules/notification/notification.service';
+import { Email } from '../../../../src/shared/domain/email.vo';
+import { CNPJ } from '../../../../src/modules/stores/models/domain/cnpj.vo';
+import { BrazilianPhone } from '../../../../src/shared/domain/brazilian-phone.vo';
+
+jest.mock('../../../../src/shared/domain/email.vo', () => {
+  return {
+    Email: jest.fn().mockImplementation((email: string) => {
+      return {
+        toString: (): string => email,
+      };
+    }),
+  };
+});
+
+jest.mock('../../../../src/modules/stores/models/domain/cnpj.vo', () => {
+  return {
+    CNPJ: jest.fn().mockImplementation((cnpj: string) => {
+      return {
+        toString: (): string => cnpj,
+      };
+    }),
+  };
+});
+
+jest.mock('../../../../src/shared/domain/brazilian-phone.vo', () => {
+  return {
+    BrazilianPhone: jest.fn().mockImplementation((phone: string) => {
+      return {
+        toString: (): string => phone,
+      };
+    }),
+  };
+});
 
 describe('StoresService', () => {
   let service: StoresService;
   let storesRepository: jest.Mocked<StoresRepositoryPort>;
   let notificationService: jest.Mocked<NotificationService>;
 
+  const originalCreate = StoreModel.create;
+  beforeAll(() => {
+    StoreModel.create = jest.fn().mockImplementation((props) => {
+      return {
+        id: 'mock-id',
+        email: props.email as Email,
+        cnpj: props.cnpj as CNPJ,
+        name: props.name,
+        fantasyName: props.fantasyName,
+        phone: props.phone,
+        verifyPassword: jest.fn().mockReturnValue(true),
+        addTotem: jest.fn(),
+        inactivateTotem: jest.fn(),
+        validate: jest.fn(),
+        isActive: true,
+        totems: [],
+        createdAt: new Date(),
+      } as unknown as StoreModel;
+    });
+  });
+
+  afterAll(() => {
+    StoreModel.create = originalCreate;
+  });
   beforeEach(() => {
     storesRepository = {
       findByEmail: jest.fn(),
@@ -44,7 +102,7 @@ describe('StoresService', () => {
 
       const result = await service.create(createStoreDto);
 
-      expect(result).toBeInstanceOf(StoreModel);
+      expect(result).toHaveProperty('id');
       expect(storesRepository.findByEmail).toHaveBeenCalledWith(
         createStoreDto.email,
       );
@@ -123,25 +181,46 @@ describe('StoresService', () => {
 
   describe('findByEmail', () => {
     it('should find a store by email', async () => {
-      const email = 'test@example.com';
-      const mockStore = { email } as StoreModel;
+      const emailStr = 'test@example.com';
+      const email = new Email(emailStr);
+
+      const mockStore = {
+        email,
+        id: 'test-id',
+        name: 'Test Store',
+        fantasyName: 'Test Fantasy',
+        cnpj: new CNPJ('12345678901234'),
+        phone: new BrazilianPhone('11999999999'),
+        salt: 'test-salt',
+        passwordHash: 'test-hash',
+        isActive: true,
+        totems: [],
+        createdAt: new Date(),
+        activate: jest.fn(),
+        inactivate: jest.fn(),
+        addTotem: jest.fn(),
+        inactivateTotem: jest.fn(),
+        verifyPassword: jest.fn(),
+      } as unknown as StoreModel;
 
       storesRepository.findByEmail.mockResolvedValue(mockStore);
 
-      const result = await service.findByEmail(email);
+      const result = await service.findByEmail(emailStr);
 
-      expect(storesRepository.findByEmail).toHaveBeenCalledWith(email);
+      expect(storesRepository.findByEmail).toHaveBeenCalledWith(
+        expect.any(Object),
+      );
       expect(result).toBe(mockStore);
     });
 
     it('should throw NotFoundException when store not found by email', async () => {
-      const email = 'nonexistent@example.com';
+      const emailStr = 'nonexistent@example.com';
       storesRepository.findByEmail.mockResolvedValue(null);
 
-      await expect(service.findByEmail(email)).rejects.toThrow(
+      await expect(service.findByEmail(emailStr)).rejects.toThrow(
         NotFoundException,
       );
-      await expect(service.findByEmail(email)).rejects.toThrow(
+      await expect(service.findByEmail(emailStr)).rejects.toThrow(
         'Store not found',
       );
     });

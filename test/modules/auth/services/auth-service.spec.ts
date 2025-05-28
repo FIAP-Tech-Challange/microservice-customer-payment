@@ -5,6 +5,7 @@ import { StoresService } from '../../../../src/modules/stores/stores.service';
 import { JwtService } from '@nestjs/jwt';
 import { UnauthorizedException } from '@nestjs/common';
 import { StoreModel } from '../../../../src/modules/stores/models/domain/store.model';
+import { Email } from '../../../../src/shared/domain/email.vo';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -15,7 +16,7 @@ describe('AuthService', () => {
   beforeEach(async () => {
     mockStore = {
       id: 'store-id-1',
-      email: 'store@example.com',
+      email: new Email('store@example.com'),
       verifyPassword: jest.fn(),
     };
 
@@ -64,7 +65,7 @@ describe('AuthService', () => {
       expect(mockStore.verifyPassword).toHaveBeenCalledWith(password);
       expect(jwtService.signAsync).toHaveBeenCalledWith({
         storeId: mockStore.id,
-        email: mockStore.email,
+        email: 'store@example.com',
       });
       expect(result).toBe(mockToken);
     });

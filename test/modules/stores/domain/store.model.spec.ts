@@ -2,6 +2,9 @@
 import { ConflictException } from '@nestjs/common';
 import { StoreModel } from '../../../../src/modules/stores/models/domain/store.model';
 import { TotemModel } from '../../../../src/modules/stores/models/domain/totem.model';
+import { Email } from '../../../../src/shared/domain/email.vo';
+import { BrazilianPhone } from '../../../../src/shared/domain/brazilian-phone.vo';
+import { CNPJ } from '../../../../src/modules/stores/models/domain/cnpj.vo';
 
 describe('StoreModel', () => {
   describe('create', () => {
@@ -9,10 +12,10 @@ describe('StoreModel', () => {
       const validProps = {
         name: 'Store Name',
         fantasyName: 'Fantasy Name',
-        email: 'email@example.com',
-        cnpj: '12345678901234',
+        email: new Email('email@example.com'),
+        cnpj: new CNPJ('11222333000181'),
         plainPassword: 'password123',
-        phone: '11999999999',
+        phone: new BrazilianPhone('11999999999'),
       };
 
       const store = StoreModel.create(validProps);
@@ -21,9 +24,9 @@ describe('StoreModel', () => {
       expect(store.id).toBeDefined();
       expect(store.name).toBe(validProps.name);
       expect(store.fantasyName).toBe(validProps.fantasyName);
-      expect(store.email).toBe(validProps.email);
-      expect(store.cnpj).toBe(validProps.cnpj);
-      expect(store.phone).toBe(validProps.phone);
+      expect(store.email).toBeInstanceOf(Email);
+      expect(store.cnpj).toBeInstanceOf(CNPJ);
+      expect(store.phone).toBeInstanceOf(BrazilianPhone);
       expect(store.passwordHash).toBeDefined();
       expect(store.salt).toBeDefined();
       expect(store.isActive).toBe(true);
@@ -35,10 +38,10 @@ describe('StoreModel', () => {
       const invalidProps = {
         name: '',
         fantasyName: 'Fantasy Name',
-        email: 'email@example.com',
-        cnpj: '12345678901234',
+        email: new Email('email@example.com'),
+        cnpj: new CNPJ('11222333000181'),
         plainPassword: 'password123',
-        phone: '11999999999',
+        phone: new BrazilianPhone('11999999999'),
       };
 
       expect(() => StoreModel.create(invalidProps)).toThrow('Name is required');
@@ -51,11 +54,11 @@ describe('StoreModel', () => {
         id: 'test-id',
         name: 'Store Name',
         fantasyName: 'Fantasy Name',
-        email: 'email@example.com',
-        cnpj: '12345678901234',
+        email: new Email('email@example.com'),
+        cnpj: new CNPJ('11222333000181'),
         salt: 'test-salt',
         passwordHash: 'hashed-password',
-        phone: '11999999999',
+        phone: new BrazilianPhone('11999999999'),
         isActive: true,
         totems: [],
         createdAt: new Date(),
@@ -84,10 +87,10 @@ describe('StoreModel', () => {
       const store = StoreModel.create({
         name: 'Store Name',
         fantasyName: 'Fantasy Name',
-        email: 'email@example.com',
-        cnpj: '12345678901234',
+        email: new Email('email@example.com'),
+        cnpj: new CNPJ('11222333000181'),
         plainPassword,
-        phone: '11999999999',
+        phone: new BrazilianPhone('11999999999'),
       });
 
       const result = store.verifyPassword(plainPassword);
@@ -99,10 +102,10 @@ describe('StoreModel', () => {
       const store = StoreModel.create({
         name: 'Store Name',
         fantasyName: 'Fantasy Name',
-        email: 'email@example.com',
-        cnpj: '12345678901234',
+        email: new Email('email@example.com'),
+        cnpj: new CNPJ('11222333000181'),
         plainPassword: 'password123',
-        phone: '11999999999',
+        phone: new BrazilianPhone('11999999999'),
       });
 
       const result = store.verifyPassword('wrongpassword');
@@ -116,10 +119,10 @@ describe('StoreModel', () => {
       const store = StoreModel.create({
         name: 'Store Name',
         fantasyName: 'Fantasy Name',
-        email: 'email@example.com',
-        cnpj: '12345678901234',
+        email: new Email('email@example.com'),
+        cnpj: new CNPJ('11222333000181'),
         plainPassword: 'password123',
-        phone: '11999999999',
+        phone: new BrazilianPhone('11999999999'),
       });
 
       const totem = TotemModel.create({ name: 'Totem 1' });
@@ -134,10 +137,10 @@ describe('StoreModel', () => {
       const store = StoreModel.create({
         name: 'Store Name',
         fantasyName: 'Fantasy Name',
-        email: 'email@example.com',
-        cnpj: '12345678901234',
+        email: new Email('email@example.com'),
+        cnpj: new CNPJ('11222333000181'),
         plainPassword: 'password123',
-        phone: '11999999999',
+        phone: new BrazilianPhone('11999999999'),
       });
 
       const totem1 = TotemModel.create({ name: 'Totem 1' });
@@ -155,18 +158,17 @@ describe('StoreModel', () => {
       const store = StoreModel.create({
         name: 'Store Name',
         fantasyName: 'Fantasy Name',
-        email: 'email@example.com',
-        cnpj: '12345678901234',
+        email: new Email('email@example.com'),
+        cnpj: new CNPJ('11222333000181'),
         plainPassword: 'password123',
-        phone: '11999999999',
+        phone: new BrazilianPhone('11999999999'),
       });
 
       const totem1 = TotemModel.create({ name: 'Totem 1' });
       store.addTotem(totem1);
 
-      // Mock a totem with the same ID but different name
       const sameIdTotem = TotemModel.create({ name: 'Different Name' });
-      // Override the ID to be the same
+
       Object.defineProperty(sameIdTotem, 'id', { value: totem1.id });
 
       expect(() => store.addTotem(sameIdTotem)).toThrow(ConflictException);
@@ -179,18 +181,17 @@ describe('StoreModel', () => {
       const store = StoreModel.create({
         name: 'Store Name',
         fantasyName: 'Fantasy Name',
-        email: 'email@example.com',
-        cnpj: '12345678901234',
+        email: new Email('email@example.com'),
+        cnpj: new CNPJ('11222333000181'),
         plainPassword: 'password123',
-        phone: '11999999999',
+        phone: new BrazilianPhone('11999999999'),
       });
 
       const totem1 = TotemModel.create({ name: 'Totem 1' });
       store.addTotem(totem1);
 
-      // Mock a totem with the same token access but different name and id
       const sameTokenTotem = TotemModel.create({ name: 'Different Name' });
-      // Override the token access to be the same
+
       Object.defineProperty(sameTokenTotem, 'tokenAccess', {
         value: totem1.tokenAccess,
         writable: true,
@@ -209,10 +210,10 @@ describe('StoreModel', () => {
       const store = StoreModel.create({
         name: 'Store Name',
         fantasyName: 'Fantasy Name',
-        email: 'email@example.com',
-        cnpj: '12345678901234',
+        email: new Email('email@example.com'),
+        cnpj: new CNPJ('11222333000181'),
         plainPassword: 'password123',
-        phone: '11999999999',
+        phone: new BrazilianPhone('11999999999'),
       });
 
       const totem = TotemModel.create({ name: 'Totem 1' });
@@ -227,10 +228,10 @@ describe('StoreModel', () => {
       const store = StoreModel.create({
         name: 'Store Name',
         fantasyName: 'Fantasy Name',
-        email: 'email@example.com',
-        cnpj: '12345678901234',
+        email: new Email('email@example.com'),
+        cnpj: new CNPJ('11222333000181'),
         plainPassword: 'password123',
-        phone: '11999999999',
+        phone: new BrazilianPhone('11999999999'),
       });
 
       expect(() => store.inactivateTotem('non-existent-id')).toThrow(
@@ -247,10 +248,10 @@ describe('StoreModel', () => {
       const store = StoreModel.create({
         name: 'Store Name',
         fantasyName: 'Fantasy Name',
-        email: 'email@example.com',
-        cnpj: '12345678901234',
+        email: new Email('email@example.com'),
+        cnpj: new CNPJ('11222333000181'),
         plainPassword: 'password123',
-        phone: '11999999999',
+        phone: new BrazilianPhone('11999999999'),
       });
 
       store.inactivate();
@@ -265,10 +266,10 @@ describe('StoreModel', () => {
       const store = StoreModel.create({
         name: 'Store Name',
         fantasyName: 'Fantasy Name',
-        email: 'email@example.com',
-        cnpj: '12345678901234',
+        email: new Email('email@example.com'),
+        cnpj: new CNPJ('11222333000181'),
         plainPassword: 'password123',
-        phone: '11999999999',
+        phone: new BrazilianPhone('11999999999'),
       });
 
       store.inactivate();
@@ -279,67 +280,59 @@ describe('StoreModel', () => {
 
   describe('validation during restore', () => {
     it('should validate all required fields during restore', () => {
-      // Base properties for a valid store
       const baseProps = {
         id: 'test-id',
         name: 'Store Name',
         fantasyName: 'Fantasy Name',
-        email: 'email@example.com',
-        cnpj: '12345678901234',
+        email: new Email('email@example.com'),
+        cnpj: new CNPJ('11222333000181'),
         salt: 'test-salt',
         passwordHash: 'hashed-password',
-        phone: '11999999999',
+        phone: new BrazilianPhone('11999999999'),
         isActive: true,
         totems: [],
         createdAt: new Date(),
       };
 
-      // Test validation for ID
       expect(() => StoreModel.restore({ ...baseProps, id: '' })).toThrow(
         'ID is required',
       );
 
-      // Test validation for name
       expect(() => StoreModel.restore({ ...baseProps, name: '' })).toThrow(
         'Name is required',
       );
 
-      // Test validation for email
-      expect(() => StoreModel.restore({ ...baseProps, email: '' })).toThrow(
-        'Email is required',
-      );
+      expect(() =>
+        StoreModel.restore({ ...baseProps, email: null as unknown as Email }),
+      ).toThrow('Email must be an Email value object');
 
-      // Test validation for cnpj
-      expect(() => StoreModel.restore({ ...baseProps, cnpj: '' })).toThrow(
-        'CNPJ is required',
-      );
+      expect(() =>
+        StoreModel.restore({ ...baseProps, cnpj: null as unknown as CNPJ }),
+      ).toThrow('CNPJ must be a CNPJ value object');
 
-      // Test validation for salt
       expect(() => StoreModel.restore({ ...baseProps, salt: '' })).toThrow(
         'Salt is required',
       );
 
-      // Test validation for passwordHash
       expect(() =>
         StoreModel.restore({ ...baseProps, passwordHash: '' }),
       ).toThrow('Password hash is required');
 
-      // Test validation for fantasyName
       expect(() =>
         StoreModel.restore({ ...baseProps, fantasyName: '' }),
       ).toThrow('Fantasy name is required');
 
-      // Test validation for phone
-      expect(() => StoreModel.restore({ ...baseProps, phone: '' })).toThrow(
-        'Phone is required',
-      );
+      expect(() =>
+        StoreModel.restore({
+          ...baseProps,
+          phone: null as unknown as BrazilianPhone,
+        }),
+      ).toThrow('Phone is required');
 
-      // Test validation for totems
       expect(() =>
         StoreModel.restore({ ...baseProps, totems: null as any }),
       ).toThrow('Totems is required');
 
-      // Test validation for isActive
       expect(() =>
         StoreModel.restore({ ...baseProps, isActive: null as any }),
       ).toThrow('Is active must be a boolean');

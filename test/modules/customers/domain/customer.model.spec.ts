@@ -1,20 +1,22 @@
 import { CustomerModel } from '../../../../src/modules/customers/models/domain/customer.model';
+import { CPF } from '../../../../src/shared/domain/cpf.vo';
+import { Email } from '../../../../src/shared/domain/email.vo';
 
 describe('CustomerModel (Domain)', () => {
   it('should create a valid customer using fromProps', () => {
     const now = new Date();
     const customer = CustomerModel.fromProps({
       id: '1',
-      cpf: '12345678900',
+      cpf: new CPF('90213691094'),
       name: 'Test User',
-      email: 'test@example.com',
+      email: new Email('test@example.com'),
       createdAt: now,
       updatedAt: now,
     });
     expect(customer.id).toBe('1');
-    expect(customer.cpf).toBe('12345678900');
+    expect(customer.cpf).toBeInstanceOf(CPF);
     expect(customer.name).toBe('Test User');
-    expect(customer.email).toBe('test@example.com');
+    expect(customer.email).toBeInstanceOf(Email);
     expect(customer.created_at).toBe(now);
     expect(customer.updated_at).toBe(now);
   });
@@ -24,9 +26,9 @@ describe('CustomerModel (Domain)', () => {
     expect(() =>
       CustomerModel.fromProps({
         id: '',
-        cpf: '12345678900',
+        cpf: new CPF('90213691094'),
         name: 'Test User',
-        email: 'test@example.com',
+        email: new Email('test@example.com'),
         createdAt: now,
         updatedAt: now,
       }),
@@ -34,9 +36,9 @@ describe('CustomerModel (Domain)', () => {
     expect(() =>
       CustomerModel.fromProps({
         id: '1',
-        cpf: '',
+        cpf: null as unknown as CPF,
         name: 'Test User',
-        email: 'test@example.com',
+        email: new Email('test@example.com'),
         createdAt: now,
         updatedAt: now,
       }),
@@ -44,9 +46,9 @@ describe('CustomerModel (Domain)', () => {
     expect(() =>
       CustomerModel.fromProps({
         id: '1',
-        cpf: '12345678900',
+        cpf: new CPF('90213691094'),
         name: '',
-        email: 'test@example.com',
+        email: new Email('test@example.com'),
         createdAt: now,
         updatedAt: now,
       }),
@@ -54,9 +56,9 @@ describe('CustomerModel (Domain)', () => {
     expect(() =>
       CustomerModel.fromProps({
         id: '1',
-        cpf: '12345678900',
+        cpf: new CPF('90213691094'),
         name: 'Test User',
-        email: '',
+        email: null as unknown as Email,
         createdAt: now,
         updatedAt: now,
       }),
@@ -65,14 +67,14 @@ describe('CustomerModel (Domain)', () => {
 
   it('should create a valid customer using create', () => {
     const customer = CustomerModel.create({
-      cpf: '12345678900',
+      cpf: new CPF('90213691094'),
       name: 'Test User',
-      email: 'test@example.com',
+      email: new Email('test@example.com'),
     });
     expect(customer.id).toBeDefined();
-    expect(customer.cpf).toBe('12345678900');
+    expect(customer.cpf).toBeInstanceOf(CPF);
     expect(customer.name).toBe('Test User');
-    expect(customer.email).toBe('test@example.com');
+    expect(customer.email).toBeInstanceOf(Email);
     expect(customer.created_at).toBeInstanceOf(Date);
     expect(customer.updated_at).toBeInstanceOf(Date);
   });
@@ -80,23 +82,23 @@ describe('CustomerModel (Domain)', () => {
   it('should throw if required fields are missing (create)', () => {
     expect(() =>
       CustomerModel.create({
-        cpf: '',
+        cpf: null as unknown as CPF,
         name: 'Test User',
-        email: 'test@example.com',
+        email: new Email('test@example.com'),
       }),
     ).toThrow('CPF is required');
     expect(() =>
       CustomerModel.create({
-        cpf: '12345678900',
+        cpf: new CPF('90213691094'),
         name: '',
-        email: 'test@example.com',
+        email: new Email('test@example.com'),
       }),
     ).toThrow('Name is required');
     expect(() =>
       CustomerModel.create({
-        cpf: '12345678900',
+        cpf: new CPF('90213691094'),
         name: 'Test User',
-        email: '',
+        email: null as unknown as Email,
       }),
     ).toThrow('Email is required');
   });

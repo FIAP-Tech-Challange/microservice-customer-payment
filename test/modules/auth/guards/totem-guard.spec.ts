@@ -51,7 +51,7 @@ describe('TotemGuard', () => {
     it('should return true when totem token is valid', async () => {
       const mockRequest = {
         headers: {
-          authorization: 'Bearer valid-totem-token',
+          'x-totem-access-token': 'valid-totem-token',
         },
       };
 
@@ -88,7 +88,7 @@ describe('TotemGuard', () => {
       } as unknown as ExecutionContext;
 
       await expect(guard.canActivate(mockExecutionContext)).rejects.toThrow(
-        new UnauthorizedException('Token not found'),
+        new UnauthorizedException('Totem token not found'),
       );
       expect(storesService.findByTotemAccessToken).not.toHaveBeenCalled();
     });
@@ -107,7 +107,7 @@ describe('TotemGuard', () => {
       } as unknown as ExecutionContext;
 
       await expect(guard.canActivate(mockExecutionContext)).rejects.toThrow(
-        new UnauthorizedException('Token not found'),
+        new UnauthorizedException('Totem token not found'),
       );
       expect(storesService.findByTotemAccessToken).not.toHaveBeenCalled();
     });
@@ -115,7 +115,7 @@ describe('TotemGuard', () => {
     it('should throw UnauthorizedException when token is invalid', async () => {
       const mockRequest = {
         headers: {
-          authorization: 'Bearer invalid-totem-token',
+          'x-totem-access-token': 'invalid-totem-token',
         },
       };
 
@@ -130,7 +130,7 @@ describe('TotemGuard', () => {
         .mockRejectedValue(new Error('Store not found'));
 
       await expect(guard.canActivate(mockExecutionContext)).rejects.toThrow(
-        new UnauthorizedException('Invalid token'),
+        new UnauthorizedException('Invalid totem token'),
       );
       expect(storesService.findByTotemAccessToken).toHaveBeenCalledWith(
         'invalid-totem-token',
