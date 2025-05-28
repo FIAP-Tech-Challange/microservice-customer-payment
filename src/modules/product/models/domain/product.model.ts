@@ -37,34 +37,34 @@ export class ProductModel {
     this.validate();
   }
 
-  get id(): string {
+  get id() {
     return this._id;
   }
-  get name(): string {
+  get name() {
     return this._name;
   }
-  get price(): number {
+  get price() {
     return this._price;
   }
-  get is_active(): boolean {
+  get is_active() {
     return this._is_active;
   }
-  get description(): string | undefined {
+  get description() {
     return this._description;
   }
-  get prep_time(): number {
+  get prep_time() {
     return this._prep_time;
   }
-  get image_url(): string | undefined {
+  get image_url() {
     return this._image_url;
   }
-  get created_at(): Date {
+  get created_at() {
     return this._created_at;
   }
-  get updated_at(): Date {
+  get updated_at() {
     return this._updated_at;
   }
-  get store_id(): string {
+  get store_id() {
     return this._store_id;
   }
 
@@ -82,30 +82,19 @@ export class ProductModel {
   }
 
   private validate() {
-    if (!this._id) {
-      throw new Error('ID is required');
-    }
-    if (this._name.length < 3) {
+    if (!this._id) throw new Error('ID is required');
+    if (this._name.length < 3)
       throw new Error('Name is too short, must be at least 3 characters');
-    }
-    if (this._name.length > 255) {
+    if (this._name.length > 255)
       throw new Error('Name must be less than 255 characters');
-    }
-    if (this._description && this._description.length > 500) {
+    if (this._description && this._description.length > 500)
       throw new Error('Description must be less than 500 characters');
-    }
-    if (this._price <= 0) {
-      throw new Error('Price must be a positive number');
-    }
-    if (this._is_active !== !!this._is_active) {
+    if (this._price <= 0) throw new Error('Price must be a positive number');
+    if (this._is_active !== !!this._is_active)
       throw new Error('is_active must be a boolean');
-    }
-    if (this._prep_time <= 0) {
+    if (this._prep_time <= 0)
       throw new Error('Preparation time must be a positive number');
-    }
-    if (!this._store_id) {
-      throw new Error('Store ID is required');
-    }
+    if (!this._store_id) throw new Error('Store ID is required');
   }
 
   static create(props: {
@@ -130,7 +119,7 @@ export class ProductModel {
     });
   }
 
-  static fromProps(props: ProductProps): ProductModel {
+  static restore(props: ProductProps): ProductModel {
     return new ProductModel(props);
   }
 }

@@ -23,7 +23,7 @@ interface NotificationProps {
   errorMessage?: string;
   sentAt?: Date;
   createdAt: Date;
-  updatedAt?: Date;
+  updatedAt: Date;
 }
 
 export type NotificationDestinationToken = BrazilianPhone | Email | string;
@@ -37,7 +37,7 @@ export class NotificationModel {
   errorMessage?: string;
   sentAt?: Date;
   createdAt: Date;
-  updatedAt?: Date;
+  updatedAt: Date;
 
   private constructor(props: NotificationProps) {
     this.id = props.id;
@@ -48,7 +48,7 @@ export class NotificationModel {
     this.errorMessage = props.errorMessage || undefined;
     this.sentAt = props.sentAt || undefined;
     this.createdAt = props.createdAt;
-    this.updatedAt = props.updatedAt || undefined;
+    this.updatedAt = props.updatedAt;
 
     this.validate();
   }
@@ -111,6 +111,9 @@ export class NotificationModel {
     }
     if (!this.createdAt) {
       throw new Error('Created at is required');
+    }
+    if (!this.updatedAt) {
+      throw new Error('Updated at is required');
     }
   }
 

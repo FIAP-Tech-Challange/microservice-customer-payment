@@ -17,4 +17,21 @@ export class ProductMapper {
 
     return productEntity;
   }
+
+  static toModel(productEntity: ProductEntity): ProductModel {
+    const productModel = ProductModel.restore({
+      id: productEntity.id,
+      name: productEntity.name,
+      price: parseFloat(productEntity.price),
+      is_active: productEntity.is_active,
+      description: productEntity.description,
+      prep_time: productEntity.prep_time,
+      image_url: productEntity.image_url,
+      created_at: productEntity.created_at,
+      updated_at: productEntity.updated_at,
+      store_id: productEntity.store_id,
+    });
+
+    return productModel;
+  }
 }

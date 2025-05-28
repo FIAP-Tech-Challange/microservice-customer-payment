@@ -1,14 +1,6 @@
-import {
-  Entity,
-  Column,
-  CreateDateColumn,
-  UpdateDateColumn,
-  PrimaryColumn,
-  ManyToOne,
-  JoinColumn,
-} from 'typeorm';
-import { ProductModel } from '../domain/product.model';
+import { Entity, Column, PrimaryColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { StoreEntity } from 'src/modules/stores/models/entities/store.entity';
+import { CategoryEntity } from './category.entity';
 
 @Entity('products')
 export class ProductEntity {
@@ -41,6 +33,18 @@ export class ProductEntity {
   @Column({ nullable: true })
   image_url?: string;
 
+  @Column({ type: 'uuid', nullable: false })
+  category_id: string;
+
+  @Column({ type: 'uuid', nullable: false })
+  store_id: string;
+
+  @Column()
+  created_at: Date;
+
+  @Column()
+  updated_at: Date;
+
   @ManyToOne(() => StoreEntity, (store) => store.products, {
     onDelete: 'CASCADE',
     nullable: false,
@@ -48,27 +52,10 @@ export class ProductEntity {
   @JoinColumn({ name: 'store_id' })
   store: StoreEntity;
 
-  @Column({ type: 'uuid', nullable: false })
-  store_id: string;
-
-  @CreateDateColumn()
-  created_at: Date;
-
-  @UpdateDateColumn()
-  updated_at: Date;
-
-  toModel(): ProductModel {
-    return ProductModel.fromProps({
-      id: this.id,
-      name: this.name,
-      price: parseFloat(this.price),
-      is_active: this.is_active,
-      description: this.description,
-      prep_time: this.prep_time,
-      image_url: this.image_url,
-      created_at: this.created_at,
-      updated_at: this.updated_at,
-      store_id: this.store_id,
-    });
-  }
+  @ManyToOne(() => CategoryEntity, (category) => category.products, {
+    onDelete: 'CASCADE',
+    nullable: false,
+  })
+  @JoinColumn({ name: 'category_id' })
+  category: CategoryEntity;
 }

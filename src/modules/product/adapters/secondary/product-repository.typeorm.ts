@@ -18,14 +18,14 @@ export class ProductRepositoryTypeORM implements ProductRepositoryPort {
       where: { id: id },
     });
 
-    return productEntity ? productEntity.toModel() : null;
+    return productEntity ? ProductMapper.toModel(productEntity) : null;
   }
 
   async findAll(storeId: string): Promise<ProductModel[]> {
     const productEntities = await this.productRepository.find({
       where: { store_id: storeId },
     });
-    return productEntities.map((entity) => entity.toModel());
+    return productEntities.map((entity) => ProductMapper.toModel(entity));
   }
 
   async create(product: ProductModel): Promise<void> {
