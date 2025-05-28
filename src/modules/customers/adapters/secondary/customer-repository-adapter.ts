@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { CustomerEntity } from '../../models/entities/customer.entity';
 import { CustomerRepositoryPort } from '../../ports/output/customer-repository.port';
 import { CustomerModel } from '../../models/domain/customer.model';
+import { CPF } from 'src/shared/domain/cpf.vo';
 
 @Injectable()
 export class CustomerRepositoryAdapter implements CustomerRepositoryPort {
@@ -12,29 +13,38 @@ export class CustomerRepositoryAdapter implements CustomerRepositoryPort {
     private readonly customerRepository: Repository<CustomerEntity>,
   ) {}
 
-  async findByCpf(cpf: string): Promise<CustomerModel | null> {
-    const cleanCpf = cpf.replace(/\D/g, '');
+  async findByCpf(cpf: CPF): Promise<CustomerModel | null> {
     const customer = await this.customerRepository.findOne({
-      where: { cpf: cleanCpf },
+      where: { cpf: cpf.toString() },
     });
 
     return customer ? customer.toModel() : null;
   }
 
-  async create(customerData: Partial<CustomerModel>): Promise<CustomerModel> {
-    const customerModel = CustomerModel.create({
-      cpf: customerData.cpf!,
-      name: customerData.name!,
-      email: customerData.email!,
+  async create(customer: CustomerModel): Promise<CustomerModel> {
+    const entity = new CustomerEntity();
+    if (customer.id) entity.id = customer.id;
+    if (customer.cpf) entity.cpf = customer.cpf.toString();
+    if (customer.name) entity.name = customer.name;
+    if (customer.email) entity.email = customer.email.toString();
+
+    const savedEntity = await this.customerRepository.save(entity);
+    return savedEntity.toModel();
+  }
+
+  async findById(id: string): Promise<CustomerModel | null> {
+    const customer = await this.customerRepository.findOne({
+      where: { id },
     });
 
-    const customer = new CustomerEntity();
-    customer.id = customerModel.id;
-    customer.cpf = customerModel.cpf;
-    customer.name = customerModel.name;
-    customer.email = customerModel.email;
+    return customer ? customer.toModel() : null;
+  }
 
-    const savedCustomer = await this.customerRepository.save(customer);
-    return savedCustomer.toModel();
+  async findAll(): Promise<CustomerModel[]> {
+    const customers = await this.customerRepository.find({
+      order: { name: 'ASC' },
+    });
+
+    return customers.map((customer) => customer.toModel());
   }
 }

@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-
+import { ProductModule } from './modules/product/product.module';
 import { HealthModule } from './infra/health/health.module';
 import { CustomersModule } from './modules/customers/customers.module';
 import applicationConfig from './infra/config/application.config';
@@ -20,6 +20,7 @@ import { OrderModule } from './modules/order/order.module';
     }),
     HealthModule,
     DatabaseModule,
+    ProductModule,
     CustomersModule,
     PaymentModule,
     StoresModule,

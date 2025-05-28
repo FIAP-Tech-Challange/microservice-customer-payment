@@ -191,4 +191,33 @@ export class OrderController implements OrderInputPort {
   ): Promise<OrderModel | void> {
     return this.orderService.deleteOrderItem(orderItemId);
   }
+
+  @ApiResponse({
+    status: 200,
+    description: 'Customer ID updated successfully',
+    type: OrderResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Cannot update customer ID due to order status',
+    type: BadRequestException,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Order not found',
+    type: NotFoundException,
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Order ID',
+    type: String,
+    required: true,
+  })
+  @Patch(':id/customer')
+  async updateCustomerId(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body('customerId') customerId: string,
+  ): Promise<OrderModel> {
+    return this.orderService.updateCustomerId(id, customerId);
+  }
 }

@@ -33,6 +33,7 @@ export class NotificationService {
 
     const sendResult = await notificationChannel.sendNotification(
       notification.destinationToken,
+      notification.message,
     );
 
     if (!sendResult.success) {

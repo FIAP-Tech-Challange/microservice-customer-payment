@@ -6,6 +6,8 @@ import { CustomerModel } from '../../../../src/modules/customers/models/domain/c
 import { CreateCustomerDto } from '../../../../src/modules/customers/models/dto/create-customer.dto';
 import { FindCustomerByCpfDto } from '../../../../src/modules/customers/models/dto/find-customer-by-cpf.dto';
 import { BadRequestException } from '@nestjs/common';
+import { CPF } from 'src/shared/domain/cpf.vo';
+import { Email } from 'src/shared/domain/email.vo';
 
 describe('CustomerController', () => {
   let controller: CustomerController;
@@ -38,9 +40,9 @@ describe('CustomerController', () => {
 
       const mockCustomer = CustomerModel.fromProps({
         id: '1',
-        cpf: '90213691094',
+        cpf: new CPF('90213691094'),
         name: 'Test Customer',
-        email: 'test@example.com',
+        email: new Email('test@example.com'),
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -53,9 +55,9 @@ describe('CustomerController', () => {
       expect(findByCpfMock).toHaveBeenCalledWith(findCustomerDto.cpf);
       expect(result).toEqual({
         id: mockCustomer.id,
-        cpf: mockCustomer.cpf,
+        cpf: mockCustomer.cpf.format(),
         name: mockCustomer.name,
-        email: mockCustomer.email,
+        email: mockCustomer.email.toString(),
       });
     });
 
@@ -86,9 +88,9 @@ describe('CustomerController', () => {
 
       const mockCustomer = CustomerModel.fromProps({
         id: '1',
-        cpf: '90213691094',
+        cpf: new CPF('90213691094'),
         name: 'Test Customer',
-        email: 'test@example.com',
+        email: new Email('test@example.com'),
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -100,12 +102,10 @@ describe('CustomerController', () => {
       expect(mockCustomerService.create).toHaveBeenCalledWith(
         createCustomerDto,
       );
-      expect(result).toEqual({
-        id: mockCustomer.id,
-        cpf: mockCustomer.cpf,
-        name: mockCustomer.name,
-        email: mockCustomer.email,
-      });
+      expect(result.id).toEqual(mockCustomer.id);
+      expect(result.cpf).toEqual(mockCustomer.cpf.format());
+      expect(result.name).toEqual(mockCustomer.name);
+      expect(result.email).toEqual(mockCustomer.email.toString());
     });
 
     it('should bubble up exceptions from the service', async () => {

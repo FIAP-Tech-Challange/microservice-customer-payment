@@ -13,6 +13,9 @@ import {
 import { TotemModel } from './models/domain/totem.model';
 import { NotificationService } from '../notification/notification.service';
 import { NotificationChannel } from '../notification/models/domain/notification.model';
+import { CNPJ } from './models/domain/cnpj.vo';
+import { Email } from 'src/shared/domain/email.vo';
+import { BrazilianPhone } from 'src/shared/domain/brazilian-phone.vo';
 
 @Injectable()
 export class StoresService {
@@ -23,9 +26,13 @@ export class StoresService {
   ) {}
 
   async create(dto: CreateStoreInputDto) {
+    const cnpj = new CNPJ(dto.cnpj);
+    const email = new Email(dto.email);
+    const phone = new BrazilianPhone(dto.phone);
+
     const [existingByEmail, existingByCnpj] = await Promise.all([
-      this.storesRepository.findByEmail(dto.email),
-      this.storesRepository.findByCnpj(dto.cnpj),
+      this.storesRepository.findByEmail(email),
+      this.storesRepository.findByCnpj(cnpj),
     ]);
 
     if (existingByEmail) {
@@ -37,11 +44,11 @@ export class StoresService {
     }
 
     const store = StoreModel.create({
-      cnpj: dto.cnpj,
-      email: dto.email,
+      cnpj: cnpj,
+      email: email,
       fantasyName: dto.fantasy_name,
       name: dto.name,
-      phone: dto.phone,
+      phone: phone,
       plainPassword: dto.password,
     });
 
@@ -68,7 +75,9 @@ export class StoresService {
   }
 
   async findByEmail(email: string) {
-    const store = await this.storesRepository.findByEmail(email);
+    const emailValue = new Email(email);
+
+    const store = await this.storesRepository.findByEmail(emailValue);
 
     if (!store) {
       throw new NotFoundException('Store not found');
