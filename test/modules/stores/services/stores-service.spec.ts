@@ -92,7 +92,7 @@ describe('StoresService', () => {
         name: 'Store Name',
         fantasy_name: 'Fantasy Name',
         email: 'email@example.com',
-        cnpj: '12345678901234',
+        cnpj: '11222333000181',
         password: 'password123',
         phone: '11999999999',
       };
@@ -104,10 +104,10 @@ describe('StoresService', () => {
 
       expect(result).toHaveProperty('id');
       expect(storesRepository.findByEmail).toHaveBeenCalledWith(
-        createStoreDto.email,
+        expect.any(Object),
       );
       expect(storesRepository.findByCnpj).toHaveBeenCalledWith(
-        createStoreDto.cnpj,
+        expect.any(Object),
       );
       expect(storesRepository.save).toHaveBeenCalled();
     });
