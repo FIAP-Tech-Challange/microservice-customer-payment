@@ -5,6 +5,7 @@ import {
   UpdateDateColumn,
   PrimaryColumn,
   ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 import { ProductModel } from '../domain/product.model';
 import { StoreEntity } from 'src/modules/stores/models/entities/store.entity';
@@ -44,6 +45,7 @@ export class ProductEntity {
     onDelete: 'CASCADE',
     nullable: false,
   })
+  @JoinColumn({ name: 'store_id' })
   store: StoreEntity;
 
   @Column({ type: 'uuid', nullable: false })

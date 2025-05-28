@@ -21,15 +21,16 @@ export class ProductResponseDto {
 
   @ApiProperty({
     description: 'Product status',
-    example: 'active',
+    example: true,
+    type: Boolean,
   })
-  status: string;
+  is_active: boolean;
 
   @ApiProperty({
     description: 'Product description',
     example: 'A delicious pizza with fresh ingredients.',
   })
-  description: string;
+  description?: string;
 
   @ApiProperty({
     description: 'Preparation time in minutes',
@@ -41,17 +42,5 @@ export class ProductResponseDto {
     description: 'URL of the product image',
     example: 'https://example.com/images/pizza.jpg',
   })
-  image_url: string;
-
-  @ApiProperty({
-    description: 'Date when the product was created',
-    example: '2025-05-19T12:00:00Z',
-  })
-  created_at: Date;
-
-  @ApiProperty({
-    description: 'Date when the product was last updated',
-    example: '2025-05-20T12:00:00Z',
-  })
-  updated_at: Date;
+  image_url?: string;
 }

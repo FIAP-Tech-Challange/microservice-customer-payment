@@ -17,6 +17,7 @@ import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ProductService } from '../../services/product.service';
 import { StoreGuard } from 'src/modules/auth/guards/store.guard';
 import { RequestFromStore } from 'src/modules/auth/models/dtos/request.dto';
+import { ProductResponseDto } from '../../models/dto/product-response.dto';
 
 @ApiTags('products')
 @Controller('products')
@@ -38,9 +39,19 @@ export class ProductController implements ProductInputPort {
   async create(
     @Body() createProductDto: CreateProductDto,
     @Request() req: RequestFromStore,
-  ) {
+  ): Promise<ProductResponseDto> {
     const storeId = req.storeId;
-    return this.productService.create(createProductDto, storeId);
+    const product = await this.productService.create(createProductDto, storeId);
+
+    return {
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      is_active: product.is_active,
+      description: product.description,
+      prep_time: product.prep_time,
+      image_url: product.image_url,
+    };
   }
 
   @Get()
@@ -50,9 +61,21 @@ export class ProductController implements ProductInputPort {
     status: HttpStatus.OK,
     description: 'List of products retrieved successfully',
   })
-  async findAll(@Request() req: RequestFromStore) {
+  async findAll(
+    @Request() req: RequestFromStore,
+  ): Promise<ProductResponseDto[]> {
     const storeId = req.storeId;
-    return await this.productService.findAll(storeId);
+    const products = await this.productService.findAll(storeId);
+
+    return products.map((product) => ({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      is_active: product.is_active,
+      description: product.description,
+      prep_time: product.prep_time,
+      image_url: product.image_url,
+    }));
   }
 
   @Get(':id')
@@ -68,7 +91,17 @@ export class ProductController implements ProductInputPort {
   })
   async findById(@Param('id') id: string, @Request() req: RequestFromStore) {
     const storeId = req.storeId;
-    return this.productService.findById(id, storeId);
+    const product = await this.productService.findById(id, storeId);
+
+    return {
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      is_active: product.is_active,
+      description: product.description,
+      prep_time: product.prep_time,
+      image_url: product.image_url,
+    };
   }
 
   @Patch(':id')
@@ -92,7 +125,21 @@ export class ProductController implements ProductInputPort {
     @Request() req: RequestFromStore,
   ) {
     const storeId = req.storeId;
-    return this.productService.update(id, updateProductDto, storeId);
+    const product = await this.productService.update(
+      id,
+      updateProductDto,
+      storeId,
+    );
+
+    return {
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      is_active: product.is_active,
+      description: product.description,
+      prep_time: product.prep_time,
+      image_url: product.image_url,
+    };
   }
 
   @Delete(':id')
