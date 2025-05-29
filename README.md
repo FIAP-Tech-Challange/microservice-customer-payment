@@ -64,12 +64,6 @@ npm run start:prod
 # Executar testes
 npm run test
 
-# Executar testes com cobertura
-npm run test:cov
-
-# Executar testes end-to-end
-npm run test:e2e
-
 # Gerar uma nova migration
 npm run typeorm:migration:generate -- src/db/migrations/NomeDaMigration
 
@@ -92,11 +86,27 @@ src/
 │   ├── config/           # Configurações da aplicação
 │   └── health/           # Endpoints de health check
 └── modules/              # Módulos da aplicação
-    ├── auth/             # Autenticação e autorização
+    ├── order/                   # Gerenciamento de pedidos
+    │   ├── order.module.ts      # Módulo principal de pedidos
+    │   ├── order.tokens.ts      # Tokens para injeção de dependência
+    │   ├── adapters/            # Adaptadores (Controllers, Repositories, etc.)
+    │   │   ├── primary/         # Controllers REST
+    │   │   │   ├── controllers/ # Controladores para gerenciamento de pedidos
+    │   │   └── secondary/       # Implementações dos repositórios
+    │   │       └── repositories/ # Repositórios de persistência
+    │   ├── models/              # Modelos de domínio
+    │   │   ├── domain/          # Modelos de domínio (Aggregates, Entities, Value Objects)
+    │   │   ├── entities/        # Entidades para persistência (TypeORM)
+    │   │   └── dto/             # Data Transfer Objects
+    │   ├── ports/               # Interfaces (Repository interfaces, Use cases)
+    │   │   ├── input/          # Interfaces para casos de uso (entrada de dados)
+    │   │   └── output/         # Interfaces para adaptadores secundários (saída de dados)
+    │   ├── services/            # Implementações dos casos de uso
+    │   └── util/                # Utilidades específicas para pedidos
     ├── categories/       # Gerenciamento de categorias
     ├── customers/        # Gerenciamento de clientes
     ├── notification/     # Sistema de notificações
-    ├── order/            # Gerenciamento de pedidos
+    ├── auth/             # Gerenciamento de autentificação
     ├── payment/          # Processamento de pagamentos
     └── stores/           # Gerenciamento de lojas
 ```
