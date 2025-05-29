@@ -8,7 +8,6 @@ export class ProductMapper {
     productEntity.id = productModel.id;
     productEntity.name = productModel.name;
     productEntity.price = productModel.price.toString();
-    productEntity.is_active = productModel.is_active;
     productEntity.description = productModel.description;
     productEntity.prep_time = productModel.prep_time;
     productEntity.image_url = productModel.image_url;
@@ -24,7 +23,6 @@ export class ProductMapper {
       id: productEntity.id,
       name: productEntity.name,
       price: parseFloat(productEntity.price),
-      is_active: productEntity.is_active,
       description: productEntity.description,
       prep_time: productEntity.prep_time,
       image_url: productEntity.image_url,
@@ -44,7 +42,6 @@ export class ProductMapper {
       description: productModel.description,
       prepTime: productModel.prep_time,
       imageUrl: productModel.image_url,
-      isActive: productModel.is_active,
       createdAt: productModel.created_at,
       updatedAt: productModel.updated_at,
       storeId: productModel.store_id,

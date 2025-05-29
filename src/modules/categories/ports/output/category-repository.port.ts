@@ -7,4 +7,5 @@ export interface CategoryRepositoryPort {
   findAll(storeId: string): Promise<CategoryModel[]>;
   save(category: CategoryModel): Promise<void>;
   findByName(name: string, storeId: string): Promise<CategoryModel | null>;
+  delete(category: CategoryModel): Promise<void>;
 }

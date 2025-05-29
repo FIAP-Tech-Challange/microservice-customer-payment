@@ -32,11 +32,6 @@ export class CreateProductsTable1748273668667 implements MigrationInterface {
             isNullable: false,
           },
           {
-            name: 'is_active',
-            type: 'boolean',
-            isNullable: false,
-          },
-          {
             name: 'description',
             type: 'text',
             isNullable: true,

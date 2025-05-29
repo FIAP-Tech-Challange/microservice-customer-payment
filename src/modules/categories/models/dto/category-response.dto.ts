@@ -1,7 +1,6 @@
 export interface CategoryResponseDto {
   id: string;
   name: string;
-  isActive: boolean;
   products: ProductResponseDto[];
   createdAt: Date;
   updatedAt: Date;
@@ -15,7 +14,6 @@ export interface ProductResponseDto {
   description?: string;
   prepTime: number;
   imageUrl?: string;
-  isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
   storeId: string;
