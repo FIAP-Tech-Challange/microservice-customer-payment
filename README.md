@@ -114,5 +114,5 @@ A organização do código está baseada em módulos que representam os diferent
 
 ### Links Importantes
 
-- [Miro](https://miro.com/app/board/uXjVIGlxRtY=/)
-- [Video Youtube](https://www.youtube.com/)
+- <a href="https://miro.com/app/board/uXjVIGlxRtY=/" target="_blank">Miro</a>
+- <a href="https://www.youtube.com/" target="_blank">Video Youtube</a>
