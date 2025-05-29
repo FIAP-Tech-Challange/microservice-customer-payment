@@ -1,4 +1,4 @@
-import { ProductModel } from '../../../src/modules/product/models/domain/product.model';
+import { ProductModel } from '../../../src/modules/categories/models/domain/product.model';
 
 describe('ProductModel', () => {
   it('should create a valid product', () => {
@@ -90,19 +90,42 @@ describe('ProductModel', () => {
     product.changeValues({
       name: 'New Name',
       price: 20,
-      is_active: false,
       description: 'new desc',
       prep_time: 15,
       image_url: 'newimg.png',
     });
     expect(product.name).toBe('New Name');
     expect(product.price).toBe(20);
-    expect(product.is_active).toBe(false);
     expect(product.description).toBe('new desc');
     expect(product.prep_time).toBe(15);
     expect(product.image_url).toBe('newimg.png');
     expect(product.updated_at.getTime()).toBeGreaterThanOrEqual(
       oldUpdatedAt.getTime(),
     );
+  });
+
+  it('should deactivate the product', () => {
+    const product = ProductModel.create({
+      name: 'Test Product',
+      price: 100,
+      prep_time: 10,
+      store_id: 'some-store-id',
+    });
+    product.deactivate();
+    expect(product.is_active).toBe(false);
+    expect(product.updated_at).toBeInstanceOf(Date);
+  });
+
+  it('should activate the product', () => {
+    const product = ProductModel.create({
+      name: 'Test Product',
+      price: 100,
+      prep_time: 10,
+      store_id: 'some-store-id',
+    });
+    product.deactivate(); // First deactivate
+    product.activate(); // Then activate
+    expect(product.is_active).toBe(true);
+    expect(product.updated_at).toBeInstanceOf(Date);
   });
 });

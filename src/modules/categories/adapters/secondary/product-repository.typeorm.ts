@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ProductEntity } from '../../models/entities/product.entity';
 import { ProductRepositoryPort } from '../../ports/output/product-repository.port';
-import { ProductModel } from '../../models/domain/product.model';
 import { ProductMapper } from '../../models/product.mapper';
 
 @Injectable()
@@ -19,26 +18,5 @@ export class ProductRepositoryTypeORM implements ProductRepositoryPort {
     });
 
     return productEntity ? ProductMapper.toModel(productEntity) : null;
-  }
-
-  async findAll(storeId: string): Promise<ProductModel[]> {
-    const productEntities = await this.productRepository.find({
-      where: { store_id: storeId },
-    });
-    return productEntities.map((entity) => ProductMapper.toModel(entity));
-  }
-
-  async create(product: ProductModel): Promise<void> {
-    const productEntity = ProductMapper.toEntity(product);
-    await this.productRepository.save(productEntity);
-  }
-
-  async update(product: ProductModel): Promise<void> {
-    const productEntity = ProductMapper.toEntity(product);
-    await this.productRepository.save(productEntity);
-  }
-
-  async delete(product: ProductModel): Promise<void> {
-    await this.productRepository.delete(product.id);
   }
 }

@@ -51,19 +51,43 @@ export class CategoryModel {
       );
     }
 
+    if (this._products.some((p) => p.id === product.id)) {
+      throw new Error(
+        `Product with ID ${product.id} already exists in category.`,
+      );
+    }
+
+    if (this.products.some((p) => p.name === product.name)) {
+      throw new Error(
+        `Product with name ${product.name} already exists in category.`,
+      );
+    }
+
     this._products.push(product);
     this._updatedAt = new Date();
     this.validate();
   }
 
-  removeProduct(product: ProductModel): void {
-    const productIndex = this._products.findIndex((p) => p.id === product.id);
+  removeProduct(productId: string): void {
+    const productIndex = this._products.findIndex((p) => p.id === productId);
 
     if (productIndex === -1) {
-      throw new Error(`Product with ID ${product.id} not found in category.`);
+      throw new Error(`Product with ID ${productId} not found in category.`);
     }
 
     this._products.splice(productIndex, 1);
+    this._updatedAt = new Date();
+    this.validate();
+  }
+
+  deactivate() {
+    this._isActive = false;
+    this._updatedAt = new Date();
+    this.validate();
+  }
+
+  activate() {
+    this._isActive = true;
     this._updatedAt = new Date();
     this.validate();
   }

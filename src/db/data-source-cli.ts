@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { ProductEntity } from 'src/modules/product/models/entities/product.entity';
+import { ProductEntity } from 'src/modules/categories/models/entities/product.entity';
 import { PaymentEntity } from 'src/modules/payment/models/entities/payment.entity';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { CustomerEntity } from '../modules/customers/models/entities/customer.entity';
@@ -7,7 +7,7 @@ import { StoreEntity } from 'src/modules/stores/models/entities/store.entity';
 import { TotemEntity } from 'src/modules/stores/models/entities/totem.entity';
 import { OrderEntity } from 'src/modules/order/models/entities/order.entity';
 import { OrderItemEntity } from 'src/modules/order/models/entities/order-item.entity';
-import { CategoryEntity } from 'src/modules/product/models/entities/category.entity';
+import { CategoryEntity } from 'src/modules/categories/models/entities/category.entity';
 
 const dataSourceOptions: DataSourceOptions = {
   type: 'postgres',

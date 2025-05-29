@@ -1,4 +1,5 @@
 import { ProductModel } from './domain/product.model';
+import { ProductResponseDto } from './dto/category-response.dto';
 import { ProductEntity } from './entities/product.entity';
 
 export class ProductMapper {
@@ -33,5 +34,20 @@ export class ProductMapper {
     });
 
     return productModel;
+  }
+
+  static toSimplifiedDto(productModel: ProductModel): ProductResponseDto {
+    return {
+      id: productModel.id,
+      name: productModel.name,
+      price: productModel.price,
+      description: productModel.description,
+      prepTime: productModel.prep_time,
+      imageUrl: productModel.image_url,
+      isActive: productModel.is_active,
+      createdAt: productModel.created_at,
+      updatedAt: productModel.updated_at,
+      storeId: productModel.store_id,
+    };
   }
 }

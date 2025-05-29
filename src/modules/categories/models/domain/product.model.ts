@@ -68,12 +68,26 @@ export class ProductModel {
     return this._store_id;
   }
 
+  deactivate() {
+    this._is_active = false;
+    this._updated_at = new Date();
+    this.validate();
+  }
+
+  activate() {
+    this._is_active = true;
+    this._updated_at = new Date();
+    this.validate();
+  }
+
   changeValues(
-    props: Omit<ProductProps, 'id' | 'created_at' | 'updated_at' | 'store_id'>,
+    props: Omit<
+      ProductProps,
+      'id' | 'created_at' | 'updated_at' | 'store_id' | 'is_active'
+    >,
   ) {
     this._name = props.name;
     this._price = props.price;
-    this._is_active = props.is_active;
     this._description = props.description;
     this._prep_time = props.prep_time;
     this._image_url = props.image_url;
