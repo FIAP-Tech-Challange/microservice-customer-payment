@@ -21,6 +21,8 @@ describe('CustomerService', () => {
   beforeEach(async () => {
     mockRepository = {
       findByCpf: jest.fn(),
+      findById: jest.fn(),
+      findAll: jest.fn(),
       create: jest.fn(),
     };
 
@@ -101,7 +103,6 @@ describe('CustomerService', () => {
       };
 
       mockRepository.findByCpf.mockResolvedValue(null);
-      mockRepository.create.mockResolvedValue(undefined);
 
       const result = await service.create(createCustomerDto);
       expect(result.cpf.equals(new CPF(createCustomerDto.cpf)));
