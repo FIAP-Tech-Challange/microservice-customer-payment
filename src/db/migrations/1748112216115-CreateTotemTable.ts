@@ -29,11 +29,6 @@ export class CreateTotemTable1748112216115 implements MigrationInterface {
             isNullable: false,
           },
           {
-            name: 'is_active',
-            type: 'boolean',
-            isNullable: false,
-          },
-          {
             name: 'created_at',
             type: 'timestamp',
             isNullable: false,

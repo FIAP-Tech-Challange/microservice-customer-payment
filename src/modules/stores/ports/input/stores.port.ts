@@ -8,6 +8,6 @@ export interface StoresPort {
     req: RequestFromStore,
     totemName: string,
   ): Promise<{ id: string }>;
-  inactivateTotem(req: RequestFromStore, totemId: string): Promise<void>;
   findById(req: RequestFromStore): Promise<SimplifiedStoreDto>;
+  deleteTotem(req: RequestFromStore, totemId: string): Promise<void>;
 }

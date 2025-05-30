@@ -3,7 +3,6 @@ import { ProductModel } from './product.model';
 interface CategoryModelProps {
   id: string;
   name: string;
-  isActive: boolean;
   products: ProductModel[];
   createdAt: Date;
   updatedAt: Date;
@@ -13,7 +12,6 @@ interface CategoryModelProps {
 export class CategoryModel {
   private _id: string;
   private _name: string;
-  private _isActive: boolean;
   private _products: ProductModel[];
   private _createdAt: Date;
   private _updatedAt: Date;
@@ -22,7 +20,6 @@ export class CategoryModel {
   private constructor(props: CategoryModelProps) {
     this._id = props.id;
     this._name = props.name;
-    this._isActive = props.isActive;
     this._products = props.products;
     this._createdAt = props.createdAt;
     this._updatedAt = props.updatedAt;
@@ -39,8 +36,6 @@ export class CategoryModel {
     if (!this._createdAt) throw new Error('CreatedAt is required');
     if (!this._updatedAt) throw new Error('UpdatedAt is required');
     if (!this._products) throw new Error('Products array is required');
-    if (this._isActive !== !!this._isActive)
-      throw new Error('isActive must be a boolean value.');
     if (!this._storeId) throw new Error('Store ID is required');
   }
 
@@ -68,34 +63,26 @@ export class CategoryModel {
     this.validate();
   }
 
-  removeProduct(productId: string): void {
+  removeProduct(productId: string): ProductModel {
     const productIndex = this._products.findIndex((p) => p.id === productId);
 
     if (productIndex === -1) {
       throw new Error(`Product with ID ${productId} not found in category.`);
     }
 
+    const productRemoved = this._products[productIndex];
+
     this._products.splice(productIndex, 1);
     this._updatedAt = new Date();
     this.validate();
-  }
 
-  deactivate() {
-    this._isActive = false;
-    this._updatedAt = new Date();
-    this.validate();
-  }
-
-  activate() {
-    this._isActive = true;
-    this._updatedAt = new Date();
-    this.validate();
+    return productRemoved;
   }
 
   public static create(
     props: Omit<
       CategoryModelProps,
-      'id' | 'products' | 'createdAt' | 'updatedAt' | 'isActive'
+      'id' | 'products' | 'createdAt' | 'updatedAt'
     >,
   ): CategoryModel {
     const now = new Date();
@@ -103,7 +90,6 @@ export class CategoryModel {
     return new CategoryModel({
       id: crypto.randomUUID(),
       name: props.name,
-      isActive: true,
       storeId: props.storeId,
       products: [],
       createdAt: now,
@@ -120,9 +106,6 @@ export class CategoryModel {
   }
   get name() {
     return this._name;
-  }
-  get isActive() {
-    return this._isActive;
   }
   get products() {
     return this._products;

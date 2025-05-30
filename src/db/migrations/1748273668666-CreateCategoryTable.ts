@@ -25,11 +25,6 @@ export class CreateCategoryTable1748273668666 implements MigrationInterface {
             isNullable: false,
           },
           {
-            name: 'is_active',
-            type: 'boolean',
-            isNullable: false,
-          },
-          {
             name: 'store_id',
             type: 'uuid',
             isNullable: false,

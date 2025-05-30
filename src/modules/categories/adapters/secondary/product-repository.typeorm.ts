@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { ProductEntity } from '../../models/entities/product.entity';
 import { ProductRepositoryPort } from '../../ports/output/product-repository.port';
 import { ProductMapper } from '../../models/product.mapper';
+import { ProductModel } from '../../models/domain/product.model';
 
 @Injectable()
 export class ProductRepositoryTypeORM implements ProductRepositoryPort {
@@ -18,5 +19,10 @@ export class ProductRepositoryTypeORM implements ProductRepositoryPort {
     });
 
     return productEntity ? ProductMapper.toModel(productEntity) : null;
+  }
+
+  async delete(product: ProductModel): Promise<void> {
+    const productEntity = ProductMapper.toEntity(product);
+    await this.productRepository.remove(productEntity);
   }
 }

@@ -18,9 +18,6 @@ export class CategoryEntity {
   name: string;
 
   @Column()
-  is_active: boolean;
-
-  @Column()
   store_id: string;
 
   @Column()

@@ -8,7 +8,6 @@ export class CategoryMapper {
     const categoryEntity = new CategoryEntity();
     categoryEntity.id = categoryModel.id;
     categoryEntity.name = categoryModel.name;
-    categoryEntity.is_active = categoryModel.isActive;
     categoryEntity.store_id = categoryModel.storeId;
     categoryEntity.created_at = categoryModel.createdAt;
     categoryEntity.updated_at = categoryModel.updatedAt;
@@ -23,7 +22,6 @@ export class CategoryMapper {
     const categoryModel = CategoryModel.restore({
       id: categoryEntity.id,
       name: categoryEntity.name,
-      isActive: categoryEntity.is_active,
       products: categoryEntity.products.map((product) =>
         ProductMapper.toModel(product),
       ),
@@ -39,7 +37,6 @@ export class CategoryMapper {
     return {
       id: categoryModel.id,
       name: categoryModel.name,
-      isActive: categoryModel.isActive,
       createdAt: categoryModel.createdAt,
       updatedAt: categoryModel.updatedAt,
       storeId: categoryModel.storeId,

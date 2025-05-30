@@ -3,7 +3,6 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   HttpStatus,
   UseGuards,
@@ -91,34 +90,20 @@ export class CategoryController implements CategoryInputPort {
     return CategoryMapper.toSimplifiedDto(category);
   }
 
-  @Patch(':id/deactivate')
+  @Delete(':id')
   @UseGuards(StoreGuard)
-  @ApiOperation({ summary: 'Deactivate a category by ID' })
+  @ApiOperation({ summary: 'Delete a category' })
   @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'The category has been successfully deactivated',
+    status: HttpStatus.NO_CONTENT,
+    description: 'The category has been successfully deleted',
   })
-  async deactivate(
-    @Param('id') id: string,
-    @Request() req: RequestFromStore,
-  ): Promise<void> {
-    const storeId = req.storeId;
-    await this.categoryService.deactivate(id, storeId);
-  }
-
-  @Patch(':id/activate')
-  @UseGuards(StoreGuard)
-  @ApiOperation({ summary: 'Activate a category by ID' })
   @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'The category has been successfully activated',
+    status: HttpStatus.NOT_FOUND,
+    description: 'Category not found',
   })
-  async activate(
-    @Param('id') id: string,
-    @Request() req: RequestFromStore,
-  ): Promise<void> {
+  async delete(id: string, req: RequestFromStore): Promise<void> {
     const storeId = req.storeId;
-    await this.categoryService.activate(id, storeId);
+    await this.categoryService.delete(id, storeId);
   }
 
   @Post(':categoryId/products')
@@ -163,44 +148,6 @@ export class CategoryController implements CategoryInputPort {
   ): Promise<void> {
     const storeId = req.storeId;
 
-    await this.categoryService.removeProduct(categoryId, productId, storeId);
-  }
-
-  @Patch(':categoryId/products/:productId/activate')
-  @UseGuards(StoreGuard)
-  @ApiOperation({ summary: 'Activate a product in a category' })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'The product has been successfully activated',
-  })
-  async activateProduct(
-    @Param('categoryId') categoryId: string,
-    @Param('productId') productId: string,
-    @Request() req: RequestFromStore,
-  ): Promise<void> {
-    const storeId = req.storeId;
-
-    await this.categoryService.activateProduct(categoryId, productId, storeId);
-  }
-
-  @Patch(':categoryId/products/:productId/deactivate')
-  @UseGuards(StoreGuard)
-  @ApiOperation({ summary: 'Deactivate a product in a category' })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'The product has been successfully deactivated',
-  })
-  async deactivateProduct(
-    @Param('categoryId') categoryId: string,
-    @Param('productId') productId: string,
-    @Request() req: RequestFromStore,
-  ): Promise<void> {
-    const storeId = req.storeId;
-
-    await this.categoryService.deactivateProduct(
-      categoryId,
-      productId,
-      storeId,
-    );
+    await this.categoryService.removeProduct(categoryId, storeId, productId);
   }
 }

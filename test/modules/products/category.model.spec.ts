@@ -11,7 +11,6 @@ describe('CategoryModel', () => {
     expect(category).toBeInstanceOf(CategoryModel);
     expect(category.id).toBeDefined();
     expect(category.name).toBe('Test Category');
-    expect(category.isActive).toBe(true);
     expect(category.products).toEqual([]);
     expect(category.createdAt).toBeInstanceOf(Date);
     expect(category.updatedAt).toBeInstanceOf(Date);
@@ -131,17 +130,6 @@ describe('CategoryModel', () => {
     );
   });
 
-  it('should deactivate and activate a category', () => {
-    const category = CategoryModel.create({
-      name: 'Test Category',
-      storeId: 'some-store-id',
-    });
-    category.deactivate();
-    expect(category.isActive).toBe(false);
-    category.activate();
-    expect(category.isActive).toBe(true);
-  });
-
   it('should not allow adding a product with duplicate ID', () => {
     const category = CategoryModel.create({
       name: 'Test Category',
@@ -161,7 +149,6 @@ describe('CategoryModel', () => {
       name: 'Another Name',
       created_at: new Date(),
       updated_at: new Date(),
-      is_active: true,
       price: 100,
       prep_time: 10,
       description: 'A nice product',
@@ -205,7 +192,6 @@ describe('CategoryModel', () => {
       CategoryModel.restore({
         id: '',
         name: 'Valid Name',
-        isActive: true,
         products: [],
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -216,7 +202,6 @@ describe('CategoryModel', () => {
       CategoryModel.restore({
         id: 'id',
         name: 'ab',
-        isActive: true,
         products: [],
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -227,7 +212,6 @@ describe('CategoryModel', () => {
       CategoryModel.restore({
         id: 'id',
         name: 'Valid Name',
-        isActive: true,
         products: [],
         createdAt: undefined!,
         updatedAt: new Date(),
@@ -238,7 +222,6 @@ describe('CategoryModel', () => {
       CategoryModel.restore({
         id: 'id',
         name: 'Valid Name',
-        isActive: true,
         products: undefined!,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -249,7 +232,6 @@ describe('CategoryModel', () => {
       CategoryModel.restore({
         id: 'id',
         name: 'Valid Name',
-        isActive: true,
         products: [],
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -263,7 +245,6 @@ describe('CategoryModel', () => {
     const category = CategoryModel.restore({
       id: 'cat-id',
       name: 'Restored Category',
-      isActive: false,
       products: [],
       createdAt: now,
       updatedAt: now,
@@ -271,7 +252,6 @@ describe('CategoryModel', () => {
     });
     expect(category.id).toBe('cat-id');
     expect(category.name).toBe('Restored Category');
-    expect(category.isActive).toBe(false);
     expect(category.products).toEqual([]);
     expect(category.createdAt).toBe(now);
     expect(category.updatedAt).toBe(now);
