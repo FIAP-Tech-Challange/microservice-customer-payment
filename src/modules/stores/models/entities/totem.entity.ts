@@ -13,9 +13,6 @@ export class TotemEntity {
   token_access: string;
 
   @Column()
-  is_active: boolean;
-
-  @Column()
   created_at: Date;
 
   @ManyToOne(() => StoreEntity, (store) => store.totems, {

@@ -18,7 +18,6 @@ export class StoreMapper {
       passwordHash: entity.password_hash,
       salt: entity.salt,
       createdAt: entity.created_at,
-      isActive: entity.is_active,
       totems: entity.totems.map((totem) => TotemMapper.toDomain(totem)),
     });
   }
@@ -34,7 +33,6 @@ export class StoreMapper {
     storeEntity.password_hash = entity.passwordHash;
     storeEntity.salt = entity.salt;
     storeEntity.created_at = entity.createdAt;
-    storeEntity.is_active = entity.isActive;
     storeEntity.totems = entity.totems.map((totem) =>
       TotemMapper.toEntity(totem),
     );
@@ -50,7 +48,6 @@ export class StoreMapper {
       email: store.email.toString(),
       phone: store.phone.toString(),
       cnpj: store.cnpj.toString(),
-      isActive: store.isActive,
       totems: store.totems.map((t) =>
         TotemMapper.fromDomainToSimplifiedTotemDto(t),
       ),

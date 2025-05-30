@@ -7,7 +7,6 @@ export class TotemMapper {
     return TotemModel.restore({
       id: entity.id,
       name: entity.name,
-      isActive: entity.is_active,
       tokenAccess: entity.token_access,
       createdAt: entity.created_at,
     });
@@ -17,7 +16,6 @@ export class TotemMapper {
     const totemEntity = new TotemEntity();
     totemEntity.id = entity.id;
     totemEntity.name = entity.name;
-    totemEntity.is_active = entity.isActive;
     totemEntity.token_access = entity.tokenAccess;
     totemEntity.created_at = entity.createdAt;
     return totemEntity;
@@ -28,7 +26,6 @@ export class TotemMapper {
       id: totem.id,
       name: totem.name,
       tokenAccess: totem.tokenAccess,
-      isActive: totem.isActive,
     };
   }
 }

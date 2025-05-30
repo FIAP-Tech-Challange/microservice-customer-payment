@@ -14,7 +14,6 @@ interface StoreProps {
   salt: string;
   passwordHash: string;
   cnpj: CNPJ;
-  isActive: boolean;
   totems: TotemModel[];
   createdAt: Date;
 }
@@ -30,7 +29,6 @@ export class StoreModel {
   // TODO: create password value object
   salt: string;
   passwordHash: string;
-  isActive: boolean;
   totems: TotemModel[] = [];
   createdAt: Date;
 
@@ -41,8 +39,6 @@ export class StoreModel {
     this.email = props.email;
     this.fantasyName = props.fantasyName;
     this.phone = props.phone;
-    this.isActive = props.isActive;
-    this.isActive = props.isActive;
     this.fantasyName = props.fantasyName;
     this.salt = props.salt;
     this.passwordHash = props.passwordHash;
@@ -50,14 +46,6 @@ export class StoreModel {
     this.createdAt = props.createdAt;
 
     this.validate();
-  }
-
-  inactivate() {
-    this.isActive = false;
-  }
-
-  activate() {
-    this.isActive = true;
   }
 
   addTotem(totem: TotemModel) {
@@ -125,9 +113,6 @@ export class StoreModel {
     if (!this.phone) {
       throw new Error('Phone is required');
     }
-    if (this.isActive !== !!this.isActive) {
-      throw new Error('Is active must be a boolean');
-    }
     if (!this.totems) {
       throw new Error('Totems is required');
     }
@@ -156,7 +141,6 @@ export class StoreModel {
       name: props.name,
       fantasyName: props.fantasyName,
       phone: props.phone,
-      isActive: true,
       email: props.email,
       cnpj: props.cnpj,
       salt,

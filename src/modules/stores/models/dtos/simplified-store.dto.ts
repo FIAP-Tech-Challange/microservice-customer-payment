@@ -5,7 +5,6 @@ export interface SimplifiedStoreDto {
   email: string;
   phone: string;
   cnpj: string;
-  isActive: boolean;
   totems: SimplifiedTotemDto[];
 }
 
@@ -13,5 +12,4 @@ export interface SimplifiedTotemDto {
   id: string;
   name: string;
   tokenAccess: string;
-  isActive: boolean;
 }
