@@ -126,3 +126,4 @@ A organização do código está baseada em módulos que representam os diferent
 
 - <a href="https://miro.com/app/board/uXjVIGlxRtY=/" target="_blank">Miro</a>
 - <a href="https://www.youtube.com/" target="_blank">Video Youtube</a>
+- <a href="https://app.brmodeloweb.com/#!/publicview/68213be2acb39fc7c317bb53" target="_blank">Modelo do banco de dados</a>
