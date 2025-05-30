@@ -8,6 +8,7 @@ export interface OrderRepositoryPort {
     page: number,
     limit: number,
     status: OrderStatusEnum,
+    storeId: string,
   ): Promise<OrderPaginationDto>;
   findById(id: string): Promise<OrderModel | null>;
   updateStatus(id: string, status: OrderStatusEnum): Promise<OrderModel | null>;

@@ -16,6 +16,7 @@ import { OrderRequestParamsDto } from '../models/dto/order-request-params.dto';
 import { OrderPaginationDto } from '../models/dto/order-pagination.dto';
 import { getStatusName } from '../util/status-order.util';
 import { CustomerService } from '../../customers/services/customer.service';
+import { ProductService } from 'src/modules/categories/services/product.service';
 
 @Injectable()
 export class OrderService {
@@ -26,39 +27,59 @@ export class OrderService {
     private readonly orderRepositoryPort: OrderRepositoryPort,
     @Inject(forwardRef(() => CustomerService))
     private readonly customerService: CustomerService,
+    private readonly productService: ProductService,
   ) {}
 
-  create(dto: CreateOrderDto): Promise<OrderModel> {
+  async create(
+    dto: CreateOrderDto,
+    storeId: string,
+    totemId?: string,
+  ): Promise<OrderModel> {
     const order = OrderModel.create({
-      storeId: dto.storeId,
-      totemId: dto.totemId,
+      storeId: storeId,
+      totemId: totemId,
     });
 
-    this.logger.log(
-      `Creating order for store ${dto.storeId} with id ${order.id}`,
-    );
+    this.logger.log(`Creating order for store ${storeId} with id ${order.id}`);
 
-    const orderItems = dto.orderItems.map((item) => {
+    const orderItemsPromises = dto.orderItems.map(async (item) => {
+      const product = await this.productService.findById(
+        item.productId,
+        storeId,
+      );
+
+      if (!product) {
+        this.logger.log(`Produt id ${item.productId} not found.`);
+        throw new NotFoundException(`Produt id ${item.productId} not found.`);
+      }
+
       return OrderItemModel.create({
         orderId: order.id,
         productId: item.productId,
         quantity: item.quantity,
-        unitPrice: item.unitPrice,
+        unitPrice: product.price,
       });
     });
 
-    const orderWithItems = OrderModel.addOrderItens(order, orderItems);
-    return this.orderRepositoryPort.saveOrder(orderWithItems);
+    return Promise.all(orderItemsPromises).then((orderItems) => {
+      const orderWithItems = OrderModel.addOrderItens(order, orderItems);
+      return this.orderRepositoryPort.saveOrder(orderWithItems);
+    });
   }
 
-  async getAll(params: OrderRequestParamsDto): Promise<OrderPaginationDto> {
-    this.logger.log('Fetching all orders');
+  async getAll(
+    params: OrderRequestParamsDto,
+    storeId: string,
+  ): Promise<OrderPaginationDto> {
+    this.logger.log(`Fetching all orders storeId ${storeId}`);
+
     const orders = await this.orderRepositoryPort.getAll(
       params.page ?? 1,
       params.limit ?? 10,
       params.status ?? OrderStatusEnum.PENDING,
+      storeId,
     );
-    this.logger.log(`Found ${orders?.total} orders`);
+    this.logger.log(`Found ${orders?.total ?? 0} orders`);
     return orders;
   }
 

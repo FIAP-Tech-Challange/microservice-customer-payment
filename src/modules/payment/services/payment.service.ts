@@ -85,7 +85,7 @@ export class PaymentService {
 
     const payment = PaymentModel.create({
       orderId: createPaymentDto.orderId,
-      storeId: createPaymentDto.storeId,
+      storeId: order.storeId,
       paymentType: this.paymentProviderPort.paymentType,
       total: order.totalPrice,
       externalId: id,

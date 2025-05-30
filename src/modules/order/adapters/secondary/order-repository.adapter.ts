@@ -46,11 +46,16 @@ export class OrderRepositoryAdapter implements OrderRepositoryPort {
     page: number,
     limit: number,
     status: OrderStatusEnum,
+    storeId: string,
   ): Promise<any> {
+    const params = {
+      store_id: storeId,
+      status: status,
+    };
     const orders = await this.orderRepository.findAndCount({
       skip: (page - 1) * limit,
       take: limit,
-      where: status ? { status } : {},
+      where: params,
       relations: ['order_items', 'customer'],
       order: { created_at: 'DESC' },
     });

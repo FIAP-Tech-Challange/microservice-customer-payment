@@ -1,3 +1,4 @@
+import { RequestFromStoreOrTotem } from 'src/modules/auth/models/dtos/request.dto';
 import { OrderModel } from '../../models/domain/order.model';
 import { CreateOrderDto } from '../../models/dto/create-order.dto';
 import { OrderIdDto } from '../../models/dto/order-id.dto';
@@ -6,9 +7,15 @@ import { OrderRequestParamsDto } from '../../models/dto/order-request-params.dto
 import { UpdateOrderStatusDto } from '../../models/dto/update-order-status.dto';
 
 export interface OrderInputPort {
-  create(createOrderDto: CreateOrderDto): Promise<OrderModel>;
+  create(
+    createOrderDto: CreateOrderDto,
+    req: RequestFromStoreOrTotem,
+  ): Promise<OrderModel>;
   findById(id: OrderIdDto): Promise<OrderModel>;
-  getAll(params: OrderRequestParamsDto): Promise<OrderPaginationDto>;
+  getAll(
+    params: OrderRequestParamsDto,
+    req: RequestFromStoreOrTotem,
+  ): Promise<OrderPaginationDto>;
   updateStatus(
     id: OrderIdDto,
     status: UpdateOrderStatusDto,

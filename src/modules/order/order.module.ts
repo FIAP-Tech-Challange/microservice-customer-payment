@@ -7,11 +7,13 @@ import { OrderService } from './services/order.service';
 import { OrderRepositoryAdapter } from './adapters/secondary/order-repository.adapter';
 import { Module, forwardRef } from '@nestjs/common';
 import { CustomersModule } from '../customers/customers.module';
+import { CategoryModule } from '../categories/category.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([OrderEntity, OrderItemEntity]),
     forwardRef(() => CustomersModule),
+    CategoryModule,
   ],
   controllers: [OrderController],
   providers: [
