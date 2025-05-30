@@ -4,21 +4,25 @@ import { OrderController } from './adapters/primary/order.controller';
 import { OrderEntity } from './models/entities/order.entity';
 import { OrderItemEntity } from './models/entities/order-item.entity';
 import { OrderService } from './services/order.service';
-import { OrderRepositoryAdapter } from './adapters/secondary/order-repository.adapter';
+import { OrderRepositoryTypeORM } from './adapters/secondary/order.repository.typeorm';
 import { Module, forwardRef } from '@nestjs/common';
 import { CustomersModule } from '../customers/customers.module';
+import { JwtModule } from '@nestjs/jwt';
+import { StoresModule } from '../stores/stores.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([OrderEntity, OrderItemEntity]),
     forwardRef(() => CustomersModule),
+    JwtModule,
+    StoresModule,
   ],
   controllers: [OrderController],
   providers: [
     OrderService,
     {
       provide: ORDER_REPOSITORY_PORT,
-      useClass: OrderRepositoryAdapter,
+      useClass: OrderRepositoryTypeORM,
     },
   ],
   exports: [OrderService],

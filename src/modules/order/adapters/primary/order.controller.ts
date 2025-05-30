@@ -10,6 +10,8 @@ import {
   Patch,
   Post,
   Query,
+  Request,
+  UseGuards,
 } from '@nestjs/common';
 import { OrderInputPort } from '../../ports/input/order.port';
 import { OrderModel } from '../../models/domain/order.model';
@@ -29,6 +31,12 @@ import { OrderPaginationDto } from '../../models/dto/order-pagination.dto';
 import { statusOptionsMessage } from '../../util/status-order.util';
 import { OrderIdDto } from '../../models/dto/order-id.dto';
 import { UpdateOrderStatusDto } from '../../models/dto/update-order-status.dto';
+import { StoreGuard } from 'src/modules/auth/guards/store.guard';
+import { StoreOrTotemGuard } from 'src/modules/auth/guards/store-or-totem.guard';
+import {
+  RequestFromStore,
+  RequestFromTotem,
+} from 'src/modules/auth/models/dtos/request.dto';
 
 @ApiTags('Order')
 @Controller({
@@ -52,9 +60,13 @@ export class OrderController implements OrderInputPort {
     description: 'Order data',
     type: CreateOrderDto,
   })
+  @UseGuards(StoreOrTotemGuard)
   @Post()
-  async create(@Body() createOrderDto: CreateOrderDto): Promise<OrderModel> {
-    return this.orderService.create(createOrderDto);
+  async create(
+    @Body() createOrderDto: CreateOrderDto,
+    @Request() req: RequestFromTotem,
+  ): Promise<OrderModel> {
+    return this.orderService.create(createOrderDto, req.storeId, req.totemId);
   }
 
   @ApiResponse({
@@ -85,11 +97,13 @@ export class OrderController implements OrderInputPort {
     description: 'Filter orders by status',
     type: String,
   })
+  @UseGuards(StoreGuard)
   @Get('all')
   async getAll(
     @Query() params: OrderRequestParamsDto,
+    @Request() req: RequestFromStore,
   ): Promise<OrderPaginationDto> {
-    return this.orderService.getAll(params);
+    return this.orderService.getAll(params, req.storeId);
   }
 
   @ApiResponse({
@@ -108,9 +122,13 @@ export class OrderController implements OrderInputPort {
     description: 'Order ID',
     type: String,
   })
+  @UseGuards(StoreGuard)
   @Get(':id')
-  findById(@Param() params: OrderIdDto): Promise<OrderModel> {
-    return this.orderService.findById(params.id);
+  findById(
+    @Param() params: OrderIdDto,
+    @Request() req: RequestFromStore,
+  ): Promise<OrderModel> {
+    return this.orderService.findById(params.id, req.storeId);
   }
 
   @ApiResponse({
@@ -140,12 +158,14 @@ export class OrderController implements OrderInputPort {
       },
     },
   })
+  @UseGuards(StoreGuard)
   @Patch('status/:id')
   updateStatus(
     @Param() params: OrderIdDto,
     @Body() body: UpdateOrderStatusDto,
+    @Request() req: RequestFromStore,
   ): Promise<OrderModel> {
-    return this.orderService.updateStatus(params.id, body.status);
+    return this.orderService.updateStatus(params.id, body.status, req.storeId);
   }
 
   @ApiResponse({
@@ -163,9 +183,13 @@ export class OrderController implements OrderInputPort {
     type: String,
     required: true,
   })
+  @UseGuards(StoreGuard)
   @Delete(':id')
-  delete(@Param() params: OrderIdDto): Promise<void> {
-    return this.orderService.delete(params.id);
+  delete(
+    @Param() params: OrderIdDto,
+    @Request() req: RequestFromStore,
+  ): Promise<void> {
+    return this.orderService.delete(params.id, req.storeId);
   }
 
   @ApiResponse({
@@ -184,12 +208,13 @@ export class OrderController implements OrderInputPort {
     type: String,
     required: true,
   })
+  @UseGuards(StoreGuard)
   @Delete('order-item/:id')
   async deleteOrderItem(
-    @Param('id', new ParseUUIDPipe())
-    orderItemId: string,
-  ): Promise<OrderModel | void> {
-    return this.orderService.deleteOrderItem(orderItemId);
+    @Param('id', new ParseUUIDPipe()) orderItemId: string,
+    @Request() req: RequestFromStore,
+  ): Promise<OrderModel> {
+    return this.orderService.deleteOrderItem(orderItemId, req.storeId);
   }
 
   @ApiResponse({
@@ -217,7 +242,8 @@ export class OrderController implements OrderInputPort {
   async updateCustomerId(
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body('customerId') customerId: string,
+    @Request() req: RequestFromStore,
   ): Promise<OrderModel> {
-    return this.orderService.updateCustomerId(id, customerId);
+    return this.orderService.updateCustomerId(id, customerId, req.storeId);
   }
 }

@@ -1,75 +1,77 @@
 interface OrderItemProps {
   id: string;
-  orderId: string;
   productId: string;
   unitPrice: number;
   quantity: number;
-  subtotal: number;
   createdAt: Date;
 }
 
 export class OrderItemModel {
-  id: string;
-  orderId: string;
-  productId: string;
-  unitPrice: number;
-  quantity: number;
-  subtotal: number;
-  createdAt: Date;
+  private _id: string;
+  private _productId: string;
+  private _unitPrice: number;
+  private _quantity: number;
+  private _createdAt: Date;
 
   private constructor(props: OrderItemProps) {
-    this.id = props.id;
-    this.orderId = props.orderId;
-    this.productId = props.productId;
-    this.unitPrice = props.unitPrice;
-    this.quantity = props.quantity;
-    this.subtotal = props.subtotal;
-    this.createdAt = props.createdAt;
+    this._id = props.id;
+    this._productId = props.productId;
+    this._unitPrice = props.unitPrice;
+    this._quantity = props.quantity;
+    this._createdAt = props.createdAt;
+    this.validate();
   }
 
   private validate() {
-    if (!this.id) {
+    if (!this._id) {
       throw new Error('ID is required');
     }
-    if (!this.orderId) {
-      throw new Error('Order ID is required');
-    }
-    if (!this.productId) {
+    if (!this._productId) {
       throw new Error('Product ID is required');
     }
-    if (this.unitPrice <= 0) {
+    if (this._unitPrice <= 0) {
       throw new Error('Unit price must be greater than zero');
     }
-    if (this.quantity <= 0) {
+    if (this._quantity <= 0) {
       throw new Error('Quantity must be greater than zero');
     }
-    if (this.subtotal <= 0) {
-      throw new Error('Subtotal must be greater than zero');
-    }
-    if (!this.createdAt) {
+    if (!this._createdAt) {
       throw new Error('Created at date is required');
-    }
-    if (this.createdAt > new Date()) {
-      throw new Error('Created at date cannot be in the future');
     }
   }
 
   static create(
-    props: Omit<OrderItemProps, 'id' | 'createdAt' | 'subtotal'>,
+    props: Omit<OrderItemProps, 'id' | 'createdAt'>,
   ): OrderItemModel {
-    const orderItem = new OrderItemModel({
-      ...props,
+    return new OrderItemModel({
       id: crypto.randomUUID(),
+      productId: props.productId,
+      unitPrice: props.unitPrice,
+      quantity: props.quantity,
       createdAt: new Date(),
-      subtotal: props.unitPrice * props.quantity,
     });
-    orderItem.validate();
-    return orderItem;
   }
 
-  static fromProps(props: OrderItemProps): OrderItemModel {
-    const model = new OrderItemModel(props);
-    model.validate();
-    return model;
+  static restore(props: OrderItemProps): OrderItemModel {
+    return new OrderItemModel(props);
+  }
+
+  get id() {
+    return this._id;
+  }
+  get productId() {
+    return this._productId;
+  }
+  get unitPrice() {
+    return this._unitPrice;
+  }
+  get quantity() {
+    return this._quantity;
+  }
+  get createdAt() {
+    return this._createdAt;
+  }
+  get subtotal() {
+    return this._unitPrice * this._quantity;
   }
 }

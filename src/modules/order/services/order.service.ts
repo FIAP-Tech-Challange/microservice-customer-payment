@@ -6,7 +6,7 @@ import {
   NotFoundException,
   forwardRef,
 } from '@nestjs/common';
-import { OrderRepositoryPort } from '../ports/output/order.repository';
+import { OrderRepositoryPort } from '../ports/output/order.repository.port';
 import { ORDER_REPOSITORY_PORT } from '../order.tokens';
 import { OrderModel } from '../models/domain/order.model';
 import { CreateOrderDto } from '../models/dto/create-order.dto';
@@ -28,44 +28,59 @@ export class OrderService {
     private readonly customerService: CustomerService,
   ) {}
 
-  create(dto: CreateOrderDto): Promise<OrderModel> {
-    const order = OrderModel.create({
-      storeId: dto.storeId,
-      totemId: dto.totemId,
-    });
+  async create(
+    dto: CreateOrderDto,
+    storeId: string,
+    totemId: string | undefined,
+  ): Promise<OrderModel> {
+    let order: OrderModel;
+
+    try {
+      order = OrderModel.create({
+        storeId,
+        totemId,
+        orderItems: dto.orderItems.map((item) =>
+          OrderItemModel.create({
+            productId: item.productId,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+          }),
+        ),
+      });
+    } catch (error) {
+      this.logger.error(`Failed to create order: ${error.message}`);
+      throw new BadRequestException('Failed to create order: ' + error.message);
+    }
 
     this.logger.log(
-      `Creating order for store ${dto.storeId} with id ${order.id}`,
+      `Creating order for store ${order.storeId}. Id: ${order.id}, Items: ${order.orderItems.length}`,
     );
 
-    const orderItems = dto.orderItems.map((item) => {
-      return OrderItemModel.create({
-        orderId: order.id,
-        productId: item.productId,
-        quantity: item.quantity,
-        unitPrice: item.unitPrice,
-      });
-    });
+    await this.orderRepositoryPort.save(order);
 
-    const orderWithItems = OrderModel.addOrderItens(order, orderItems);
-    return this.orderRepositoryPort.saveOrder(orderWithItems);
+    return order;
   }
 
-  async getAll(params: OrderRequestParamsDto): Promise<OrderPaginationDto> {
+  async getAll(
+    params: OrderRequestParamsDto,
+    storeId: string,
+  ): Promise<OrderPaginationDto> {
     this.logger.log('Fetching all orders');
     const orders = await this.orderRepositoryPort.getAll(
       params.page ?? 1,
       params.limit ?? 10,
       params.status ?? OrderStatusEnum.PENDING,
+      storeId,
     );
     this.logger.log(`Found ${orders?.total} orders`);
     return orders;
   }
 
-  async findById(id: string): Promise<OrderModel> {
+  async findById(id: string, storeId: string): Promise<OrderModel> {
     if (!id) {
       throw new BadRequestException('Id is required');
     }
+
     this.logger.log(`Finding order by id ${id}`);
     const order = await this.orderRepositoryPort.findById(id);
 
@@ -73,53 +88,25 @@ export class OrderService {
       this.logger.log(`Order with id ${id} not found`);
       throw new NotFoundException(`Order with id ${id} not found`);
     }
-    this.logger.log(`Order found successfully`);
+
+    if (order.storeId !== storeId) {
+      this.logger.error(
+        `Order with id ${id} does not belong to store ${storeId}`,
+      );
+      throw new NotFoundException(`Order with id ${id} not found`);
+    }
+
+    this.logger.log(`Order with id ${id} found successfully`);
     return order;
   }
 
-  async updateStatus(id: string, status: OrderStatusEnum): Promise<any> {
-    this.logger.log(`Updating order ${id} to status ${getStatusName(status)}`);
-    const orderCurrent = await this.orderRepositoryPort.findById(id);
+  async findByOrderItemId(
+    orderItemId: string,
+    storeId: string,
+  ): Promise<OrderModel> {
+    this.logger.log(`Finding order by order item id ${orderItemId}`);
 
-    if (!orderCurrent) {
-      this.logger.error(`order with id ${id} not found`);
-      throw new NotFoundException(`order with id ${id} not found`);
-    }
-
-    if (
-      orderCurrent.status === (OrderStatusEnum.RECEIVED as string) ||
-      orderCurrent.status === (OrderStatusEnum.IN_PROGRESS as string)
-    ) {
-      return this.orderRepositoryPort.updateStatus(id, status);
-    } else {
-      throw new BadRequestException(`Order with id ${id} cannot be updated`);
-    }
-  }
-
-  async delete(id: string): Promise<void> {
-    this.logger.log(`Deleting order ${id}`);
-    const orderCurrent = await this.orderRepositoryPort.findById(id);
-
-    if (!orderCurrent) {
-      this.logger.error(`Order with id ${id} not found`);
-      throw new NotFoundException(`Order with id ${id} not found`);
-    }
-    if (orderCurrent.status !== (OrderStatusEnum.PENDING as string)) {
-      this.logger.error(
-        `Order with id ${id} cannot be deleted, status is not PENDING`,
-      );
-      throw new BadRequestException(
-        `Order with id ${id} cannot be deleted, status is not PENDING`,
-      );
-    }
-
-    return this.orderRepositoryPort.delete(id);
-  }
-
-  async deleteOrderItem(orderItemId: string): Promise<OrderModel | void> {
-    this.logger.log(`Deleting order item ${orderItemId}`);
-
-    const order = await this.orderRepositoryPort.findOrderItem(orderItemId);
+    const order = await this.orderRepositoryPort.findByOrderItemId(orderItemId);
 
     if (!order) {
       this.logger.error(`Order item with id ${orderItemId} not found`);
@@ -128,101 +115,127 @@ export class OrderService {
       );
     }
 
-    if (order.status !== (OrderStatusEnum.PENDING as string)) {
+    if (order.storeId !== storeId) {
+      this.logger.error(
+        `Order with id ${order.id} does not belong to store ${storeId}`,
+      );
+      throw new NotFoundException(`Order with id ${order.id} not found`);
+    }
+
+    this.logger.log(`Order with id ${order.id} found successfully`);
+    return order;
+  }
+
+  async updateStatus(
+    id: string,
+    status: OrderStatusEnum,
+    storeId: string,
+  ): Promise<OrderModel> {
+    this.logger.log(`Updating order ${id} to status ${getStatusName(status)}`);
+    const order = await this.findById(id, storeId);
+
+    switch (status) {
+      case OrderStatusEnum.CANCELED:
+        order.setToCanceled();
+        break;
+      case OrderStatusEnum.FINISHED:
+        order.setToFinished();
+        break;
+      case OrderStatusEnum.IN_PROGRESS:
+        order.setToInProgress();
+        break;
+      case OrderStatusEnum.READY:
+        order.setToReady();
+        break;
+      case OrderStatusEnum.RECEIVED:
+        order.setToReceived();
+        break;
+      default:
+        this.logger.error(`Invalid status: ${status}`);
+        throw new BadRequestException(`Invalid status: ${status}`);
+    }
+
+    await this.orderRepositoryPort.save(order);
+
+    this.logger.log(
+      `Order ${id} updated to status ${getStatusName(status)} successfully`,
+    );
+
+    return order;
+  }
+
+  async delete(id: string, storeId: string): Promise<void> {
+    if (!id) {
+      this.logger.error('Id is required for deletion');
+      throw new BadRequestException('Id is required for deletion');
+    }
+
+    const orderCurrent = await this.findById(id, storeId);
+
+    if (orderCurrent.status !== OrderStatusEnum.PENDING) {
+      this.logger.error(
+        `Order with id ${id} cannot be deleted, status is not PENDING`,
+      );
       throw new BadRequestException(
-        `Order item with id ${orderItemId} cannot be deleted, status is not PENDING`,
+        `Order with id ${id} cannot be deleted, status is not PENDING`,
       );
     }
 
-    await this.orderRepositoryPort.deleteOrderItem(orderItemId);
-    this.logger.log(`Order item ${orderItemId} deleted successfully`);
-    const orderCurrent = await this.orderRepositoryPort.findById(order.id);
+    await this.orderRepositoryPort.delete(orderCurrent);
+  }
 
-    if (!orderCurrent) {
-      this.logger.error(`Order with id ${order.id} not found`);
-      throw new NotFoundException(`Order with id ${order.id} not found`);
+  async deleteOrderItem(
+    orderItemId: string,
+    storeId: string,
+  ): Promise<OrderModel> {
+    this.logger.log(`Deleting order item ${orderItemId}`);
+
+    const order = await this.findByOrderItemId(orderItemId, storeId);
+
+    let orderItem: OrderItemModel;
+
+    try {
+      orderItem = order.removeItem(orderItemId);
+    } catch (error) {
+      this.logger.error(`Failed to remove order item: ${error.message}`);
+      throw new BadRequestException(
+        `Failed to remove order item: ${error.message}`,
+      );
     }
 
-    if (!orderCurrent.orderItems || orderCurrent.orderItems?.length === 0) {
-      this.logger.log(`No more order items left, deleting order ${order.id}`);
-      await this.orderRepositoryPort.delete(orderCurrent.id);
-      return;
-    }
+    await this.orderRepositoryPort.deleteOrderItem(orderItem, order.id);
+    await this.orderRepositoryPort.save(order);
 
-    order.totalPrice = orderCurrent.orderItems?.reduce(
-      (acc, item) => acc + item.subtotal,
-      0,
-    );
-
-    this.logger.log(
-      `update total price for order ${order.id} after deleting order item ${orderItemId}`,
-    );
-
-    const orderUpdated = await this.orderRepositoryPort.updateOrder(order);
-    if (!orderUpdated) {
-      this.logger.error(`Order with id ${order.id} not found after deletion`);
-      throw new NotFoundException(`Order with id ${order.id} not found`);
-    }
+    return order;
   }
 
   async updateCustomerId(
     orderId: string,
     customerId: string,
+    storeId: string,
   ): Promise<OrderModel> {
     this.logger.log(`Updating customer ID for order ${orderId}`);
 
-    // Get the customer data to associate
     const customer = await this.customerService.findById(customerId);
     if (!customer) {
       this.logger.error(`Customer with ID ${customerId} not found`);
       throw new BadRequestException(`Customer with ID ${customerId} not found`);
     }
 
-    // Find order
-    const order = await this.orderRepositoryPort.findById(orderId);
-    if (!order) {
-      this.logger.error(`Order with id ${orderId} not found`);
-      throw new NotFoundException(`Order with id ${orderId} not found`);
-    }
+    const order = await this.findById(orderId, storeId);
 
-    // Check if order already has a customer associated
-    if (order.customer) {
-      this.logger.error(
-        `Order ${orderId} already has a customer associated (${order.customer.id})`,
-      );
-      throw new BadRequestException(`Order already has a customer associated`);
-    }
-
-    // Check if order status is CANCELED or FINISHED
-    if (
-      (order.status as OrderStatusEnum) === OrderStatusEnum.CANCELED ||
-      (order.status as OrderStatusEnum) === OrderStatusEnum.FINISHED
-    ) {
-      this.logger.error(
-        `Cannot update customer ID for order ${orderId} with status ${getStatusName(order.status as OrderStatusEnum)}`,
-      );
+    try {
+      order.associateCustomer(customer);
+    } catch (error) {
+      this.logger.error(`Failed to associate customer: ${error.message}`);
       throw new BadRequestException(
-        `Cannot update customer ID for order with status ${getStatusName(order.status as OrderStatusEnum)}`,
+        `Failed to associate customer: ${error.message}`,
       );
     }
 
-    // Update customer data
-    order.customer = {
-      id: customer.id,
-      cpf: customer.cpf.toString(),
-      name: customer.name,
-      email: customer.email.toString(),
-    };
-
-    const updatedOrder = await this.orderRepositoryPort.updateOrder(order);
-    if (!updatedOrder) {
-      this.logger.error(`Failed to update customer ID for order ${orderId}`);
-      throw new BadRequestException(
-        `Failed to update customer ID for order ${orderId}`,
-      );
-    }
+    await this.orderRepositoryPort.save(order);
 
     this.logger.log(`Customer ID updated successfully for order ${orderId}`);
-    return updatedOrder;
+    return order;
   }
 }
