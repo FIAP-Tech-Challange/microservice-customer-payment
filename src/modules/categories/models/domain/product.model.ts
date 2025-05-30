@@ -2,7 +2,6 @@ interface ProductProps {
   id: string;
   name: string;
   price: number;
-  is_active: boolean;
   description: string | undefined;
   prep_time: number;
   image_url: string | undefined;
@@ -15,7 +14,6 @@ export class ProductModel {
   private _id: string;
   private _name: string;
   private _price: number;
-  private _is_active: boolean;
   private _description: string | undefined;
   private _prep_time: number;
   private _image_url: string | undefined;
@@ -27,7 +25,6 @@ export class ProductModel {
     this._id = props.id;
     this._name = props.name;
     this._price = props.price;
-    this._is_active = props.is_active;
     this._description = props.description;
     this._prep_time = props.prep_time;
     this._image_url = props.image_url;
@@ -45,9 +42,6 @@ export class ProductModel {
   }
   get price() {
     return this._price;
-  }
-  get is_active() {
-    return this._is_active;
   }
   get description() {
     return this._description;
@@ -68,23 +62,8 @@ export class ProductModel {
     return this._store_id;
   }
 
-  deactivate() {
-    this._is_active = false;
-    this._updated_at = new Date();
-    this.validate();
-  }
-
-  activate() {
-    this._is_active = true;
-    this._updated_at = new Date();
-    this.validate();
-  }
-
   changeValues(
-    props: Omit<
-      ProductProps,
-      'id' | 'created_at' | 'updated_at' | 'store_id' | 'is_active'
-    >,
+    props: Omit<ProductProps, 'id' | 'created_at' | 'updated_at' | 'store_id'>,
   ) {
     this._name = props.name;
     this._price = props.price;
@@ -104,8 +83,6 @@ export class ProductModel {
     if (this._description && this._description.length > 500)
       throw new Error('Description must be less than 500 characters');
     if (this._price <= 0) throw new Error('Price must be a positive number');
-    if (this._is_active !== !!this._is_active)
-      throw new Error('is_active must be a boolean');
     if (this._prep_time <= 0)
       throw new Error('Preparation time must be a positive number');
     if (!this._store_id) throw new Error('Store ID is required');
@@ -126,7 +103,6 @@ export class ProductModel {
       image_url: props.image_url,
       price: props.price,
       prep_time: props.prep_time,
-      is_active: true,
       created_at: new Date(),
       updated_at: new Date(),
       store_id: props.store_id,

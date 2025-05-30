@@ -42,4 +42,9 @@ export class CategoryRepositoryTypeORM implements CategoryRepositoryPort {
   async save(category: CategoryModel): Promise<void> {
     await this.categoryRepository.save(CategoryMapper.toEntity(category));
   }
+
+  async delete(category: CategoryModel): Promise<void> {
+    const entity = CategoryMapper.toEntity(category);
+    await this.categoryRepository.remove(entity);
+  }
 }

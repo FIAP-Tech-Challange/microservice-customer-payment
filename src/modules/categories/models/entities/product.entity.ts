@@ -21,9 +21,6 @@ export class ProductEntity {
   })
   price: string;
 
-  @Column({ nullable: false })
-  is_active: boolean;
-
   @Column({ nullable: true })
   description?: string;
 

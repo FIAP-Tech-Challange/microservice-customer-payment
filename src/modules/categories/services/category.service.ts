@@ -11,12 +11,18 @@ import {
 } from '../ports/output/category-repository.port';
 import { CreateProductDto } from '../models/dto/create-product.dto';
 import { ProductModel } from '../models/domain/product.model';
+import {
+  PRODUCT_REPOSITORY_PORT,
+  ProductRepositoryPort,
+} from '../ports/output/product-repository.port';
 
 @Injectable()
 export class CategoryService {
   constructor(
     @Inject(CATEGORY_REPOSITORY_PORT)
     private readonly categoryRepository: CategoryRepositoryPort,
+    @Inject(PRODUCT_REPOSITORY_PORT)
+    private readonly productRepository: ProductRepositoryPort,
   ) {}
 
   async findAll(storeId: string): Promise<CategoryModel[]> {
@@ -63,28 +69,14 @@ export class CategoryService {
     return category;
   }
 
-  async deactivate(id: string, storeId: string): Promise<void> {
+  async delete(id: string, storeId: string): Promise<void> {
     const category = await this.findById(id, storeId);
 
     if (!category) {
       throw new BadRequestException('Category not found');
     }
 
-    category.deactivate();
-
-    await this.categoryRepository.save(category);
-  }
-
-  async activate(id: string, storeId: string): Promise<void> {
-    const category = await this.findById(id, storeId);
-
-    if (!category) {
-      throw new BadRequestException('Category not found');
-    }
-
-    category.activate();
-
-    await this.categoryRepository.save(category);
+    await this.categoryRepository.delete(category);
   }
 
   async createProduct(
@@ -125,56 +117,15 @@ export class CategoryService {
       throw new BadRequestException('Category not found');
     }
 
+    let product: ProductModel;
+
     try {
-      category.removeProduct(productId);
+      product = category.removeProduct(productId);
     } catch (error) {
       throw new BadRequestException(`Error removing product: ${error.message}`);
     }
 
-    await this.categoryRepository.save(category);
-  }
-
-  async activateProduct(
-    categoryId: string,
-    storeId: string,
-    productId: string,
-  ): Promise<void> {
-    const category = await this.findById(categoryId, storeId);
-
-    if (!category) {
-      throw new BadRequestException('Category not found');
-    }
-
-    const product = category.products.find((p) => p.id === productId);
-
-    if (!product) {
-      throw new BadRequestException('Product not found in category');
-    }
-
-    product.activate();
-
-    await this.categoryRepository.save(category);
-  }
-
-  async deactivateProduct(
-    categoryId: string,
-    storeId: string,
-    productId: string,
-  ): Promise<void> {
-    const category = await this.findById(categoryId, storeId);
-
-    if (!category) {
-      throw new BadRequestException('Category not found');
-    }
-
-    const product = category.products.find((p) => p.id === productId);
-
-    if (!product) {
-      throw new BadRequestException('Product not found in category');
-    }
-
-    product.deactivate();
-
+    await this.productRepository.delete(product);
     await this.categoryRepository.save(category);
   }
 }
