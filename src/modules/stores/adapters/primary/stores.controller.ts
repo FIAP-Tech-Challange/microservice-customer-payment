@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -44,13 +45,13 @@ export class StoresController implements StoresPort {
   }
 
   @UseGuards(StoreGuard)
-  @Post('totems/:totemId/inactivate')
-  async inactivateTotem(
+  @Delete('totems/:totemId')
+  async deleteTotem(
     @Req() req: RequestFromStore,
     @Param('totemId') totemId: string,
   ): Promise<void> {
     const storeId = req.storeId;
-    await this.storeService.inactivateTotem(storeId, totemId);
+    await this.storeService.deleteTotem(storeId, totemId);
   }
 
   @UseGuards(StoreGuard)

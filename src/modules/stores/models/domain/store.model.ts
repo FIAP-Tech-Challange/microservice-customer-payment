@@ -1,6 +1,6 @@
 import { randomUUID, pbkdf2Sync } from 'node:crypto';
 import { TotemModel } from './totem.model';
-import { ConflictException } from '@nestjs/common';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 import { CNPJ } from './cnpj.vo';
 import { Email } from 'src/shared/domain/email.vo';
 import { BrazilianPhone } from 'src/shared/domain/brazilian-phone.vo';
@@ -79,14 +79,13 @@ export class StoreModel {
     this.totems.push(totem);
   }
 
-  inactivateTotem(totemId: string) {
-    const totem = this.totems.find((t) => t.id === totemId);
-
-    if (!totem) {
-      throw new ConflictException('Totem not found');
+  removeTotem(totemId: string): TotemModel {
+    const totemIndex = this.totems.findIndex((t) => t.id === totemId);
+    if (totemIndex === -1) {
+      throw new NotFoundException('Totem not found');
     }
-
-    totem.inactivate();
+    const [removedTotem] = this.totems.splice(totemIndex, 1);
+    return removedTotem;
   }
 
   verifyPassword(plainPassword: string): boolean {

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Inject,
   Injectable,
@@ -16,12 +17,18 @@ import { NotificationChannel } from '../notification/models/domain/notification.
 import { CNPJ } from './models/domain/cnpj.vo';
 import { Email } from 'src/shared/domain/email.vo';
 import { BrazilianPhone } from 'src/shared/domain/brazilian-phone.vo';
+import {
+  TOTEMS_REPOSITORY_PORT_KEY,
+  TotemsRepositoryPort,
+} from './ports/output/totems.repository.port';
 
 @Injectable()
 export class StoresService {
   constructor(
     @Inject(STORE_REPOSITORY_PORT_KEY)
     private storesRepository: StoresRepositoryPort,
+    @Inject(TOTEMS_REPOSITORY_PORT_KEY)
+    private totemsRepository: TotemsRepositoryPort,
     private notificationService: NotificationService,
   ) {}
 
@@ -107,11 +114,22 @@ export class StoresService {
     return store;
   }
 
-  async inactivateTotem(storeId: string, totemId: string) {
+  async deleteTotem(storeId: string, totemId: string) {
     const store = await this.findById(storeId);
 
-    store.inactivateTotem(totemId);
+    let totem: TotemModel;
 
+    try {
+      totem = store.removeTotem(totemId);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw new NotFoundException('Totem not found in this store');
+      }
+
+      throw new BadRequestException('Error removing totem: ' + error.message);
+    }
+
+    await this.totemsRepository.remove(totem);
     await this.storesRepository.save(store);
   }
 }
