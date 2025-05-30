@@ -1,5 +1,7 @@
 import { Entity, Column, OneToMany, PrimaryColumn } from 'typeorm';
 import { TotemEntity } from './totem.entity';
+import { ProductEntity } from 'src/modules/categories/models/entities/product.entity';
+import { CategoryEntity } from 'src/modules/categories/models/entities/category.entity';
 
 @Entity('stores')
 export class StoreEntity {
@@ -38,4 +40,16 @@ export class StoreEntity {
     eager: true,
   })
   totems: TotemEntity[];
+
+  @OneToMany(() => ProductEntity, (product) => product.store, {
+    cascade: true,
+    eager: false,
+  })
+  products: ProductEntity[];
+
+  @OneToMany(() => CategoryEntity, (category) => category.store, {
+    cascade: true,
+    eager: false,
+  })
+  categories: CategoryEntity[];
 }

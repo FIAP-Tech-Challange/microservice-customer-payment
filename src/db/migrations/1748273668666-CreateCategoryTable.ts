@@ -5,13 +5,13 @@ import {
   TableForeignKey,
 } from 'typeorm';
 
-export class CreateProductsTable1748273668667 implements MigrationInterface {
-  name = 'CreateProductsTable1748273668667';
+export class CreateCategoryTable1748273668666 implements MigrationInterface {
+  name = 'CreateCategoryTable1748273668666';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(
       new Table({
-        name: 'products',
+        name: 'categories',
         columns: [
           {
             name: 'id',
@@ -25,35 +25,8 @@ export class CreateProductsTable1748273668667 implements MigrationInterface {
             isNullable: false,
           },
           {
-            name: 'price',
-            type: 'decimal',
-            precision: 10,
-            scale: 2,
-            isNullable: false,
-          },
-          {
             name: 'is_active',
             type: 'boolean',
-            isNullable: false,
-          },
-          {
-            name: 'description',
-            type: 'text',
-            isNullable: true,
-          },
-          {
-            name: 'prep_time',
-            type: 'int',
-            isNullable: false,
-          },
-          {
-            name: 'image_url',
-            type: 'varchar',
-            isNullable: true,
-          },
-          {
-            name: 'category_id',
-            type: 'uuid',
             isNullable: false,
           },
           {
@@ -78,7 +51,7 @@ export class CreateProductsTable1748273668667 implements MigrationInterface {
     );
 
     await queryRunner.createForeignKey(
-      'products',
+      'categories',
       new TableForeignKey({
         columnNames: ['store_id'],
         referencedTableName: 'stores',
@@ -86,25 +59,16 @@ export class CreateProductsTable1748273668667 implements MigrationInterface {
         onDelete: 'CASCADE',
       }),
     );
-
-    await queryRunner.createForeignKey(
-      'products',
-      new TableForeignKey({
-        columnNames: ['category_id'],
-        referencedTableName: 'categories',
-        referencedColumnNames: ['id'],
-        onDelete: 'CASCADE',
-      }),
-    );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    const table = await queryRunner.getTable('products');
+    const table = await queryRunner.getTable('categories');
     if (table) {
       for (const fk of table.foreignKeys) {
-        await queryRunner.dropForeignKey('products', fk);
+        await queryRunner.dropForeignKey('categories', fk);
       }
     }
-    await queryRunner.dropTable('products');
+
+    await queryRunner.dropTable('categories');
   }
 }
