@@ -7,6 +7,7 @@ import {
   Param,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { CreatePaymentDto } from '../../models/dto/create-payment.dto';
 import { PaymentModel } from '../../models/domain/payment.model';
@@ -16,6 +17,7 @@ import { PaymentIdDto } from '../../models/dto/payment-id.dto';
 import { UpdateStatusPaymentDto } from '../../models/dto/update-status-payment.dto';
 import { ApiBody, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { PaymentResponseDto } from '../../models/dto/payment.dto';
+import { StoreOrTotemGuard } from 'src/modules/auth/guards/store-or-totem.guard';
 
 @ApiTags('Payment')
 @Controller({
@@ -39,6 +41,7 @@ export class PaymentController implements PaymentInputPort {
     description: 'Payment data',
     type: CreatePaymentDto,
   })
+  @UseGuards(StoreOrTotemGuard)
   @Post()
   async create(
     @Body() createPaymentDto: CreatePaymentDto,
@@ -62,6 +65,7 @@ export class PaymentController implements PaymentInputPort {
     type: String,
     required: true,
   })
+  @UseGuards(StoreOrTotemGuard)
   @Get(':id')
   async findById(@Param() params: PaymentIdDto): Promise<PaymentModel> {
     return this.paymentService.findById(params.id);
@@ -88,6 +92,7 @@ export class PaymentController implements PaymentInputPort {
     type: UpdateStatusPaymentDto,
     required: true,
   })
+  //Criar Guard ApiKey
   @Patch(':id/status')
   async updateStatus(
     @Param('id') id: string,
