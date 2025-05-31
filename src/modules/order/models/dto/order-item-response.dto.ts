@@ -9,12 +9,6 @@ export class OrderItemResponseDto {
   id: string;
 
   @ApiProperty({
-    description: 'Unique identifier for the order',
-  })
-  @IsString()
-  orderId: string;
-
-  @ApiProperty({
     description: 'Unique identifier for the product',
   })
   @IsString()

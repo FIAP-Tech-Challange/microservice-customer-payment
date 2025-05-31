@@ -13,9 +13,9 @@ import { CreateOrderDto } from '../models/dto/create-order.dto';
 import { OrderItemModel } from '../models/domain/order-item.model';
 import { OrderStatusEnum } from '../models/enum/order-status.enum';
 import { OrderRequestParamsDto } from '../models/dto/order-request-params.dto';
-import { OrderPaginationDto } from '../models/dto/order-pagination.dto';
 import { getStatusName } from '../util/status-order.util';
 import { CustomerService } from '../../customers/services/customer.service';
+import { OrderPaginationDomainDto } from '../models/dto/order-pagination-domain.dto';
 
 @Injectable()
 export class OrderService {
@@ -64,16 +64,16 @@ export class OrderService {
   async getAll(
     params: OrderRequestParamsDto,
     storeId: string,
-  ): Promise<OrderPaginationDto> {
+  ): Promise<OrderPaginationDomainDto> {
     this.logger.log('Fetching all orders');
-    const orders = await this.orderRepositoryPort.getAll(
+    const paginatedData = await this.orderRepositoryPort.getAll(
       params.page ?? 1,
       params.limit ?? 10,
       params.status ?? OrderStatusEnum.PENDING,
       storeId,
     );
-    this.logger.log(`Found ${orders?.total} orders`);
-    return orders;
+    this.logger.log(`Found ${paginatedData?.total} orders`);
+    return paginatedData;
   }
 
   async findById(id: string, storeId: string): Promise<OrderModel> {

@@ -1,4 +1,5 @@
 import { OrderItemModel } from '../domain/order-item.model';
+import { OrderItemResponseDto } from '../dto/order-item-response.dto';
 import { OrderItemEntity } from '../entities/order-item.entity';
 
 export class OrderItemMapper {
@@ -22,5 +23,16 @@ export class OrderItemMapper {
       quantity: model.quantity,
       created_at: model.createdAt,
     });
+  }
+
+  static toResponseDto(model: OrderItemModel): OrderItemResponseDto {
+    return {
+      id: model.id,
+      productId: model.productId,
+      unitPrice: model.unitPrice,
+      quantity: model.quantity,
+      totalPrice: model.subtotal,
+      createdAt: model.createdAt,
+    };
   }
 }

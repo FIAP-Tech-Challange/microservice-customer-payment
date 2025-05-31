@@ -2,6 +2,7 @@ import { CustomerMapper } from 'src/modules/customers/models/customer.mapper';
 import { OrderModel } from '../domain/order.model';
 import { OrderEntity } from '../entities/order.entity';
 import { OrderItemMapper } from './order-item.mapper';
+import { OrderResponseDto } from '../dto/order-response.dto';
 
 export class OrderMapper {
   static toDomain(entity: OrderEntity): OrderModel {
@@ -34,5 +35,27 @@ export class OrderMapper {
         OrderItemMapper.toEntity(item, model.id),
       ),
     });
+  }
+
+  static toResponseDto(model: OrderModel): OrderResponseDto {
+    return {
+      id: model.id,
+      customer: model.customer
+        ? {
+            id: model.customer.id,
+            name: model.customer.name,
+            cpf: model.customer.cpf.toString(),
+            email: model.customer.email.toString(),
+          }
+        : undefined,
+      status: model.status,
+      totalPrice: model.totalPrice,
+      storeId: model.storeId,
+      totemId: model.totemId,
+      createdAt: model.createdAt,
+      orderItems: model.orderItems.map((item) =>
+        OrderItemMapper.toResponseDto(item),
+      ),
+    };
   }
 }

@@ -14,7 +14,6 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { OrderInputPort } from '../../ports/input/order.port';
-import { OrderModel } from '../../models/domain/order.model';
 import { OrderStatusEnum } from '../../models/enum/order-status.enum';
 import {
   ApiBody,
@@ -29,7 +28,6 @@ import { OrderRequestParamsDto } from '../../models/dto/order-request-params.dto
 import { OrderResponseDto } from '../../models/dto/order-response.dto';
 import { OrderPaginationDto } from '../../models/dto/order-pagination.dto';
 import { statusOptionsMessage } from '../../util/status-order.util';
-import { OrderIdDto } from '../../models/dto/order-id.dto';
 import { UpdateOrderStatusDto } from '../../models/dto/update-order-status.dto';
 import { StoreGuard } from 'src/modules/auth/guards/store.guard';
 import { StoreOrTotemGuard } from 'src/modules/auth/guards/store-or-totem.guard';
@@ -37,6 +35,7 @@ import {
   RequestFromStore,
   RequestFromTotem,
 } from 'src/modules/auth/models/dtos/request.dto';
+import { OrderMapper } from '../../models/mapper/order.mapper';
 
 @ApiTags('Order')
 @Controller({
@@ -65,8 +64,14 @@ export class OrderController implements OrderInputPort {
   async create(
     @Body() createOrderDto: CreateOrderDto,
     @Request() req: RequestFromTotem,
-  ): Promise<OrderModel> {
-    return this.orderService.create(createOrderDto, req.storeId, req.totemId);
+  ): Promise<OrderResponseDto> {
+    const order = await this.orderService.create(
+      createOrderDto,
+      req.storeId,
+      req.totemId,
+    );
+
+    return OrderMapper.toResponseDto(order);
   }
 
   @ApiResponse({
@@ -103,7 +108,17 @@ export class OrderController implements OrderInputPort {
     @Query() params: OrderRequestParamsDto,
     @Request() req: RequestFromStore,
   ): Promise<OrderPaginationDto> {
-    return this.orderService.getAll(params, req.storeId);
+    const paginatedData = await this.orderService.getAll(params, req.storeId);
+
+    return {
+      data: paginatedData.data.map((order) => OrderMapper.toResponseDto(order)),
+      hasNextPage: paginatedData.hasNextPage,
+      hasPreviousPage: paginatedData.hasPreviousPage,
+      limit: paginatedData.limit,
+      page: paginatedData.page,
+      total: paginatedData.total,
+      totalPages: paginatedData.totalPages,
+    };
   }
 
   @ApiResponse({
@@ -124,11 +139,13 @@ export class OrderController implements OrderInputPort {
   })
   @UseGuards(StoreGuard)
   @Get(':id')
-  findById(
-    @Param() params: OrderIdDto,
+  async findById(
+    @Param('id') id: string,
     @Request() req: RequestFromStore,
-  ): Promise<OrderModel> {
-    return this.orderService.findById(params.id, req.storeId);
+  ): Promise<OrderResponseDto> {
+    const order = await this.orderService.findById(id, req.storeId);
+
+    return OrderMapper.toResponseDto(order);
   }
 
   @ApiResponse({
@@ -160,12 +177,18 @@ export class OrderController implements OrderInputPort {
   })
   @UseGuards(StoreGuard)
   @Patch('status/:id')
-  updateStatus(
-    @Param() params: OrderIdDto,
+  async updateStatus(
+    @Param('id') id: string,
     @Body() body: UpdateOrderStatusDto,
     @Request() req: RequestFromStore,
-  ): Promise<OrderModel> {
-    return this.orderService.updateStatus(params.id, body.status, req.storeId);
+  ): Promise<OrderResponseDto> {
+    const order = await this.orderService.updateStatus(
+      id,
+      body.status,
+      req.storeId,
+    );
+
+    return OrderMapper.toResponseDto(order);
   }
 
   @ApiResponse({
@@ -186,10 +209,10 @@ export class OrderController implements OrderInputPort {
   @UseGuards(StoreGuard)
   @Delete(':id')
   delete(
-    @Param() params: OrderIdDto,
+    @Param('id') id: string,
     @Request() req: RequestFromStore,
   ): Promise<void> {
-    return this.orderService.delete(params.id, req.storeId);
+    return this.orderService.delete(id, req.storeId);
   }
 
   @ApiResponse({
@@ -213,8 +236,13 @@ export class OrderController implements OrderInputPort {
   async deleteOrderItem(
     @Param('id', new ParseUUIDPipe()) orderItemId: string,
     @Request() req: RequestFromStore,
-  ): Promise<OrderModel> {
-    return this.orderService.deleteOrderItem(orderItemId, req.storeId);
+  ): Promise<OrderResponseDto> {
+    const order = await this.orderService.deleteOrderItem(
+      orderItemId,
+      req.storeId,
+    );
+
+    return OrderMapper.toResponseDto(order);
   }
 
   @ApiResponse({
@@ -238,12 +266,19 @@ export class OrderController implements OrderInputPort {
     type: String,
     required: true,
   })
+  @UseGuards(StoreGuard)
   @Patch(':id/customer')
   async updateCustomerId(
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body('customerId') customerId: string,
     @Request() req: RequestFromStore,
-  ): Promise<OrderModel> {
-    return this.orderService.updateCustomerId(id, customerId, req.storeId);
+  ): Promise<OrderResponseDto> {
+    const order = await this.orderService.updateCustomerId(
+      id,
+      customerId,
+      req.storeId,
+    );
+
+    return OrderMapper.toResponseDto(order);
   }
 }

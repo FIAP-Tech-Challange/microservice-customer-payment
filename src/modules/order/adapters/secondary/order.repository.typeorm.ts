@@ -9,6 +9,7 @@ import { OrderItemEntity } from '../../models/entities/order-item.entity';
 import { Injectable } from '@nestjs/common';
 import { OrderItemModel } from '../../models/domain/order-item.model';
 import { OrderItemMapper } from '../../models/mapper/order-item.mapper';
+import { OrderPaginationDomainDto } from '../../models/dto/order-pagination-domain.dto';
 
 @Injectable()
 export class OrderRepositoryTypeORM implements OrderRepositoryPort {
@@ -41,7 +42,7 @@ export class OrderRepositoryTypeORM implements OrderRepositoryPort {
     limit: number,
     status: OrderStatusEnum,
     storeId: string,
-  ): Promise<any> {
+  ): Promise<OrderPaginationDomainDto> {
     const orders = await this.orderRepository.findAndCount({
       skip: (page - 1) * limit,
       take: limit,
@@ -54,7 +55,15 @@ export class OrderRepositoryTypeORM implements OrderRepositoryPort {
     });
 
     if (!orders || orders[0].length === 0) {
-      return [];
+      return {
+        data: [],
+        total: 0,
+        page,
+        limit,
+        totalPages: 0,
+        hasNextPage: false,
+        hasPreviousPage: false,
+      };
     }
     const orderModels = orders[0].map((order) => OrderMapper.toDomain(order));
 
