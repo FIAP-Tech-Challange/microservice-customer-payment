@@ -3,6 +3,8 @@ import {
   ConflictException,
   Inject,
   Injectable,
+  Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { CategoryModel } from '../models/domain/category.model';
 import {
@@ -18,6 +20,8 @@ import {
 
 @Injectable()
 export class CategoryService {
+  private readonly logger = new Logger(CategoryService.name);
+
   constructor(
     @Inject(CATEGORY_REPOSITORY_PORT)
     private readonly categoryRepository: CategoryRepositoryPort,
@@ -26,16 +30,20 @@ export class CategoryService {
   ) {}
 
   async findAll(storeId: string): Promise<CategoryModel[]> {
+    this.logger.log(`Searching Categories for storeId ${storeId}`);
     return this.categoryRepository.findAll(storeId);
   }
 
   async findById(id: string, storeId: string): Promise<CategoryModel | null> {
+    this.logger.log(`Find category id ${id}`);
     const category = await this.categoryRepository.findById(id);
 
     if (!category || category.storeId !== storeId) {
+      this.logger.log(`Category id ${id} not found`);
       return null;
     }
 
+    this.logger.log(`Category found successfully`);
     return category;
   }
 
@@ -47,9 +55,11 @@ export class CategoryService {
   }
 
   async create(name: string, storeId: string): Promise<CategoryModel> {
+    this.logger.log(`Creating category for ${storeId}`);
     const duplicated = await this.categoryRepository.findByName(name, storeId);
 
     if (duplicated) {
+      this.logger.log(`Category ${duplicated.name} already exists`);
       throw new ConflictException('Category already exists');
     }
 
@@ -65,15 +75,18 @@ export class CategoryService {
     }
 
     await this.categoryRepository.save(category);
-
+    this.logger.log(`Category created successfully`);
     return category;
   }
 
   async delete(id: string, storeId: string): Promise<void> {
+    this.logger.log(`Deleting category id ${id}`);
     const category = await this.findById(id, storeId);
 
     if (!category) {
-      throw new BadRequestException('Category not found');
+      this.logger.log(`Category ${id} not found`);
+
+      throw new NotFoundException('Category not found');
     }
 
     await this.categoryRepository.delete(category);
@@ -84,10 +97,15 @@ export class CategoryService {
     storeId: string,
     productDto: CreateProductDto,
   ): Promise<ProductModel> {
+    this.logger.log(
+      `Creatig product ${productDto.name} for category ${categoryId}`,
+    );
+
     const category = await this.findById(categoryId, storeId);
 
     if (!category) {
-      throw new BadRequestException('Category not found');
+      this.logger.log(`Category id ${categoryId} not found `);
+      throw new NotFoundException('Category not found');
     }
 
     const product = ProductModel.create({
@@ -102,7 +120,9 @@ export class CategoryService {
     category.addProduct(product);
 
     await this.categoryRepository.save(category);
-
+    this.logger.log(
+      `Created successfully ${productDto.name} for category ${categoryId}`,
+    );
     return product;
   }
 
@@ -114,7 +134,8 @@ export class CategoryService {
     const category = await this.findById(categoryId, storeId);
 
     if (!category) {
-      throw new BadRequestException('Category not found');
+      this.logger.log(`Category id ${categoryId} not found `);
+      throw new NotFoundException('Category not found');
     }
 
     let product: ProductModel;
@@ -122,10 +143,12 @@ export class CategoryService {
     try {
       product = category.removeProduct(productId);
     } catch (error) {
+      this.logger.log(`Error removing product: ${error.message}`);
       throw new BadRequestException(`Error removing product: ${error.message}`);
     }
 
     await this.productRepository.delete(product);
     await this.categoryRepository.save(category);
+    this.logger.log(`Product ${productId} deleted successfully`);
   }
 }

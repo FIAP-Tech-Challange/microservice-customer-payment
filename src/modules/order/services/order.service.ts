@@ -108,8 +108,8 @@ export class OrderService {
     }
 
     if (
-      orderCurrent.status === (OrderStatusEnum.RECEIVED as string) ||
-      orderCurrent.status === (OrderStatusEnum.IN_PROGRESS as string)
+      orderCurrent.status !== (OrderStatusEnum.CANCELED as string) ||
+      orderCurrent.status !== (OrderStatusEnum.FINISHED as string)
     ) {
       return this.orderRepositoryPort.updateStatus(id, status);
     } else {
