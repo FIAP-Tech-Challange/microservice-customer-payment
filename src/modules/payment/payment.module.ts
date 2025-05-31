@@ -12,9 +12,10 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { FakePaymentProvider } from './adapters/secondary/fake-payment.adapter';
 import { OrderModule } from '../order/order.module';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([PaymentEntity]), OrderModule],
+  imports: [TypeOrmModule.forFeature([PaymentEntity]), OrderModule, JwtModule],
   controllers: [PaymentController],
   providers: [
     PaymentService,

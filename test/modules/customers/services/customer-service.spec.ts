@@ -21,9 +21,9 @@ describe('CustomerService', () => {
   beforeEach(async () => {
     mockRepository = {
       findByCpf: jest.fn(),
-      create: jest.fn(),
       findById: jest.fn(),
       findAll: jest.fn(),
+      create: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -103,12 +103,6 @@ describe('CustomerService', () => {
       };
 
       mockRepository.findByCpf.mockResolvedValue(null);
-      const expectedCustomer = CustomerModel.create({
-        cpf: new CPF(createCustomerDto.cpf),
-        name: createCustomerDto.name,
-        email: new Email(createCustomerDto.email),
-      });
-      mockRepository.create.mockResolvedValue(expectedCustomer);
 
       const result = await service.create(createCustomerDto);
       expect(result.cpf.equals(new CPF(createCustomerDto.cpf)));

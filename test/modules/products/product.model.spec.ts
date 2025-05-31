@@ -1,4 +1,4 @@
-import { ProductModel } from '../../../src/modules/product/models/domain/product.model';
+import { ProductModel } from '../../../src/modules/categories/models/domain/product.model';
 
 describe('ProductModel', () => {
   it('should create a valid product', () => {
@@ -13,7 +13,6 @@ describe('ProductModel', () => {
     expect(product).toBeInstanceOf(ProductModel);
     expect(product.name).toBe('Test Product');
     expect(product.price).toBe(100);
-    expect(product.is_active).toBe(true);
     expect(product.description).toBe('A nice product');
     expect(product.image_url).toBe('http://img.com/1.png');
     expect(product.created_at).toBeInstanceOf(Date);
@@ -90,14 +89,12 @@ describe('ProductModel', () => {
     product.changeValues({
       name: 'New Name',
       price: 20,
-      is_active: false,
       description: 'new desc',
       prep_time: 15,
       image_url: 'newimg.png',
     });
     expect(product.name).toBe('New Name');
     expect(product.price).toBe(20);
-    expect(product.is_active).toBe(false);
     expect(product.description).toBe('new desc');
     expect(product.prep_time).toBe(15);
     expect(product.image_url).toBe('newimg.png');

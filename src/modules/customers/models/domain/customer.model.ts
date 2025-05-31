@@ -15,16 +15,16 @@ export class CustomerModel {
   cpf: CPF;
   name: string;
   email: Email;
-  created_at: Date;
-  updated_at: Date;
+  createdAt: Date;
+  updatedAt: Date;
 
   private constructor(props: CustomerProps) {
     this.id = props.id;
     this.cpf = props.cpf;
     this.name = props.name;
     this.email = props.email;
-    this.created_at = props.createdAt;
-    this.updated_at = props.updatedAt;
+    this.createdAt = props.createdAt;
+    this.updatedAt = props.updatedAt;
     this.validate();
   }
 

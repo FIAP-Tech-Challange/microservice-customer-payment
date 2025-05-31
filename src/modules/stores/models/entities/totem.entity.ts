@@ -1,4 +1,4 @@
-import { Entity, Column, ManyToOne, PrimaryColumn } from 'typeorm';
+import { Entity, Column, ManyToOne, PrimaryColumn, JoinColumn } from 'typeorm';
 import { StoreEntity } from './store.entity';
 
 @Entity('totems')
@@ -13,14 +13,12 @@ export class TotemEntity {
   token_access: string;
 
   @Column()
-  is_active: boolean;
-
-  @Column()
   created_at: Date;
 
   @ManyToOne(() => StoreEntity, (store) => store.totems, {
     onDelete: 'CASCADE',
   })
+  @JoinColumn({ name: 'store_id' })
   store: StoreEntity;
 
   @Column()

@@ -19,14 +19,15 @@ export class PaidMarketAdapter implements PaymentProviderPort {
   private readonly baseUrl: string | undefined;
   private readonly acessToken: string | undefined;
   private readonly userId: string | undefined;
+  private readonly checkout: string | undefined;
 
   constructor(private readonly configService: ConfigService) {
     this.baseUrl = this.configService.get<string>('paidMarketBaseUrl');
-    this.acessToken =
-      this.configService.get<string>('paidMarketAccessToken') || '';
-    this.userId = this.configService.get<string>('paidMarketUserId') || '';
+    this.acessToken = this.configService.get<string>('paidMarketAccessToken');
+    this.userId = this.configService.get<string>('paidMarketUserId');
+    this.checkout = this.configService.get<string>('paidMarketCheckout');
 
-    if (!this.baseUrl || !this.acessToken || !this.userId) {
+    if (!this.baseUrl || !this.acessToken || !this.userId || !this.checkout) {
       this.logger.error(
         'Missing required configuration for Paid Market, please check your environment variables.',
       );
@@ -35,7 +36,7 @@ export class PaidMarketAdapter implements PaymentProviderPort {
   }
 
   async createQrCode(dto: createQrCodeDto): Promise<ResponseQrCodeDto> {
-    const endpoint = `${this.baseUrl}/instore/orders/qr/seller/collectors/${this.userId}/pos/CP01/qrs`;
+    const endpoint = `${this.baseUrl}/instore/orders/qr/seller/collectors/${this.userId}/pos/${this.checkout}/qrs`;
     const headers = {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${this.acessToken}`,
