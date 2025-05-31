@@ -33,12 +33,13 @@ export class PaymentService {
 
   async savePayment(
     createPaymentDto: CreatePaymentDto,
+    storeId: string,
   ): Promise<PaymentModel | null> {
     this.logger.log(`Creating payment for order ${createPaymentDto.orderId}`);
 
     const order = await this.orderService.findById(
       createPaymentDto.orderId,
-      createPaymentDto.storeId,
+      storeId,
     );
 
     if (order.status !== OrderStatusEnum.PENDING) {
@@ -92,17 +93,14 @@ export class PaymentService {
         `Fake payment provider enabled, save for order ${createPaymentDto.orderId}`,
       );
 
-      const order = await this.orderService.findById(
-        payment.orderId,
-        createPaymentDto.storeId,
-      );
+      const order = await this.orderService.findById(payment.orderId, storeId);
 
       const paymentFake = await this.paymentRepositoryPort.savePayment(payment);
 
       await this.orderService.updateStatus(
         order.id,
         OrderStatusEnum.RECEIVED,
-        createPaymentDto.storeId,
+        storeId,
       );
 
       return this.paymentRepositoryPort.updateStatus(

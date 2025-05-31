@@ -24,7 +24,10 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { PaymentResponseDto } from '../../models/dto/payment.dto';
-import { RequestFromStore } from 'src/modules/auth/models/dtos/request.dto';
+import {
+  RequestFromStore,
+  RequestFromStoreOrTotem,
+} from 'src/modules/auth/models/dtos/request.dto';
 import { StoreOrTotemGuard } from 'src/modules/auth/guards/store-or-totem.guard';
 import { BusinessException } from 'src/shared/dto/business-exception.dto';
 import { ApiKeyGuard } from 'src/modules/auth/guards/api-key.guard';
@@ -58,8 +61,9 @@ export class PaymentController implements PaymentInputPort {
   @Post()
   async create(
     @Body() createPaymentDto: CreatePaymentDto,
+    @Request() req: RequestFromStoreOrTotem,
   ): Promise<PaymentModel | null> {
-    return this.paymentService.savePayment(createPaymentDto);
+    return this.paymentService.savePayment(createPaymentDto, req.storeId);
   }
 
   @ApiResponse({

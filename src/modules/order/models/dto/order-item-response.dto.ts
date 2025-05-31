@@ -10,13 +10,6 @@ export class OrderItemResponseDto {
   id: string;
 
   @ApiProperty({
-    description: 'Unique identifier for the order',
-    example: '84079b90-b1ba-4223-812f-d1f1435ea34d',
-  })
-  @IsString()
-  orderId: string;
-
-  @ApiProperty({
     description: 'Unique identifier for the product',
     example: '84079b90-b1ba-4223-812f-d1f1435ea34d',
   })
