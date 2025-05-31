@@ -5,7 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Request } from 'express';
-import { StoresService } from 'src/modules/stores/stores.service';
+import { StoresService } from 'src/modules/stores/services/stores.service';
 
 @Injectable()
 export class TotemGuard implements CanActivate {

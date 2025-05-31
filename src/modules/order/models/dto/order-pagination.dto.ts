@@ -5,7 +5,6 @@ export class OrderPaginationDto {
   @ApiProperty({
     description: 'List orders',
     type: [OrderResponseDto],
-    isArray: true,
   })
   data: OrderResponseDto[];
 

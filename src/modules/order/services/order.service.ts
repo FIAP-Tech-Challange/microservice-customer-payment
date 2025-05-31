@@ -15,6 +15,7 @@ import { OrderStatusEnum } from '../models/enum/order-status.enum';
 import { OrderRequestParamsDto } from '../models/dto/order-request-params.dto';
 import { getStatusName } from '../util/status-order.util';
 import { CustomerService } from '../../customers/services/customer.service';
+import { ProductService } from 'src/modules/categories/services/product.service';
 import { OrderPaginationDomainDto } from '../models/dto/order-pagination-domain.dto';
 
 @Injectable()
@@ -26,6 +27,7 @@ export class OrderService {
     private readonly orderRepositoryPort: OrderRepositoryPort,
     @Inject(forwardRef(() => CustomerService))
     private readonly customerService: CustomerService,
+    private readonly productService: ProductService,
   ) {}
 
   async create(
@@ -35,6 +37,20 @@ export class OrderService {
   ): Promise<OrderModel> {
     let order: OrderModel;
 
+    const uniqueProductIds = new Set(
+      dto.orderItems.map((item) => item.productId),
+    );
+    const products = await Promise.all(
+      Array.from(uniqueProductIds).map((productId) =>
+        this.productService.findById(productId, storeId),
+      ),
+    );
+
+    if (products.some((product) => !product)) {
+      this.logger.error('One or more products not found');
+      throw new NotFoundException('One or more products not found');
+    }
+
     try {
       order = OrderModel.create({
         storeId,
@@ -43,7 +59,9 @@ export class OrderService {
           OrderItemModel.create({
             productId: item.productId,
             quantity: item.quantity,
-            unitPrice: item.unitPrice,
+            unitPrice:
+              products.find((product) => product?.id === item.productId)
+                ?.price ?? 0,
           }),
         ),
       });
@@ -65,7 +83,8 @@ export class OrderService {
     params: OrderRequestParamsDto,
     storeId: string,
   ): Promise<OrderPaginationDomainDto> {
-    this.logger.log('Fetching all orders');
+    this.logger.log(`Fetching all orders storeId ${storeId}`);
+
     const paginatedData = await this.orderRepositoryPort.getAll(
       params.page ?? 1,
       params.limit ?? 10,

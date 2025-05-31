@@ -1,10 +1,8 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
   Get,
-  NotFoundException,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -16,7 +14,9 @@ import {
 import { OrderInputPort } from '../../ports/input/order.port';
 import { OrderStatusEnum } from '../../models/enum/order-status.enum';
 import {
+  ApiBearerAuth,
   ApiBody,
+  ApiOperation,
   ApiParam,
   ApiQuery,
   ApiResponse,
@@ -29,13 +29,14 @@ import { OrderResponseDto } from '../../models/dto/order-response.dto';
 import { OrderPaginationDto } from '../../models/dto/order-pagination.dto';
 import { statusOptionsMessage } from '../../util/status-order.util';
 import { UpdateOrderStatusDto } from '../../models/dto/update-order-status.dto';
-import { StoreGuard } from 'src/modules/auth/guards/store.guard';
-import { StoreOrTotemGuard } from 'src/modules/auth/guards/store-or-totem.guard';
 import {
   RequestFromStore,
   RequestFromTotem,
 } from 'src/modules/auth/models/dtos/request.dto';
 import { OrderMapper } from '../../models/mapper/order.mapper';
+import { StoreOrTotemGuard } from 'src/modules/auth/guards/store-or-totem.guard';
+import { StoreGuard } from 'src/modules/auth/guards/store.guard';
+import { BusinessException } from 'src/shared/dto/business-exception.dto';
 
 @ApiTags('Order')
 @Controller({
@@ -53,12 +54,15 @@ export class OrderController implements OrderInputPort {
   @ApiResponse({
     status: 400,
     description: 'Order has not been created',
-    type: BadRequestException,
+    type: BusinessException,
   })
   @ApiBody({
     description: 'Order data',
     type: CreateOrderDto,
   })
+  @ApiOperation({ summary: 'Register your order' })
+  @ApiBearerAuth('access-token')
+  @ApiBearerAuth('totem-token')
   @UseGuards(StoreOrTotemGuard)
   @Post()
   async create(
@@ -82,7 +86,7 @@ export class OrderController implements OrderInputPort {
   @ApiResponse({
     status: 404,
     description: 'Orders not found',
-    type: NotFoundException,
+    type: BusinessException,
   })
   @ApiQuery({
     name: 'page',
@@ -102,6 +106,8 @@ export class OrderController implements OrderInputPort {
     description: 'Filter orders by status',
     type: String,
   })
+  @ApiOperation({ summary: 'List all orders' })
+  @ApiBearerAuth('access-token')
   @UseGuards(StoreGuard)
   @Get('all')
   async getAll(
@@ -129,7 +135,7 @@ export class OrderController implements OrderInputPort {
   @ApiResponse({
     status: 404,
     description: 'Order not found',
-    type: NotFoundException,
+    type: BusinessException,
   })
   @ApiParam({
     name: 'id',
@@ -137,7 +143,10 @@ export class OrderController implements OrderInputPort {
     description: 'Order ID',
     type: String,
   })
-  @UseGuards(StoreGuard)
+  @ApiOperation({ summary: 'Find Order by orderId' })
+  @ApiBearerAuth('access-token')
+  @ApiBearerAuth('totem-token')
+  @UseGuards(StoreOrTotemGuard)
   @Get(':id')
   async findById(
     @Param('id') id: string,
@@ -156,7 +165,7 @@ export class OrderController implements OrderInputPort {
   @ApiResponse({
     status: 400,
     description: 'Order status has not been updated',
-    type: BadRequestException,
+    type: BusinessException,
   })
   @ApiParam({
     name: 'id',
@@ -165,16 +174,20 @@ export class OrderController implements OrderInputPort {
     required: true,
   })
   @ApiBody({
-    description: 'New status for the order',
+    description: `New status for the order, ${statusOptionsMessage}`,
     type: String,
     enum: OrderStatusEnum,
     examples: {
-      status: {
+      pending: {
         value: OrderStatusEnum.READY,
-        description: 'Order status options: ' + statusOptionsMessage,
+      },
+      receivid: {
+        value: OrderStatusEnum.RECEIVED,
       },
     },
   })
+  @ApiOperation({ summary: 'Update order by orderId' })
+  @ApiBearerAuth('access-token')
   @UseGuards(StoreGuard)
   @Patch('status/:id')
   async updateStatus(
@@ -198,7 +211,7 @@ export class OrderController implements OrderInputPort {
   @ApiResponse({
     status: 404,
     description: 'Order not found',
-    type: NotFoundException,
+    type: BusinessException,
   })
   @ApiParam({
     name: 'id',
@@ -206,7 +219,10 @@ export class OrderController implements OrderInputPort {
     type: String,
     required: true,
   })
-  @UseGuards(StoreGuard)
+  @ApiOperation({ summary: 'Delete order by orderId' })
+  @ApiBearerAuth('access-token')
+  @ApiBearerAuth('totem-token')
+  @UseGuards(StoreOrTotemGuard)
   @Delete(':id')
   delete(
     @Param('id') id: string,
@@ -223,15 +239,18 @@ export class OrderController implements OrderInputPort {
   @ApiResponse({
     status: 400,
     description: 'Order item has not been deleted',
-    type: BadRequestException,
+    type: BusinessException,
   })
   @ApiParam({
     name: 'id',
-    description: 'Order ID',
+    description: 'Order Item ID',
     type: String,
     required: true,
   })
-  @UseGuards(StoreGuard)
+  @ApiOperation({ summary: 'Delete order item by orderItemId' })
+  @ApiBearerAuth('access-token')
+  @ApiBearerAuth('totem-token')
+  @UseGuards(StoreOrTotemGuard)
   @Delete('order-item/:id')
   async deleteOrderItem(
     @Param('id', new ParseUUIDPipe()) orderItemId: string,
@@ -252,13 +271,13 @@ export class OrderController implements OrderInputPort {
   })
   @ApiResponse({
     status: 400,
-    description: 'Cannot update customer ID due to order status',
-    type: BadRequestException,
+    description: 'it is not possible to update the customer id in the order',
+    type: BusinessException,
   })
   @ApiResponse({
     status: 404,
     description: 'Order not found',
-    type: NotFoundException,
+    type: BusinessException,
   })
   @ApiParam({
     name: 'id',
@@ -266,7 +285,10 @@ export class OrderController implements OrderInputPort {
     type: String,
     required: true,
   })
-  @UseGuards(StoreGuard)
+  @ApiOperation({ summary: 'Link customer to order' })
+  @ApiBearerAuth('access-token')
+  @ApiBearerAuth('totem-token')
+  @UseGuards(StoreOrTotemGuard)
   @Patch(':id/customer')
   async updateCustomerId(
     @Param('id', new ParseUUIDPipe()) id: string,

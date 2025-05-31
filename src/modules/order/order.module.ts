@@ -7,15 +7,15 @@ import { OrderService } from './services/order.service';
 import { OrderRepositoryTypeORM } from './adapters/secondary/order.repository.typeorm';
 import { Module, forwardRef } from '@nestjs/common';
 import { CustomersModule } from '../customers/customers.module';
-import { JwtModule } from '@nestjs/jwt';
 import { StoresModule } from '../stores/stores.module';
+import { CategoryModule } from '../categories/category.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([OrderEntity, OrderItemEntity]),
     forwardRef(() => CustomersModule),
-    JwtModule,
     StoresModule,
+    CategoryModule,
   ],
   controllers: [OrderController],
   providers: [

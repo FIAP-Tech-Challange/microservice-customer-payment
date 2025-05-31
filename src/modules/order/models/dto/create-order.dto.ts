@@ -13,7 +13,6 @@ export class CreateOrderDto {
       {
         productId: '12345',
         quantity: 2,
-        unitPrice: 19.99,
       },
     ],
   })

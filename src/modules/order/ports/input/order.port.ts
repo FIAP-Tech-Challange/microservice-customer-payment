@@ -1,6 +1,6 @@
 import {
+  RequestFromStoreOrTotem,
   RequestFromStore,
-  RequestFromTotem,
 } from 'src/modules/auth/models/dtos/request.dto';
 import { CreateOrderDto } from '../../models/dto/create-order.dto';
 import { OrderPaginationDto } from '../../models/dto/order-pagination.dto';
@@ -11,9 +11,9 @@ import { OrderResponseDto } from '../../models/dto/order-response.dto';
 export interface OrderInputPort {
   create(
     createOrderDto: CreateOrderDto,
-    req: RequestFromTotem,
+    req: RequestFromStoreOrTotem,
   ): Promise<OrderResponseDto>;
-  findById(id: string, req: RequestFromStore): Promise<OrderResponseDto>;
+  findById(id: string, req: RequestFromStoreOrTotem): Promise<OrderResponseDto>;
   getAll(
     params: OrderRequestParamsDto,
     req: RequestFromStore,
@@ -21,16 +21,16 @@ export interface OrderInputPort {
   updateStatus(
     id: string,
     status: UpdateOrderStatusDto,
-    req: RequestFromStore,
+    req: RequestFromStoreOrTotem,
   ): Promise<OrderResponseDto>;
-  delete(id: string, req: RequestFromStore): Promise<void>;
+  delete(id: string, req: RequestFromStoreOrTotem): Promise<void>;
   deleteOrderItem(
     orderItemId: string,
-    req: RequestFromStore,
+    req: RequestFromStoreOrTotem,
   ): Promise<OrderResponseDto>;
   updateCustomerId(
     id: string,
     customerId: string,
-    req: RequestFromStore,
+    req: RequestFromStoreOrTotem,
   ): Promise<OrderResponseDto>;
 }

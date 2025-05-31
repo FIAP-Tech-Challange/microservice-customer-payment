@@ -2,10 +2,12 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsNumber, IsString } from 'class-validator';
 import { OrderItemResponseDto } from './order-item-response.dto';
 import { CustomerOrderDto } from './customer-order.dto';
+import { OrderStatusEnum } from '../enum/order-status.enum';
 
 export class OrderResponseDto {
   @ApiProperty({
     description: 'Unique identifier for the order',
+    example: '84079b90-b1ba-4223-812f-d1f1435ea34d',
   })
   @IsString()
   id: string;
@@ -20,6 +22,7 @@ export class OrderResponseDto {
   @ApiProperty({
     description: 'Status of the order',
     required: true,
+    example: OrderStatusEnum.PENDING,
   })
   @IsString()
   status: string;
@@ -27,18 +30,21 @@ export class OrderResponseDto {
   @ApiProperty({
     description: 'Total price of the order',
     required: true,
+    example: 50.0,
   })
   @IsNumber()
   totalPrice: number;
 
   @ApiProperty({
     description: 'Unique identifier for the store',
+    example: '84079b90-b1ba-4223-812f-d1f1435ea34d',
   })
   @IsString()
   storeId: string;
 
   @ApiProperty({
     description: 'Unique identifier for the totem',
+    example: '84079b90-b1ba-4223-812f-d1f1435ea34d',
     required: false,
   })
   totemId?: string;
