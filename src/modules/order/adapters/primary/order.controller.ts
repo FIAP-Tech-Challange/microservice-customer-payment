@@ -8,11 +8,10 @@ import {
   Patch,
   Post,
   Query,
-  Req,
+  Request,
   UseGuards,
 } from '@nestjs/common';
 import { OrderInputPort } from '../../ports/input/order.port';
-import { OrderModel } from '../../models/domain/order.model';
 import { OrderStatusEnum } from '../../models/enum/order-status.enum';
 import {
   ApiBearerAuth,
@@ -29,9 +28,12 @@ import { OrderRequestParamsDto } from '../../models/dto/order-request-params.dto
 import { OrderResponseDto } from '../../models/dto/order-response.dto';
 import { OrderPaginationDto } from '../../models/dto/order-pagination.dto';
 import { statusOptionsMessage } from '../../util/status-order.util';
-import { OrderIdDto } from '../../models/dto/order-id.dto';
 import { UpdateOrderStatusDto } from '../../models/dto/update-order-status.dto';
-import { RequestFromStoreOrTotem } from 'src/modules/auth/models/dtos/request.dto';
+import {
+  RequestFromStore,
+  RequestFromTotem,
+} from 'src/modules/auth/models/dtos/request.dto';
+import { OrderMapper } from '../../models/mapper/order.mapper';
 import { StoreOrTotemGuard } from 'src/modules/auth/guards/store-or-totem.guard';
 import { StoreGuard } from 'src/modules/auth/guards/store.guard';
 import { BusinessException } from 'src/shared/dto/business-exception.dto';
@@ -65,9 +67,15 @@ export class OrderController implements OrderInputPort {
   @Post()
   async create(
     @Body() createOrderDto: CreateOrderDto,
-    @Req() req: RequestFromStoreOrTotem,
-  ): Promise<OrderModel> {
-    return this.orderService.create(createOrderDto, req.storeId, req.totemId);
+    @Request() req: RequestFromTotem,
+  ): Promise<OrderResponseDto> {
+    const order = await this.orderService.create(
+      createOrderDto,
+      req.storeId,
+      req.totemId,
+    );
+
+    return OrderMapper.toResponseDto(order);
   }
 
   @ApiResponse({
@@ -104,9 +112,19 @@ export class OrderController implements OrderInputPort {
   @Get('all')
   async getAll(
     @Query() params: OrderRequestParamsDto,
-    @Req() req: RequestFromStoreOrTotem,
+    @Request() req: RequestFromStore,
   ): Promise<OrderPaginationDto> {
-    return this.orderService.getAll(params, req.storeId);
+    const paginatedData = await this.orderService.getAll(params, req.storeId);
+
+    return {
+      data: paginatedData.data.map((order) => OrderMapper.toResponseDto(order)),
+      hasNextPage: paginatedData.hasNextPage,
+      hasPreviousPage: paginatedData.hasPreviousPage,
+      limit: paginatedData.limit,
+      page: paginatedData.page,
+      total: paginatedData.total,
+      totalPages: paginatedData.totalPages,
+    };
   }
 
   @ApiResponse({
@@ -130,8 +148,13 @@ export class OrderController implements OrderInputPort {
   @ApiBearerAuth('totem-token')
   @UseGuards(StoreOrTotemGuard)
   @Get(':id')
-  findById(@Param() params: OrderIdDto): Promise<OrderModel> {
-    return this.orderService.findById(params.id);
+  async findById(
+    @Param('id') id: string,
+    @Request() req: RequestFromStore,
+  ): Promise<OrderResponseDto> {
+    const order = await this.orderService.findById(id, req.storeId);
+
+    return OrderMapper.toResponseDto(order);
   }
 
   @ApiResponse({
@@ -167,11 +190,18 @@ export class OrderController implements OrderInputPort {
   @ApiBearerAuth('access-token')
   @UseGuards(StoreGuard)
   @Patch('status/:id')
-  updateStatus(
-    @Param() params: OrderIdDto,
+  async updateStatus(
+    @Param('id') id: string,
     @Body() body: UpdateOrderStatusDto,
-  ): Promise<OrderModel> {
-    return this.orderService.updateStatus(params.id, body.status);
+    @Request() req: RequestFromStore,
+  ): Promise<OrderResponseDto> {
+    const order = await this.orderService.updateStatus(
+      id,
+      body.status,
+      req.storeId,
+    );
+
+    return OrderMapper.toResponseDto(order);
   }
 
   @ApiResponse({
@@ -194,8 +224,11 @@ export class OrderController implements OrderInputPort {
   @ApiBearerAuth('totem-token')
   @UseGuards(StoreOrTotemGuard)
   @Delete(':id')
-  delete(@Param() params: OrderIdDto): Promise<void> {
-    return this.orderService.delete(params.id);
+  delete(
+    @Param('id') id: string,
+    @Request() req: RequestFromStore,
+  ): Promise<void> {
+    return this.orderService.delete(id, req.storeId);
   }
 
   @ApiResponse({
@@ -220,10 +253,15 @@ export class OrderController implements OrderInputPort {
   @UseGuards(StoreOrTotemGuard)
   @Delete('order-item/:id')
   async deleteOrderItem(
-    @Param('id', new ParseUUIDPipe())
-    orderItemId: string,
-  ): Promise<OrderModel | void> {
-    return this.orderService.deleteOrderItem(orderItemId);
+    @Param('id', new ParseUUIDPipe()) orderItemId: string,
+    @Request() req: RequestFromStore,
+  ): Promise<OrderResponseDto> {
+    const order = await this.orderService.deleteOrderItem(
+      orderItemId,
+      req.storeId,
+    );
+
+    return OrderMapper.toResponseDto(order);
   }
 
   @ApiResponse({
@@ -255,7 +293,14 @@ export class OrderController implements OrderInputPort {
   async updateCustomerId(
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body('customerId') customerId: string,
-  ): Promise<OrderModel> {
-    return this.orderService.updateCustomerId(id, customerId);
+    @Request() req: RequestFromStore,
+  ): Promise<OrderResponseDto> {
+    const order = await this.orderService.updateCustomerId(
+      id,
+      customerId,
+      req.storeId,
+    );
+
+    return OrderMapper.toResponseDto(order);
   }
 }

@@ -5,6 +5,7 @@ import {
   Param,
   Patch,
   Post,
+  Request,
   UseGuards,
 } from '@nestjs/common';
 import { CreatePaymentDto } from '../../models/dto/create-payment.dto';
@@ -23,6 +24,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { PaymentResponseDto } from '../../models/dto/payment.dto';
+import { RequestFromStore } from 'src/modules/auth/models/dtos/request.dto';
 import { StoreOrTotemGuard } from 'src/modules/auth/guards/store-or-totem.guard';
 import { BusinessException } from 'src/shared/dto/business-exception.dto';
 import { ApiKeyGuard } from 'src/modules/auth/guards/api-key.guard';
@@ -113,7 +115,8 @@ export class PaymentController implements PaymentInputPort {
   async updateStatus(
     @Param('id') id: string,
     @Body() dto: UpdateStatusPaymentDto,
+    @Request() req: RequestFromStore,
   ): Promise<PaymentModel | null> {
-    return this.paymentService.updateStatus(id, dto.status);
+    return this.paymentService.updateStatus(id, dto.status, req.storeId);
   }
 }

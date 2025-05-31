@@ -1,26 +1,36 @@
-import { RequestFromStoreOrTotem } from 'src/modules/auth/models/dtos/request.dto';
-import { OrderModel } from '../../models/domain/order.model';
+import {
+  RequestFromStoreOrTotem,
+  RequestFromStore,
+} from 'src/modules/auth/models/dtos/request.dto';
 import { CreateOrderDto } from '../../models/dto/create-order.dto';
-import { OrderIdDto } from '../../models/dto/order-id.dto';
 import { OrderPaginationDto } from '../../models/dto/order-pagination.dto';
 import { OrderRequestParamsDto } from '../../models/dto/order-request-params.dto';
 import { UpdateOrderStatusDto } from '../../models/dto/update-order-status.dto';
+import { OrderResponseDto } from '../../models/dto/order-response.dto';
 
 export interface OrderInputPort {
   create(
     createOrderDto: CreateOrderDto,
     req: RequestFromStoreOrTotem,
-  ): Promise<OrderModel>;
-  findById(id: OrderIdDto): Promise<OrderModel>;
+  ): Promise<OrderResponseDto>;
+  findById(id: string, req: RequestFromStoreOrTotem): Promise<OrderResponseDto>;
   getAll(
     params: OrderRequestParamsDto,
-    req: RequestFromStoreOrTotem,
+    req: RequestFromStore,
   ): Promise<OrderPaginationDto>;
   updateStatus(
-    id: OrderIdDto,
+    id: string,
     status: UpdateOrderStatusDto,
-  ): Promise<OrderModel>;
-  delete(id: OrderIdDto): Promise<void>;
-  deleteOrderItem(orderItemId: string): Promise<OrderModel | void>;
-  updateCustomerId(id: string, customerId: string): Promise<OrderModel>;
+    req: RequestFromStoreOrTotem,
+  ): Promise<OrderResponseDto>;
+  delete(id: string, req: RequestFromStoreOrTotem): Promise<void>;
+  deleteOrderItem(
+    orderItemId: string,
+    req: RequestFromStoreOrTotem,
+  ): Promise<OrderResponseDto>;
+  updateCustomerId(
+    id: string,
+    customerId: string,
+    req: RequestFromStoreOrTotem,
+  ): Promise<OrderResponseDto>;
 }

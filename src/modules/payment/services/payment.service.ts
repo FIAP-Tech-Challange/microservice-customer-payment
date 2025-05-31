@@ -36,16 +36,12 @@ export class PaymentService {
   ): Promise<PaymentModel | null> {
     this.logger.log(`Creating payment for order ${createPaymentDto.orderId}`);
 
-    const order = await this.orderService.findById(createPaymentDto.orderId);
+    const order = await this.orderService.findById(
+      createPaymentDto.orderId,
+      createPaymentDto.storeId,
+    );
 
-    if (!order) {
-      this.logger.log(`Order ${createPaymentDto.orderId} not found`);
-      throw new NotFoundException(
-        `Order ${createPaymentDto.orderId} not found`,
-      );
-    }
-
-    if (order.status !== (OrderStatusEnum.PENDING as string)) {
+    if (order.status !== OrderStatusEnum.PENDING) {
       this.logger.log(
         'Payment cannot be created for orders with a status other than PENDING ',
       );
@@ -63,12 +59,6 @@ export class PaymentService {
         totalPrice: item.subtotal,
       };
     });
-
-    if (!order.totalPrice || order.totalPrice <= 0) {
-      throw new BadRequestException(
-        'check the order value, it is not valid for generating payment',
-      );
-    }
 
     const { qrCode, id } = await this.paymentProviderPort.createQrCode({
       orderId: createPaymentDto.orderId,
@@ -102,15 +92,19 @@ export class PaymentService {
         `Fake payment provider enabled, save for order ${createPaymentDto.orderId}`,
       );
 
-      const order = await this.orderService.findById(payment.orderId);
-      if (!order) {
-        throw new NotFoundException(
-          'the order linked to the payment was not found.',
-        );
-      }
+      const order = await this.orderService.findById(
+        payment.orderId,
+        createPaymentDto.storeId,
+      );
 
       const paymentFake = await this.paymentRepositoryPort.savePayment(payment);
-      await this.orderService.updateStatus(order.id, OrderStatusEnum.RECEIVED);
+
+      await this.orderService.updateStatus(
+        order.id,
+        OrderStatusEnum.RECEIVED,
+        createPaymentDto.storeId,
+      );
+
       return this.paymentRepositoryPort.updateStatus(
         paymentFake.id,
         PaymentStatusEnum.APPROVED,
@@ -128,6 +122,7 @@ export class PaymentService {
   async updateStatus(
     id: string,
     status: PaymentStatusEnum,
+    storeId: string,
   ): Promise<PaymentModel | null> {
     this.logger.log(
       `Updating payment status for id ${id} to ${getStatusName(status)}`,
@@ -145,14 +140,18 @@ export class PaymentService {
     }
 
     if (status === PaymentStatusEnum.APPROVED) {
-      const order = await this.orderService.findById(payment.orderId);
+      const order = await this.orderService.findById(payment.orderId, storeId);
       if (!order) {
         throw new NotFoundException(
           'the order linked to the payment was not found.',
         );
       }
 
-      await this.orderService.updateStatus(order.id, OrderStatusEnum.RECEIVED);
+      await this.orderService.updateStatus(
+        order.id,
+        OrderStatusEnum.RECEIVED,
+        storeId,
+      );
     }
     return this.paymentRepositoryPort.updateStatus(id, status);
   }
