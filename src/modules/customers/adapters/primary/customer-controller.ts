@@ -3,38 +3,53 @@ import {
   Get,
   Post,
   Body,
-  HttpStatus,
   Query,
-  Version,
   Param,
+  UseGuards,
+  ParseUUIDPipe,
 } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags, ApiParam } from '@nestjs/swagger';
+import {
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+  ApiParam,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { CreateCustomerDto } from '../../models/dto/create-customer.dto';
 import { FindCustomerByCpfDto } from '../../models/dto/find-customer-by-cpf.dto';
 import { CustomerResponseDto } from '../../models/dto/customer-response.dto';
 import { CustomerService } from '../../services/customer.service';
+import { BusinessException } from 'src/shared/dto/business-exception.dto';
+import { StoreOrTotemGuard } from 'src/modules/auth/guards/store-or-totem.guard';
 
-@ApiTags('customers')
-@Controller('customers')
+@ApiTags('Customer')
+@Controller({
+  path: 'customers',
+  version: '1',
+})
 export class CustomerController {
   constructor(private readonly customerService: CustomerService) {}
 
-  @Get('/cpf')
-  @Version('1')
-  @ApiOperation({ summary: 'Find a customer by CPF' })
   @ApiResponse({
-    status: HttpStatus.OK,
+    status: 200,
     description: 'The customer was found successfully',
     type: CustomerResponseDto,
   })
   @ApiResponse({
-    status: HttpStatus.BAD_REQUEST,
+    status: 400,
     description: 'Invalid CPF format',
+    type: BusinessException,
   })
   @ApiResponse({
-    status: HttpStatus.NOT_FOUND,
+    status: 404,
     description: 'Customer not found',
+    type: BusinessException,
   })
+  @ApiOperation({ summary: 'Find a customer by CPF' })
+  @ApiBearerAuth('access-token')
+  @ApiBearerAuth('totem-token')
+  @UseGuards(StoreOrTotemGuard)
+  @Get('/cpf')
   async findByCpf(
     @Query() findCustomerDto: FindCustomerByCpfDto,
   ): Promise<CustomerResponseDto> {
@@ -47,22 +62,26 @@ export class CustomerController {
     };
   }
 
-  @Post()
-  @Version('1')
-  @ApiOperation({ summary: 'Create a new customer' })
   @ApiResponse({
-    status: HttpStatus.CREATED,
+    status: 201,
     description: 'The customer has been successfully created',
     type: CustomerResponseDto,
   })
   @ApiResponse({
-    status: HttpStatus.BAD_REQUEST,
+    status: 400,
     description: 'Invalid input data',
+    type: BusinessException,
   })
   @ApiResponse({
-    status: HttpStatus.CONFLICT,
+    status: 409,
     description: 'Customer with this CPF already exists',
+    type: BusinessException,
   })
+  @ApiOperation({ summary: 'Create a new customer' })
+  @ApiBearerAuth('access-token')
+  @ApiBearerAuth('totem-token')
+  @UseGuards(StoreOrTotemGuard)
+  @Post()
   async create(
     @Body() createCustomerDto: CreateCustomerDto,
   ): Promise<CustomerResponseDto> {
@@ -75,25 +94,30 @@ export class CustomerController {
     };
   }
 
-  @Get('/:id')
-  @Version('1')
-  @ApiOperation({ summary: 'Find a customer by ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'The customer was found successfully',
+    type: CustomerResponseDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Customer not found',
+    type: BusinessException,
+  })
   @ApiParam({
     name: 'id',
     required: true,
     description: 'Customer ID',
     type: String,
   })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'The customer was found successfully',
-    type: CustomerResponseDto,
-  })
-  @ApiResponse({
-    status: HttpStatus.NOT_FOUND,
-    description: 'Customer not found',
-  })
-  async findById(@Param('id') id: string): Promise<CustomerResponseDto> {
+  @ApiOperation({ summary: 'Find a customer by ID' })
+  @ApiBearerAuth('access-token')
+  @ApiBearerAuth('totem-token')
+  @UseGuards(StoreOrTotemGuard)
+  @Get('/:id')
+  async findById(
+    @Param('id', new ParseUUIDPipe()) id: string,
+  ): Promise<CustomerResponseDto> {
     const customer = await this.customerService.findById(id);
     return {
       id: customer.id,
@@ -103,14 +127,21 @@ export class CustomerController {
     };
   }
 
-  @Get()
-  @Version('1')
-  @ApiOperation({ summary: 'List all customers' })
   @ApiResponse({
-    status: HttpStatus.OK,
+    status: 200,
     description: 'Customers list retrieved successfully',
     type: [CustomerResponseDto],
   })
+  @ApiResponse({
+    status: 404,
+    description: 'Customers not found',
+    type: BusinessException,
+  })
+  @ApiOperation({ summary: 'List all customers' })
+  @ApiBearerAuth('access-token')
+  @ApiBearerAuth('totem-token')
+  @UseGuards(StoreOrTotemGuard)
+  @Get()
   async findAll(): Promise<CustomerResponseDto[]> {
     const customers = await this.customerService.findAll();
     return customers.map((customer) => ({

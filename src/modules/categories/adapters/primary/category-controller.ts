@@ -4,15 +4,23 @@ import {
   Post,
   Body,
   Param,
-  HttpStatus,
   UseGuards,
   Request,
   NotFoundException,
   Delete,
+  ParseUUIDPipe,
+  BadRequestException,
 } from '@nestjs/common';
 import { CreateProductDto } from '../../models/dto/create-product.dto';
 import { CategoryInputPort } from '../../ports/input/category.port';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiBody,
+  ApiParam,
+} from '@nestjs/swagger';
 import { StoreGuard } from 'src/modules/auth/guards/store.guard';
 import { RequestFromStore } from 'src/modules/auth/models/dtos/request.dto';
 import { CategoryService } from '../../services/category.service';
@@ -22,19 +30,34 @@ import {
 } from '../../models/dto/category-response.dto';
 import { CategoryMapper } from '../../models/category.mapper';
 import { ProductMapper } from '../../models/product.mapper';
+import { BusinessException } from 'src/shared/dto/business-exception.dto';
 
-@ApiTags('categories')
-@Controller('categories')
+@ApiTags('Category')
+@Controller({
+  path: 'categories',
+  version: '1',
+})
 export class CategoryController implements CategoryInputPort {
   constructor(private readonly categoryService: CategoryService) {}
 
-  @Get()
-  @UseGuards(StoreGuard)
-  @ApiOperation({ summary: 'Retrieve all categories' })
   @ApiResponse({
-    status: HttpStatus.OK,
+    status: 200,
     description: 'List of categories retrieved successfully',
+    type: [CategoryResponseDto],
   })
+  @ApiResponse({
+    status: 404,
+    description: 'List of categories not found',
+    type: BusinessException,
+  })
+  @ApiOperation({
+    summary: 'Retrieve all categories',
+    description:
+      'Retrieves the Categories based on the storeId contained in the accessToken (JWT).',
+  })
+  @ApiBearerAuth('access-token')
+  @UseGuards(StoreGuard)
+  @Get()
   async findAll(
     @Request() req: RequestFromStore,
   ): Promise<CategoryResponseDto[]> {
@@ -47,19 +70,22 @@ export class CategoryController implements CategoryInputPort {
     );
   }
 
-  @Get(':id')
-  @UseGuards(StoreGuard)
-  @ApiOperation({ summary: 'Retrieve a category by ID' })
   @ApiResponse({
-    status: HttpStatus.OK,
+    status: 200,
     description: 'The category was found successfully',
+    type: CategoryResponseDto,
   })
   @ApiResponse({
-    status: HttpStatus.NOT_FOUND,
+    status: 404,
     description: 'Category not found',
+    type: BusinessException,
   })
+  @ApiOperation({ summary: 'Retrieve a category by ID' })
+  @ApiBearerAuth('access-token')
+  @UseGuards(StoreGuard)
+  @Get(':id')
   async findById(
-    @Param('id') id: string,
+    @Param('id', new ParseUUIDPipe()) id: string,
     @Request() req: RequestFromStore,
   ): Promise<CategoryResponseDto> {
     const storeId = req.storeId;
@@ -72,13 +98,32 @@ export class CategoryController implements CategoryInputPort {
     return CategoryMapper.toSimplifiedDto(category);
   }
 
-  @Post()
-  @UseGuards(StoreGuard)
-  @ApiOperation({ summary: 'Create a new category' })
   @ApiResponse({
-    status: HttpStatus.CREATED,
+    status: 200,
     description: 'The category has been successfully created',
+    type: CategoryResponseDto,
   })
+  @ApiResponse({
+    status: 400,
+    description: 'The category has not been created',
+    type: BusinessException,
+  })
+  @ApiBody({
+    description: 'Name the category',
+    schema: {
+      type: 'object',
+      properties: {
+        name: {
+          type: 'string',
+          example: 'Sobremesa',
+        },
+      },
+    },
+  })
+  @ApiOperation({ summary: 'Create a new category' })
+  @ApiBearerAuth('access-token')
+  @UseGuards(StoreGuard)
+  @Post()
   async create(
     @Body('name') name: string,
     @Request() req: RequestFromStore,
@@ -90,60 +135,114 @@ export class CategoryController implements CategoryInputPort {
     return CategoryMapper.toSimplifiedDto(category);
   }
 
-  @Delete(':id')
-  @UseGuards(StoreGuard)
-  @ApiOperation({ summary: 'Delete a category' })
   @ApiResponse({
-    status: HttpStatus.NO_CONTENT,
+    status: 200,
     description: 'The category has been successfully deleted',
   })
   @ApiResponse({
-    status: HttpStatus.NOT_FOUND,
+    status: 404,
     description: 'Category not found',
+    type: BusinessException,
   })
-  async delete(id: string, req: RequestFromStore): Promise<void> {
+  @ApiParam({
+    name: 'id',
+    type: String,
+    description: 'ID category',
+    example: '44226bf5-0187-4d7b-b649-e460fda43b01',
+    required: true,
+  })
+  @ApiOperation({ summary: 'Delete a category' })
+  @ApiBearerAuth('access-token')
+  @UseGuards(StoreGuard)
+  @Delete(':id')
+  async delete(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Request() req: RequestFromStore,
+  ): Promise<void> {
     const storeId = req.storeId;
     await this.categoryService.delete(id, storeId);
   }
 
-  @Post(':categoryId/products')
-  @UseGuards(StoreGuard)
-  @ApiOperation({ summary: 'Create a new product' })
   @ApiResponse({
-    status: HttpStatus.CREATED,
+    status: 200,
     description: 'The product has been successfully created',
     type: CreateProductDto,
   })
   @ApiResponse({
-    status: HttpStatus.BAD_REQUEST,
-    description: 'Invalid input data',
+    status: 400,
+    description: 'Product has not been created',
+    type: BusinessException,
   })
+  @ApiResponse({
+    status: 404,
+    description: 'Category not found',
+    type: BusinessException,
+  })
+  @ApiParam({
+    name: 'categoryId',
+    type: String,
+    description: 'ID category',
+    example: '44226bf5-0187-4d7b-b649-e460fda43b01',
+    required: true,
+  })
+  @ApiBody({
+    description: 'Product data',
+    type: CreateProductDto,
+  })
+  @ApiOperation({ summary: 'Create a new product' })
+  @ApiBearerAuth('access-token')
+  @UseGuards(StoreGuard)
+  @Post(':categoryId/products')
   async createProduct(
-    @Param('categoryId') categoryId: string,
+    @Param('categoryId', new ParseUUIDPipe()) categoryId: string,
     @Body() createProductDto: CreateProductDto,
     @Request() req: RequestFromStore,
   ): Promise<ProductResponseDto> {
-    const storeId = req.storeId;
+    try {
+      const storeId = req.storeId;
 
-    const product = await this.categoryService.createProduct(
-      categoryId,
-      storeId,
-      createProductDto,
-    );
+      const product = await this.categoryService.createProduct(
+        categoryId,
+        storeId,
+        createProductDto,
+      );
 
-    return ProductMapper.toSimplifiedDto(product);
+      return ProductMapper.toSimplifiedDto(product);
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
   }
 
-  @Delete(':categoryId/products/:productId')
-  @UseGuards(StoreGuard)
-  @ApiOperation({ summary: 'Delete a product from a category' })
   @ApiResponse({
-    status: HttpStatus.NO_CONTENT,
+    status: 200,
     description: 'The product has been successfully deleted',
   })
+  @ApiResponse({
+    status: 400,
+    description: 'Product has not been created',
+    type: BusinessException,
+  })
+  @ApiParam({
+    name: 'categoryId',
+    type: String,
+    description: 'ID category',
+    example: '44226bf5-0187-4d7b-b649-e460fda43b01',
+    required: true,
+  })
+  @ApiParam({
+    name: 'productId',
+    type: String,
+    description: 'ID product',
+    example: '44226bf5-0187-4d7b-b649-e460fda43b01',
+    required: true,
+  })
+  @ApiOperation({ summary: 'Delete a product from a category' })
+  @ApiBearerAuth('access-token')
+  @UseGuards(StoreGuard)
+  @Delete(':categoryId/products/:productId')
   async deleteProduct(
-    @Param('categoryId') categoryId: string,
-    @Param('productId') productId: string,
+    @Param('categoryId', new ParseUUIDPipe()) categoryId: string,
+    @Param('productId', new ParseUUIDPipe()) productId: string,
     @Request() req: RequestFromStore,
   ): Promise<void> {
     const storeId = req.storeId;

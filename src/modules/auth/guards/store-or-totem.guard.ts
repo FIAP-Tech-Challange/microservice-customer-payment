@@ -8,7 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { StoreTokenInterface } from '../models/dtos/token.dto';
 import { ConfigService } from '@nestjs/config';
-import { StoresService } from 'src/modules/stores/stores.service';
+import { StoresService } from 'src/modules/stores/services/stores.service';
 
 @Injectable()
 export class StoreOrTotemGuard implements CanActivate {
