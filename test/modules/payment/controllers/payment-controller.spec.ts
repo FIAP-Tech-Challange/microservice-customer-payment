@@ -9,10 +9,26 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { PaymentModel } from '../../../../src/modules/payment/models/domain/payment.model';
 import { PaymentPlataformEnum } from '../../../../src/modules/payment/models/enum/payment-plataform.enum';
 import { PaymentTypeEnum } from '../../../../src/modules/payment/models/enum/payment-type.enum';
+import {
+  RequestFromStore,
+  RequestFromStoreOrTotem,
+} from '../../../../src/modules/auth/models/dtos/request.dto';
+import { StoreOrTotemGuard } from '../../../../src/modules/auth/guards/store-or-totem.guard';
+import { ApiKeyGuard } from '../../../../src/modules/auth/guards/api-key.guard';
 
 describe('PaymentController', () => {
   let controller: PaymentController;
   let paymentService: PaymentService;
+
+  const mockRequest = {
+    storeId: 'store-123',
+    totemId: 'totem-123',
+    totemAccessToken: 'token-123',
+  } as unknown as RequestFromStoreOrTotem;
+
+  const mockStoreRequest = {
+    storeId: 'store-123',
+  } as unknown as RequestFromStore;
 
   const mockPayment = {
     id: 'payment-id-1',
@@ -33,6 +49,14 @@ describe('PaymentController', () => {
       updateStatus: jest.fn(),
     };
 
+    const mockStoreOrTotemGuard = {
+      canActivate: jest.fn().mockReturnValue(true),
+    };
+
+    const mockApiKeyGuard = {
+      canActivate: jest.fn().mockReturnValue(true),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       controllers: [PaymentController],
       providers: [
@@ -41,7 +65,12 @@ describe('PaymentController', () => {
           useValue: paymentServiceMock,
         },
       ],
-    }).compile();
+    })
+      .overrideGuard(StoreOrTotemGuard)
+      .useValue(mockStoreOrTotemGuard)
+      .overrideGuard(ApiKeyGuard)
+      .useValue(mockApiKeyGuard)
+      .compile();
 
     controller = module.get<PaymentController>(PaymentController);
     paymentService = module.get<PaymentService>(PaymentService);
@@ -51,28 +80,34 @@ describe('PaymentController', () => {
     it('should create a payment successfully', async () => {
       const createPaymentDto: CreatePaymentDto = {
         orderId: 'order-123',
-        storeId: 'store-123',
       };
 
       jest.spyOn(paymentService, 'savePayment').mockResolvedValue(mockPayment);
 
-      const result = await controller.create(createPaymentDto);
+      const result = await controller.create(createPaymentDto, mockRequest);
 
-      expect(paymentService.savePayment).toHaveBeenCalledWith(createPaymentDto);
+      expect(paymentService.savePayment).toHaveBeenCalledWith(
+        createPaymentDto,
+        mockRequest.storeId,
+      );
       expect(result).toEqual(mockPayment);
     });
 
     it('should throw BadRequestException when payment creation fails', async () => {
       const createPaymentDto: CreatePaymentDto = {
         orderId: 'order-123',
-        storeId: 'store-123',
       };
 
       const error = new BadRequestException('Error creating payment');
       jest.spyOn(paymentService, 'savePayment').mockRejectedValue(error);
 
-      await expect(controller.create(createPaymentDto)).rejects.toThrow(error);
-      expect(paymentService.savePayment).toHaveBeenCalledWith(createPaymentDto);
+      await expect(
+        controller.create(createPaymentDto, mockRequest),
+      ).rejects.toThrow(error);
+      expect(paymentService.savePayment).toHaveBeenCalledWith(
+        createPaymentDto,
+        mockRequest.storeId,
+      );
     });
   });
 
@@ -114,11 +149,16 @@ describe('PaymentController', () => {
         .spyOn(paymentService, 'updateStatus')
         .mockResolvedValue(updatedPayment as PaymentModel);
 
-      const result = await controller.updateStatus(id, updateStatusDto);
+      const result = await controller.updateStatus(
+        id,
+        updateStatusDto,
+        mockStoreRequest,
+      );
 
       expect(paymentService.updateStatus).toHaveBeenCalledWith(
         id,
         updateStatusDto.status,
+        mockStoreRequest.storeId,
       );
       expect(result).toEqual(updatedPayment);
     });
@@ -133,11 +173,12 @@ describe('PaymentController', () => {
       jest.spyOn(paymentService, 'updateStatus').mockRejectedValue(error);
 
       await expect(
-        controller.updateStatus(id, updateStatusDto),
+        controller.updateStatus(id, updateStatusDto, mockStoreRequest),
       ).rejects.toThrow(error);
       expect(paymentService.updateStatus).toHaveBeenCalledWith(
         id,
         updateStatusDto.status,
+        mockStoreRequest.storeId,
       );
     });
   });

@@ -39,6 +39,9 @@ describe('PaymentService', () => {
     createdAt: new Date(),
   } as PaymentModel;
 
+  // Use a constant storeId for all tests
+  const storeId = 'store-123';
+
   beforeEach(async () => {
     const paymentRepositoryMock = {
       savePayment: jest.fn(),
@@ -102,31 +105,33 @@ describe('PaymentService', () => {
     it('should throw NotFoundException when order is not found', async () => {
       const createPaymentDto: CreatePaymentDto = {
         orderId: 'non-existent-order',
-        storeId: 'store-123',
       };
 
-      // Mock o orderService para retornar null (pedido não encontrado)
+      // Mock orderService to return null (order not found)
       jest
         .spyOn(orderService, 'findById')
-        .mockResolvedValue(null as unknown as OrderModel);
+        .mockRejectedValue(
+          new NotFoundException(`Order ${createPaymentDto.orderId} not found`),
+        );
 
-      await expect(service.savePayment(createPaymentDto)).rejects.toThrow(
-        NotFoundException,
-      );
-      await expect(service.savePayment(createPaymentDto)).rejects.toThrow(
-        `Order ${createPaymentDto.orderId} not found`,
-      );
+      await expect(
+        service.savePayment(createPaymentDto, storeId),
+      ).rejects.toThrow(NotFoundException);
+      await expect(
+        service.savePayment(createPaymentDto, storeId),
+      ).rejects.toThrow(`Order ${createPaymentDto.orderId} not found`);
 
       expect(orderService.findById).toHaveBeenCalledWith(
         createPaymentDto.orderId,
+        storeId,
       );
       expect(paymentProviderPort.createQrCode).not.toHaveBeenCalled();
       expect(paymentRepositoryPort.savePayment).not.toHaveBeenCalled();
     });
+
     it('should create payment successfully with QR code from provider', async () => {
       const createPaymentDto: CreatePaymentDto = {
         orderId: 'order-123',
-        storeId: 'store-123',
       };
 
       const mockQrCodeResponse = {
@@ -134,7 +139,7 @@ describe('PaymentService', () => {
         id: 'ext-123',
       };
 
-      // Criar um mock adequado para OrderModel
+      // Create a proper OrderModel mock
       const mockOrder = {
         id: 'order-123',
         customerId: 'customer-123',
@@ -156,12 +161,13 @@ describe('PaymentService', () => {
         .spyOn(paymentRepositoryPort, 'savePayment')
         .mockResolvedValue(mockPayment);
 
-      const result = await service.savePayment(createPaymentDto);
+      const result = await service.savePayment(createPaymentDto, storeId);
 
       expect(orderService.findById).toHaveBeenCalledWith(
         createPaymentDto.orderId,
+        storeId,
       );
-      // O serviço parece estar adicionando os itens do pedido, então vamos ajustar a expectativa
+      // The service is adding order items, so adjust the expectation
       expect(paymentProviderPort.createQrCode).toHaveBeenCalledWith(
         expect.objectContaining({
           orderId: createPaymentDto.orderId,
@@ -176,7 +182,6 @@ describe('PaymentService', () => {
     it('should create and auto-approve payment when fake provider is enabled', async () => {
       const createPaymentDto: CreatePaymentDto = {
         orderId: 'order-123',
-        storeId: 'store-123',
       };
 
       const mockQrCodeResponse = {
@@ -184,7 +189,7 @@ describe('PaymentService', () => {
         id: 'ext-123',
       };
 
-      // Criar um mock adequado para OrderModel
+      // Create a proper OrderModel mock
       const mockOrder = {
         id: 'order-123',
         customerId: 'customer-123',
@@ -214,12 +219,13 @@ describe('PaymentService', () => {
         .spyOn(paymentRepositoryPort, 'updateStatus')
         .mockResolvedValue(approvedPayment as PaymentModel);
 
-      const result = await service.savePayment(createPaymentDto);
+      const result = await service.savePayment(createPaymentDto, storeId);
 
       expect(orderService.findById).toHaveBeenCalledWith(
         createPaymentDto.orderId,
+        storeId,
       );
-      // O serviço parece estar adicionando os itens do pedido, então vamos ajustar a expectativa
+      // The service is adding order items, so adjust the expectation
       expect(paymentProviderPort.createQrCode).toHaveBeenCalledWith(
         expect.objectContaining({
           orderId: createPaymentDto.orderId,
@@ -238,10 +244,9 @@ describe('PaymentService', () => {
     it('should throw BadRequestException when QR code creation fails', async () => {
       const createPaymentDto: CreatePaymentDto = {
         orderId: 'order-123',
-        storeId: 'store-123',
       };
 
-      // Criar um mock adequado para OrderModel
+      // Create a proper OrderModel mock
       const mockOrder = {
         id: 'order-123',
         customerId: 'customer-123',
@@ -264,12 +269,15 @@ describe('PaymentService', () => {
         .spyOn(paymentProviderPort, 'createQrCode')
         .mockResolvedValue(mockQrCodeResponse);
 
-      await expect(service.savePayment(createPaymentDto)).rejects.toThrow(
+      await expect(
+        service.savePayment(createPaymentDto, storeId),
+      ).rejects.toThrow(
         new BadRequestException('Error creating QR code for payment'),
       );
 
       expect(orderService.findById).toHaveBeenCalledWith(
         createPaymentDto.orderId,
+        storeId,
       );
       expect(paymentProviderPort.createQrCode).toHaveBeenCalled();
       expect(paymentRepositoryPort.savePayment).not.toHaveBeenCalled();
@@ -278,10 +286,9 @@ describe('PaymentService', () => {
     it('should throw BadRequestException when order status is not PENDING', async () => {
       const createPaymentDto: CreatePaymentDto = {
         orderId: 'order-123',
-        storeId: 'store-123',
       };
 
-      // Criar um mock de pedido com status diferente de PENDING
+      // Mock order with a status other than PENDING
       const mockOrder = {
         id: 'order-123',
         customerId: 'customer-123',
@@ -296,15 +303,18 @@ describe('PaymentService', () => {
 
       jest.spyOn(orderService, 'findById').mockResolvedValue(mockOrder);
 
-      await expect(service.savePayment(createPaymentDto)).rejects.toThrow(
-        BadRequestException,
-      );
-      await expect(service.savePayment(createPaymentDto)).rejects.toThrow(
+      await expect(
+        service.savePayment(createPaymentDto, storeId),
+      ).rejects.toThrow(BadRequestException);
+      await expect(
+        service.savePayment(createPaymentDto, storeId),
+      ).rejects.toThrow(
         'Payment cannot be created for orders with a status other than PENDING',
       );
 
       expect(orderService.findById).toHaveBeenCalledWith(
         createPaymentDto.orderId,
+        storeId,
       );
       expect(paymentProviderPort.createQrCode).not.toHaveBeenCalled();
       expect(paymentRepositoryPort.savePayment).not.toHaveBeenCalled();
@@ -333,7 +343,7 @@ describe('PaymentService', () => {
 
       const updatedPayment = { ...mockPayment, status: newStatus };
 
-      // Mock do pedido associado ao pagamento
+      // Mock the order associated with the payment
       const mockOrder = {
         id: 'order-123',
         status: OrderStatusEnum.PENDING,
@@ -341,31 +351,114 @@ describe('PaymentService', () => {
         createdAt: new Date(),
       } as unknown as OrderModel;
 
-      // Primeiro precisamos mockar o findById para retornar um pagamento existente
+      // First mock findById to return an existing payment
       jest
         .spyOn(paymentRepositoryPort, 'findById')
         .mockResolvedValue(mockPayment);
 
-      // Mock para encontrar o pedido
+      // Mock finding the order
       jest.spyOn(orderService, 'findById').mockResolvedValue(mockOrder);
 
-      // Mock para atualizar o status do pedido
+      // Mock updating the order status
       jest.spyOn(orderService, 'updateStatus').mockResolvedValue(mockOrder);
 
       jest
         .spyOn(paymentRepositoryPort, 'updateStatus')
         .mockResolvedValue(updatedPayment as PaymentModel);
 
-      const result = await service.updateStatus(paymentId, newStatus);
+      const result = await service.updateStatus(paymentId, newStatus, storeId);
 
       expect(paymentRepositoryPort.findById).toHaveBeenCalledWith(paymentId);
-      expect(orderService.findById).toHaveBeenCalledWith(mockPayment.orderId);
-      expect(orderService.updateStatus).toHaveBeenCalled();
+      expect(orderService.findById).toHaveBeenCalledWith(
+        mockPayment.orderId,
+        storeId,
+      );
+      expect(orderService.updateStatus).toHaveBeenCalledWith(
+        mockOrder.id,
+        OrderStatusEnum.RECEIVED,
+        storeId,
+      );
       expect(paymentRepositoryPort.updateStatus).toHaveBeenCalledWith(
         paymentId,
         newStatus,
       );
       expect(result).toEqual(updatedPayment);
+    });
+
+    it('should throw NotFoundException when payment not found', async () => {
+      const paymentId = 'non-existent-payment';
+      const newStatus = PaymentStatusEnum.APPROVED;
+
+      jest
+        .spyOn(paymentRepositoryPort, 'findById')
+        .mockResolvedValue(null as unknown as PaymentModel);
+
+      await expect(
+        service.updateStatus(paymentId, newStatus, storeId),
+      ).rejects.toThrow(NotFoundException);
+      await expect(
+        service.updateStatus(paymentId, newStatus, storeId),
+      ).rejects.toThrow(`Payment id ${paymentId} not found`);
+
+      expect(paymentRepositoryPort.findById).toHaveBeenCalledWith(paymentId);
+      expect(orderService.findById).not.toHaveBeenCalled();
+      expect(paymentRepositoryPort.updateStatus).not.toHaveBeenCalled();
+    });
+
+    it('should throw BadRequestException when payment status is not PENDING', async () => {
+      const paymentId = 'payment-id-1';
+      const newStatus = PaymentStatusEnum.APPROVED;
+
+      // Mock payment with non-PENDING status
+      const nonPendingPayment = {
+        ...mockPayment,
+        status: PaymentStatusEnum.APPROVED,
+      };
+
+      jest
+        .spyOn(paymentRepositoryPort, 'findById')
+        .mockResolvedValue(nonPendingPayment as PaymentModel);
+
+      await expect(
+        service.updateStatus(paymentId, newStatus, storeId),
+      ).rejects.toThrow(BadRequestException);
+      await expect(
+        service.updateStatus(paymentId, newStatus, storeId),
+      ).rejects.toThrow(
+        `Payment ${paymentId} has a status other than pending, cannot be updated`,
+      );
+
+      expect(paymentRepositoryPort.findById).toHaveBeenCalledWith(paymentId);
+      expect(orderService.findById).not.toHaveBeenCalled();
+      expect(paymentRepositoryPort.updateStatus).not.toHaveBeenCalled();
+    });
+
+    it('should throw NotFoundException when order not found', async () => {
+      const paymentId = 'payment-id-1';
+      const newStatus = PaymentStatusEnum.APPROVED;
+
+      jest
+        .spyOn(paymentRepositoryPort, 'findById')
+        .mockResolvedValue(mockPayment);
+
+      jest
+        .spyOn(orderService, 'findById')
+        .mockResolvedValue(null as unknown as OrderModel);
+
+      await expect(
+        service.updateStatus(paymentId, newStatus, storeId),
+      ).rejects.toThrow(NotFoundException);
+      await expect(
+        service.updateStatus(paymentId, newStatus, storeId),
+      ).rejects.toThrow('the order linked to the payment was not found.');
+
+      expect(paymentRepositoryPort.findById).toHaveBeenCalledWith(paymentId);
+      expect(orderService.findById).toHaveBeenCalledWith(
+        mockPayment.orderId,
+        storeId,
+      );
+      expect(orderService.updateStatus).not.toHaveBeenCalled();
+      expect(paymentRepositoryPort.updateStatus).not.toHaveBeenCalled();
     });
   });
 });
