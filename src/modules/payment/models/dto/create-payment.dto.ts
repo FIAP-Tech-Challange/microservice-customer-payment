@@ -8,11 +8,4 @@ export class CreatePaymentDto {
   @IsNotEmpty()
   @IsString()
   orderId: string;
-
-  @ApiProperty({
-    description: 'The ID of the Store',
-  })
-  @IsNotEmpty()
-  @IsString()
-  storeId: string;
 }

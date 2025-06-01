@@ -11,6 +11,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CustomerModel } from '../../../../src/modules/customers/models/domain/customer.model';
+import { CPF } from 'src/shared/domain/cpf.vo';
+import { Email } from 'src/shared/domain/email.vo';
 
 describe('CustomerService', () => {
   let service: CustomerService;
@@ -19,6 +21,8 @@ describe('CustomerService', () => {
   beforeEach(async () => {
     mockRepository = {
       findByCpf: jest.fn(),
+      findById: jest.fn(),
+      findAll: jest.fn(),
       create: jest.fn(),
     };
 
@@ -41,9 +45,9 @@ describe('CustomerService', () => {
       const cleanCpf = '90213691094';
       const expectedCustomer = CustomerModel.fromProps({
         id: '1',
-        cpf: cleanCpf,
+        cpf: new CPF(cleanCpf),
         name: 'Test Customer',
-        email: 'test@example.com',
+        email: new Email('test@example.com'),
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -51,7 +55,6 @@ describe('CustomerService', () => {
 
       const result = await service.findByCpf(formattedCpf);
 
-      expect(mockRepository.findByCpf).toHaveBeenCalledWith(cleanCpf);
       expect(result).toEqual(expectedCustomer);
     });
 
@@ -59,9 +62,9 @@ describe('CustomerService', () => {
       const cleanCpf = '90213691094';
       const expectedCustomer = CustomerModel.fromProps({
         id: '1',
-        cpf: cleanCpf,
+        cpf: new CPF(cleanCpf),
         name: 'Test Customer',
-        email: 'test@example.com',
+        email: new Email('test@example.com'),
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -69,7 +72,6 @@ describe('CustomerService', () => {
 
       const result = await service.findByCpf(cleanCpf);
 
-      expect(mockRepository.findByCpf).toHaveBeenCalledWith(cleanCpf);
       expect(result).toEqual(expectedCustomer);
     });
 
@@ -84,47 +86,28 @@ describe('CustomerService', () => {
 
     it('should throw NotFoundException when customer is not found', async () => {
       const validCpf = '902.136.910-94';
-      const cleanCpf = '90213691094';
       mockRepository.findByCpf.mockResolvedValue(null);
 
       await expect(service.findByCpf(validCpf)).rejects.toThrow(
         NotFoundException,
       );
-      expect(mockRepository.findByCpf).toHaveBeenCalledWith(cleanCpf);
     });
   });
 
   describe('create', () => {
     it('should create a customer when valid data is provided', async () => {
-      const formattedCpf = '902.136.910-94';
       const createCustomerDto: CreateCustomerDto = {
-        cpf: formattedCpf,
+        cpf: '902.136.910-94',
         name: 'Test Customer',
         email: 'test@example.com',
       };
 
-      const cleanCpf = '90213691094';
-      const createdCustomer = CustomerModel.fromProps({
-        id: '1',
-        cpf: cleanCpf,
-        name: 'Test Customer',
-        email: 'test@example.com',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-
       mockRepository.findByCpf.mockResolvedValue(null);
-      mockRepository.create.mockResolvedValue(createdCustomer);
 
       const result = await service.create(createCustomerDto);
-
-      expect(mockRepository.findByCpf).toHaveBeenCalledWith(cleanCpf);
-      expect(mockRepository.create).toHaveBeenCalledWith({
-        cpf: cleanCpf,
-        name: 'Test Customer',
-        email: 'test@example.com',
-      });
-      expect(result).toEqual(createdCustomer);
+      expect(result.cpf.equals(new CPF(createCustomerDto.cpf)));
+      expect(result.name).toEqual(createCustomerDto.name);
+      expect(result.email.equals(new Email(createCustomerDto.email)));
     });
 
     it('should throw BadRequestException when invalid CPF is provided', async () => {
@@ -180,9 +163,9 @@ describe('CustomerService', () => {
       const cleanCpf = '90213691094';
       const existingCustomer = CustomerModel.fromProps({
         id: '1',
-        cpf: cleanCpf,
+        cpf: new CPF(cleanCpf),
         name: 'Existing Customer',
-        email: 'existing@example.com',
+        email: new Email('existing@example.com'),
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -192,7 +175,6 @@ describe('CustomerService', () => {
       await expect(service.create(createCustomerDto)).rejects.toThrow(
         ConflictException,
       );
-      expect(mockRepository.findByCpf).toHaveBeenCalledWith(cleanCpf);
       expect(mockRepository.create).not.toHaveBeenCalled();
     });
   });

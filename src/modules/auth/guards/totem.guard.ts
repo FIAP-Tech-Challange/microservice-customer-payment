@@ -5,7 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Request } from 'express';
-import { StoresService } from 'src/modules/stores/stores.service';
+import { StoresService } from 'src/modules/stores/services/stores.service';
 
 @Injectable()
 export class TotemGuard implements CanActivate {
@@ -14,9 +14,9 @@ export class TotemGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request: Request = context.switchToHttp().getRequest<Request>();
 
-    const token = this.extractTokenFromHeader(request);
+    const token = this.extractTokenFromTotemHeader(request);
     if (!token) {
-      throw new UnauthorizedException('Token not found');
+      throw new UnauthorizedException('Totem token not found');
     }
 
     try {
@@ -28,13 +28,20 @@ export class TotemGuard implements CanActivate {
         (t) => t.tokenAccess === token,
       )?.id;
     } catch {
-      throw new UnauthorizedException('Invalid token');
+      throw new UnauthorizedException('Invalid totem token');
     }
     return true;
   }
 
-  private extractTokenFromHeader(request: Request): string | undefined {
-    const [type, token] = request.headers.authorization?.split(' ') ?? [];
-    return type === 'Bearer' ? token : undefined;
+  private extractTokenFromTotemHeader(request: Request): string | undefined {
+    const headerKey = Object.keys(request.headers).find(
+      (key) => key.toLowerCase() === 'x-totem-access-token',
+    );
+
+    if (!headerKey) return undefined;
+
+    const token = request.headers[headerKey];
+
+    return Array.isArray(token) ? token[0] : token;
   }
 }

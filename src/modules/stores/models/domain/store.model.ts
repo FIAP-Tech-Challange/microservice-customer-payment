@@ -1,39 +1,34 @@
 import { randomUUID, pbkdf2Sync } from 'node:crypto';
 import { TotemModel } from './totem.model';
-import { ConflictException } from '@nestjs/common';
+import { ConflictException, NotFoundException } from '@nestjs/common';
+import { CNPJ } from './cnpj.vo';
+import { Email } from 'src/shared/domain/email.vo';
+import { BrazilianPhone } from 'src/shared/domain/brazilian-phone.vo';
 
 interface StoreProps {
   id: string;
   name: string;
   fantasyName: string;
-  email: string;
-  phone: string;
+  email: Email;
+  phone: BrazilianPhone;
   salt: string;
   passwordHash: string;
-  cnpj: string;
-  isActive: boolean;
+  cnpj: CNPJ;
   totems: TotemModel[];
   createdAt: Date;
 }
 
 export class StoreModel {
   id: string;
-
-  // TODO: create CNPJ value object
-  cnpj: string;
+  cnpj: CNPJ;
   name: string;
   fantasyName: string;
-
-  // TODO: create email value object
-  email: string;
-
-  // TODO: create phone value object
-  phone: string;
+  email: Email;
+  phone: BrazilianPhone;
 
   // TODO: create password value object
   salt: string;
   passwordHash: string;
-  isActive: boolean;
   totems: TotemModel[] = [];
   createdAt: Date;
 
@@ -44,8 +39,6 @@ export class StoreModel {
     this.email = props.email;
     this.fantasyName = props.fantasyName;
     this.phone = props.phone;
-    this.isActive = props.isActive;
-    this.isActive = props.isActive;
     this.fantasyName = props.fantasyName;
     this.salt = props.salt;
     this.passwordHash = props.passwordHash;
@@ -53,14 +46,6 @@ export class StoreModel {
     this.createdAt = props.createdAt;
 
     this.validate();
-  }
-
-  inactivate() {
-    this.isActive = false;
-  }
-
-  activate() {
-    this.isActive = true;
   }
 
   addTotem(totem: TotemModel) {
@@ -82,14 +67,13 @@ export class StoreModel {
     this.totems.push(totem);
   }
 
-  inactivateTotem(totemId: string) {
-    const totem = this.totems.find((t) => t.id === totemId);
-
-    if (!totem) {
-      throw new ConflictException('Totem not found');
+  removeTotem(totemId: string): TotemModel {
+    const totemIndex = this.totems.findIndex((t) => t.id === totemId);
+    if (totemIndex === -1) {
+      throw new NotFoundException('Totem not found');
     }
-
-    totem.inactivate();
+    const [removedTotem] = this.totems.splice(totemIndex, 1);
+    return removedTotem;
   }
 
   verifyPassword(plainPassword: string): boolean {
@@ -108,8 +92,8 @@ export class StoreModel {
     if (!this.name) {
       throw new Error('Name is required');
     }
-    if (!this.email) {
-      throw new Error('Email is required');
+    if (!(this.email instanceof Email)) {
+      throw new Error('Email must be an Email value object');
     }
     if (!this.salt) {
       throw new Error('Salt is required');
@@ -120,17 +104,14 @@ export class StoreModel {
     if (!this.id) {
       throw new Error('ID is required');
     }
-    if (!this.cnpj) {
-      throw new Error('CNPJ is required');
+    if (!(this.cnpj instanceof CNPJ)) {
+      throw new Error('CNPJ must be a CNPJ value object');
     }
     if (!this.fantasyName) {
       throw new Error('Fantasy name is required');
     }
     if (!this.phone) {
       throw new Error('Phone is required');
-    }
-    if (this.isActive !== !!this.isActive) {
-      throw new Error('Is active must be a boolean');
     }
     if (!this.totems) {
       throw new Error('Totems is required');
@@ -140,10 +121,10 @@ export class StoreModel {
   static create(props: {
     name: string;
     fantasyName: string;
-    email: string;
-    cnpj: string;
+    email: Email;
+    cnpj: CNPJ;
     plainPassword: string;
-    phone: string;
+    phone: BrazilianPhone;
   }): StoreModel {
     const id = randomUUID();
     const salt = randomUUID();
@@ -160,7 +141,6 @@ export class StoreModel {
       name: props.name,
       fantasyName: props.fantasyName,
       phone: props.phone,
-      isActive: true,
       email: props.email,
       cnpj: props.cnpj,
       salt,

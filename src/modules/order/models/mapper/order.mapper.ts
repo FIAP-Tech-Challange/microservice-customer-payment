@@ -1,68 +1,61 @@
-import { OrderItemModel } from '../domain/order-item.model';
+import { CustomerMapper } from 'src/modules/customers/models/customer.mapper';
 import { OrderModel } from '../domain/order.model';
-import { OrderItemEntity } from '../entities/order-item.entity';
 import { OrderEntity } from '../entities/order.entity';
-import { OrderStatusEnum } from '../enum/order-status.enum';
+import { OrderItemMapper } from './order-item.mapper';
+import { OrderResponseDto } from '../dto/order-response.dto';
 
 export class OrderMapper {
-  static toDomain(
-    entity: OrderEntity,
-    entityItem: OrderItemEntity[],
-  ): OrderModel {
-    let orderItems: OrderItemModel[] | undefined = undefined;
-    if (entityItem?.length > 0) {
-      orderItems = entityItem?.map((item) =>
-        OrderItemModel.fromProps({
-          id: item.id,
-          orderId: item.order_id,
-          productId: item.product_id,
-          unitPrice: parseFloat(item.unit_price.toFixed(2)),
-          quantity: item.quantity,
-          subtotal: parseFloat(item.subtotal.toFixed(2)),
-          createdAt: item.created_at,
-        }),
-      );
-    }
-
-    return OrderModel.fromProps({
+  static toDomain(entity: OrderEntity): OrderModel {
+    return OrderModel.restore({
       id: entity.id,
-      customerId: entity.customer_id ?? undefined,
-      status: entity.status as OrderStatusEnum,
-      totalPrice: parseFloat(entity.total_price.toFixed(2)),
+      customer: entity.customer
+        ? CustomerMapper.toDomain(entity.customer)
+        : undefined,
+      status: entity.status,
       storeId: entity.store_id,
       totemId: entity.totem_id ?? undefined,
-      orderItems: orderItems,
       createdAt: entity.created_at,
+      orderItems: entity.order_items.map((item) =>
+        OrderItemMapper.toDomain(item),
+      ),
     });
   }
 
   static toEntity(model: OrderModel): OrderEntity {
-    const entity = new OrderEntity();
-    entity.id = model.id;
-    entity.customer_id = model.customerId ?? null;
-    entity.status = model.status;
-    entity.total_price = model.totalPrice ?? 0;
-    entity.store_id = model.storeId;
-    entity.totem_id = model.totemId ?? null;
-    entity.created_at = model.createdAt;
-
-    return entity;
+    return OrderEntity.create({
+      id: model.id,
+      customer_id: model.customer?.id ?? null,
+      customer: model.customer ? CustomerMapper.toEntity(model.customer) : null,
+      status: model.status,
+      total_price: model.totalPrice,
+      store_id: model.storeId,
+      totem_id: model.totemId ?? null,
+      created_at: model.createdAt,
+      order_items: model.orderItems.map((item) =>
+        OrderItemMapper.toEntity(item, model.id),
+      ),
+    });
   }
 
-  static toEntityItem(model: OrderItemModel[]): OrderItemEntity[] {
-    const entityItems = model.map((item) => {
-      const entityItem = new OrderItemEntity();
-      entityItem.id = item.id;
-      entityItem.order_id = item.orderId;
-      entityItem.product_id = item.productId;
-      entityItem.unit_price = item.unitPrice;
-      entityItem.quantity = item.quantity;
-      entityItem.subtotal = item.subtotal;
-      entityItem.created_at = item.createdAt;
-
-      return entityItem;
-    });
-
-    return entityItems;
+  static toResponseDto(model: OrderModel): OrderResponseDto {
+    return {
+      id: model.id,
+      customer: model.customer
+        ? {
+            id: model.customer.id,
+            name: model.customer.name,
+            cpf: model.customer.cpf.toString(),
+            email: model.customer.email.toString(),
+          }
+        : undefined,
+      status: model.status,
+      totalPrice: model.totalPrice,
+      storeId: model.storeId,
+      totemId: model.totemId,
+      createdAt: model.createdAt,
+      orderItems: model.orderItems.map((item) =>
+        OrderItemMapper.toResponseDto(item),
+      ),
+    };
   }
 }

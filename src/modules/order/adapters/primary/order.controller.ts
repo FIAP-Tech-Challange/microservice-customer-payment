@@ -1,21 +1,22 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
   Get,
-  NotFoundException,
   Param,
   ParseUUIDPipe,
   Patch,
   Post,
   Query,
+  Request,
+  UseGuards,
 } from '@nestjs/common';
 import { OrderInputPort } from '../../ports/input/order.port';
-import { OrderModel } from '../../models/domain/order.model';
 import { OrderStatusEnum } from '../../models/enum/order-status.enum';
 import {
+  ApiBearerAuth,
   ApiBody,
+  ApiOperation,
   ApiParam,
   ApiQuery,
   ApiResponse,
@@ -27,8 +28,15 @@ import { OrderRequestParamsDto } from '../../models/dto/order-request-params.dto
 import { OrderResponseDto } from '../../models/dto/order-response.dto';
 import { OrderPaginationDto } from '../../models/dto/order-pagination.dto';
 import { statusOptionsMessage } from '../../util/status-order.util';
-import { OrderIdDto } from '../../models/dto/order-id.dto';
 import { UpdateOrderStatusDto } from '../../models/dto/update-order-status.dto';
+import {
+  RequestFromStore,
+  RequestFromTotem,
+} from 'src/modules/auth/models/dtos/request.dto';
+import { OrderMapper } from '../../models/mapper/order.mapper';
+import { StoreOrTotemGuard } from 'src/modules/auth/guards/store-or-totem.guard';
+import { StoreGuard } from 'src/modules/auth/guards/store.guard';
+import { BusinessException } from 'src/shared/dto/business-exception.dto';
 
 @ApiTags('Order')
 @Controller({
@@ -46,15 +54,28 @@ export class OrderController implements OrderInputPort {
   @ApiResponse({
     status: 400,
     description: 'Order has not been created',
-    type: BadRequestException,
+    type: BusinessException,
   })
   @ApiBody({
     description: 'Order data',
     type: CreateOrderDto,
   })
+  @ApiOperation({ summary: 'Register your order' })
+  @ApiBearerAuth('access-token')
+  @ApiBearerAuth('totem-token')
+  @UseGuards(StoreOrTotemGuard)
   @Post()
-  async create(@Body() createOrderDto: CreateOrderDto): Promise<OrderModel> {
-    return this.orderService.create(createOrderDto);
+  async create(
+    @Body() createOrderDto: CreateOrderDto,
+    @Request() req: RequestFromTotem,
+  ): Promise<OrderResponseDto> {
+    const order = await this.orderService.create(
+      createOrderDto,
+      req.storeId,
+      req.totemId,
+    );
+
+    return OrderMapper.toResponseDto(order);
   }
 
   @ApiResponse({
@@ -65,7 +86,7 @@ export class OrderController implements OrderInputPort {
   @ApiResponse({
     status: 404,
     description: 'Orders not found',
-    type: NotFoundException,
+    type: BusinessException,
   })
   @ApiQuery({
     name: 'page',
@@ -85,11 +106,25 @@ export class OrderController implements OrderInputPort {
     description: 'Filter orders by status',
     type: String,
   })
+  @ApiOperation({ summary: 'List all orders' })
+  @ApiBearerAuth('access-token')
+  @UseGuards(StoreGuard)
   @Get('all')
   async getAll(
     @Query() params: OrderRequestParamsDto,
+    @Request() req: RequestFromStore,
   ): Promise<OrderPaginationDto> {
-    return this.orderService.getAll(params);
+    const paginatedData = await this.orderService.getAll(params, req.storeId);
+
+    return {
+      data: paginatedData.data.map((order) => OrderMapper.toResponseDto(order)),
+      hasNextPage: paginatedData.hasNextPage,
+      hasPreviousPage: paginatedData.hasPreviousPage,
+      limit: paginatedData.limit,
+      page: paginatedData.page,
+      total: paginatedData.total,
+      totalPages: paginatedData.totalPages,
+    };
   }
 
   @ApiResponse({
@@ -100,7 +135,7 @@ export class OrderController implements OrderInputPort {
   @ApiResponse({
     status: 404,
     description: 'Order not found',
-    type: NotFoundException,
+    type: BusinessException,
   })
   @ApiParam({
     name: 'id',
@@ -108,9 +143,18 @@ export class OrderController implements OrderInputPort {
     description: 'Order ID',
     type: String,
   })
+  @ApiOperation({ summary: 'Find Order by orderId' })
+  @ApiBearerAuth('access-token')
+  @ApiBearerAuth('totem-token')
+  @UseGuards(StoreOrTotemGuard)
   @Get(':id')
-  findById(@Param() params: OrderIdDto): Promise<OrderModel> {
-    return this.orderService.findById(params.id);
+  async findById(
+    @Param('id') id: string,
+    @Request() req: RequestFromStore,
+  ): Promise<OrderResponseDto> {
+    const order = await this.orderService.findById(id, req.storeId);
+
+    return OrderMapper.toResponseDto(order);
   }
 
   @ApiResponse({
@@ -121,7 +165,7 @@ export class OrderController implements OrderInputPort {
   @ApiResponse({
     status: 400,
     description: 'Order status has not been updated',
-    type: BadRequestException,
+    type: BusinessException,
   })
   @ApiParam({
     name: 'id',
@@ -130,22 +174,34 @@ export class OrderController implements OrderInputPort {
     required: true,
   })
   @ApiBody({
-    description: 'New status for the order',
+    description: `New status for the order, ${statusOptionsMessage}`,
     type: String,
     enum: OrderStatusEnum,
     examples: {
-      status: {
+      pending: {
         value: OrderStatusEnum.READY,
-        description: 'Order status options: ' + statusOptionsMessage,
+      },
+      receivid: {
+        value: OrderStatusEnum.RECEIVED,
       },
     },
   })
+  @ApiOperation({ summary: 'Update order by orderId' })
+  @ApiBearerAuth('access-token')
+  @UseGuards(StoreGuard)
   @Patch('status/:id')
-  updateStatus(
-    @Param() params: OrderIdDto,
+  async updateStatus(
+    @Param('id') id: string,
     @Body() body: UpdateOrderStatusDto,
-  ): Promise<OrderModel> {
-    return this.orderService.updateStatus(params.id, body.status);
+    @Request() req: RequestFromStore,
+  ): Promise<OrderResponseDto> {
+    const order = await this.orderService.updateStatus(
+      id,
+      body.status,
+      req.storeId,
+    );
+
+    return OrderMapper.toResponseDto(order);
   }
 
   @ApiResponse({
@@ -155,7 +211,7 @@ export class OrderController implements OrderInputPort {
   @ApiResponse({
     status: 404,
     description: 'Order not found',
-    type: NotFoundException,
+    type: BusinessException,
   })
   @ApiParam({
     name: 'id',
@@ -163,9 +219,16 @@ export class OrderController implements OrderInputPort {
     type: String,
     required: true,
   })
+  @ApiOperation({ summary: 'Delete order by orderId' })
+  @ApiBearerAuth('access-token')
+  @ApiBearerAuth('totem-token')
+  @UseGuards(StoreOrTotemGuard)
   @Delete(':id')
-  delete(@Param() params: OrderIdDto): Promise<void> {
-    return this.orderService.delete(params.id);
+  delete(
+    @Param('id') id: string,
+    @Request() req: RequestFromStore,
+  ): Promise<void> {
+    return this.orderService.delete(id, req.storeId);
   }
 
   @ApiResponse({
@@ -176,7 +239,45 @@ export class OrderController implements OrderInputPort {
   @ApiResponse({
     status: 400,
     description: 'Order item has not been deleted',
-    type: BadRequestException,
+    type: BusinessException,
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Order Item ID',
+    type: String,
+    required: true,
+  })
+  @ApiOperation({ summary: 'Delete order item by orderItemId' })
+  @ApiBearerAuth('access-token')
+  @ApiBearerAuth('totem-token')
+  @UseGuards(StoreOrTotemGuard)
+  @Delete('order-item/:id')
+  async deleteOrderItem(
+    @Param('id', new ParseUUIDPipe()) orderItemId: string,
+    @Request() req: RequestFromStore,
+  ): Promise<OrderResponseDto> {
+    const order = await this.orderService.deleteOrderItem(
+      orderItemId,
+      req.storeId,
+    );
+
+    return OrderMapper.toResponseDto(order);
+  }
+
+  @ApiResponse({
+    status: 200,
+    description: 'Customer ID updated successfully',
+    type: OrderResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'it is not possible to update the customer id in the order',
+    type: BusinessException,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Order not found',
+    type: BusinessException,
   })
   @ApiParam({
     name: 'id',
@@ -184,11 +285,22 @@ export class OrderController implements OrderInputPort {
     type: String,
     required: true,
   })
-  @Delete('order-item/:id')
-  async deleteOrderItem(
-    @Param('id', new ParseUUIDPipe())
-    orderItemId: string,
-  ): Promise<OrderModel | void> {
-    return this.orderService.deleteOrderItem(orderItemId);
+  @ApiOperation({ summary: 'Link customer to order' })
+  @ApiBearerAuth('access-token')
+  @ApiBearerAuth('totem-token')
+  @UseGuards(StoreOrTotemGuard)
+  @Patch(':id/customer')
+  async updateCustomerId(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body('customerId') customerId: string,
+    @Request() req: RequestFromStore,
+  ): Promise<OrderResponseDto> {
+    const order = await this.orderService.updateCustomerId(
+      id,
+      customerId,
+      req.storeId,
+    );
+
+    return OrderMapper.toResponseDto(order);
   }
 }

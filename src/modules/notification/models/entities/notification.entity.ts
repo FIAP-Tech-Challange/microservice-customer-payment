@@ -30,6 +30,6 @@ export class NotificationEntity {
   @Column()
   created_at: Date;
 
-  @Column({ nullable: true })
-  updated_at?: Date;
+  @Column()
+  updated_at: Date;
 }

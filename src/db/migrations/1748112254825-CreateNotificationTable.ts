@@ -71,7 +71,7 @@ export class CreateNotificationTable1748112254825
           {
             name: 'updated_at',
             type: 'timestamp',
-            isNullable: true,
+            isNullable: false,
           },
         ],
       }),

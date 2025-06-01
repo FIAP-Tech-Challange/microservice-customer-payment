@@ -4,6 +4,10 @@ import { Repository } from 'typeorm';
 import { CustomerEntity } from '../../models/entities/customer.entity';
 import { CustomerRepositoryPort } from '../../ports/output/customer-repository.port';
 import { CustomerModel } from '../../models/domain/customer.model';
+import { CPF } from 'src/shared/domain/cpf.vo';
+import { CustomerMapper } from '../../models/customer.mapper';
+import { CustomerRequestParamsDto } from '../../models/dto/customer-request-params.dto';
+import { CustomerPaginationDto } from '../../models/dto/customer-pagination.dto';
 
 @Injectable()
 export class CustomerRepositoryAdapter implements CustomerRepositoryPort {
@@ -12,29 +16,62 @@ export class CustomerRepositoryAdapter implements CustomerRepositoryPort {
     private readonly customerRepository: Repository<CustomerEntity>,
   ) {}
 
-  async findByCpf(cpf: string): Promise<CustomerModel | null> {
-    const cleanCpf = cpf.replace(/\D/g, '');
+  async findByCpf(cpf: CPF): Promise<CustomerModel | null> {
     const customer = await this.customerRepository.findOne({
-      where: { cpf: cleanCpf },
+      where: { cpf: cpf.toString() },
     });
 
-    return customer ? customer.toModel() : null;
+    return customer ? CustomerMapper.toDomain(customer) : null;
   }
 
-  async create(customerData: Partial<CustomerModel>): Promise<CustomerModel> {
-    const customerModel = CustomerModel.create({
-      cpf: customerData.cpf!,
-      name: customerData.name!,
-      email: customerData.email!,
+  async create(customer: CustomerModel): Promise<void> {
+    await this.customerRepository.save(CustomerMapper.toEntity(customer));
+  }
+
+  async findById(id: string): Promise<CustomerModel | null> {
+    const customer = await this.customerRepository.findOne({
+      where: { id },
     });
 
-    const customer = new CustomerEntity();
-    customer.id = customerModel.id;
-    customer.cpf = customerModel.cpf;
-    customer.name = customerModel.name;
-    customer.email = customerModel.email;
+    return customer ? CustomerMapper.toDomain(customer) : null;
+  }
 
-    const savedCustomer = await this.customerRepository.save(customer);
-    return savedCustomer.toModel();
+  async findAll(
+    params: CustomerRequestParamsDto,
+  ): Promise<CustomerPaginationDto> {
+    if (!params.page) params.page = 1;
+    if (!params.limit) params.limit = 10;
+
+    const customers = await this.customerRepository.findAndCount({
+      skip: (params.page - 1) * params.limit,
+      take: params.limit,
+      order: { name: 'ASC' },
+    });
+
+    if (!customers || customers[0].length === 0) {
+      return {
+        data: [],
+        total: 0,
+        page: params.page,
+        limit: params.limit,
+        totalPages: 0,
+        hasNextPage: false,
+        hasPreviousPage: false,
+      };
+    }
+
+    const customersModels = customers[0].map((customer) =>
+      CustomerMapper.toDomain(customer),
+    );
+
+    return {
+      data: customersModels,
+      total: customers[1],
+      page: params.page,
+      limit: params.limit,
+      totalPages: Math.ceil(customers[1] / params.limit),
+      hasNextPage: params.page * params.limit < customers[1],
+      hasPreviousPage: params.page > 1,
+    };
   }
 }

@@ -1,96 +1,167 @@
 import { OrderStatusEnum } from '../enum/order-status.enum';
 import { OrderItemModel } from './order-item.model';
+import { CustomerModel } from 'src/modules/customers/models/domain/customer.model';
 
 interface OrderProps {
   id: string;
-  customerId?: string | undefined;
-  status: string;
-  totalPrice?: number | undefined;
-  storeId: string;
-  totemId?: string | undefined;
-  orderItems?: OrderItemModel[];
-  createdAt: Date;
-}
-export class OrderModel {
-  id: string;
-  customerId?: string;
-  status: string;
-  totalPrice?: number;
+  customer?: CustomerModel;
+  status: OrderStatusEnum;
   storeId: string;
   totemId?: string;
-  orderItems?: OrderItemModel[];
+  orderItems: OrderItemModel[];
   createdAt: Date;
+}
+
+export class OrderModel {
+  private _id: string;
+  private _customer?: CustomerModel;
+  private _status: OrderStatusEnum;
+  private _storeId: string;
+  private _totemId?: string;
+  private _orderItems: OrderItemModel[];
+  private _createdAt: Date;
 
   private constructor(props: OrderProps) {
-    this.id = props.id;
-    this.customerId = props.customerId ?? undefined;
-    this.status = props.status;
-    this.totalPrice = props.totalPrice ?? 0;
-    this.storeId = props.storeId;
-    this.totemId = props.totemId ?? undefined;
-    this.orderItems = props.orderItems;
-    this.createdAt = props.createdAt;
+    this._id = props.id;
+    this._customer = props.customer;
+    this._status = props.status;
+    this._storeId = props.storeId;
+    this._totemId = props.totemId;
+    this._orderItems = props.orderItems;
+    this._createdAt = props.createdAt;
+    this.validate();
   }
 
   private validate() {
-    if (!this.id) {
-      throw new Error('ID is required');
-    }
-    if (!this.status) {
-      throw new Error('Status is required');
-    }
-    if (
-      (this.totalPrice === undefined || this.totalPrice <= 0) &&
-      this.orderItems &&
-      this.orderItems.length > 0
-    ) {
-      throw new Error('Total price must be greater than zero');
-    }
-    if (!this.storeId) {
-      throw new Error('Store ID is required');
-    }
-    if (!this.createdAt) {
-      throw new Error('Created at date is required');
-    }
-    if (this.createdAt > new Date()) {
-      throw new Error('Created at date cannot be in the future');
+    if (!this._id) throw new Error('ID is required');
+    if (!this._status) throw new Error('Status is required');
+    if (!this._storeId) throw new Error('Store ID is required');
+    if (!this._createdAt) throw new Error('Created at date is required');
+    if (this._orderItems.length === 0)
+      throw new Error('Order must have at least one item');
+
+    const orderItemsIds = new Set(this._orderItems.map((item) => item.id));
+    if (orderItemsIds.size !== this._orderItems.length) {
+      throw new Error('Duplicated order item IDs are not allowed');
     }
   }
 
-  static addOrderItens(
-    order: OrderModel,
-    orderItems: OrderItemModel[],
-  ): OrderModel {
-    const orderWithItems = new OrderModel({
-      ...order,
-      orderItems: orderItems,
-      totalPrice: orderItems.reduce(
-        (acc, item) => acc + item.unitPrice * item.quantity,
-        0,
-      ),
-    });
-    orderWithItems.validate();
-    return orderWithItems;
+  setToReceived(): void {
+    if (this._status !== OrderStatusEnum.PENDING) {
+      throw new Error('Order can only be set to received if it is pending');
+    }
+    this._status = OrderStatusEnum.RECEIVED;
+    this.validate();
+  }
+
+  setToInProgress(): void {
+    if (this._status !== OrderStatusEnum.RECEIVED) {
+      throw new Error('Order can only be started if it is received');
+    }
+    this._status = OrderStatusEnum.IN_PROGRESS;
+    this.validate();
+  }
+
+  setToReady(): void {
+    if (this._status !== OrderStatusEnum.IN_PROGRESS) {
+      throw new Error('Order can only be set to ready if it is in progress');
+    }
+    this._status = OrderStatusEnum.READY;
+    this.validate();
+  }
+
+  setToFinished(): void {
+    if (this._status !== OrderStatusEnum.READY) {
+      throw new Error('Order can only be set to finished if it is ready');
+    }
+    this._status = OrderStatusEnum.FINISHED;
+    this.validate();
+  }
+
+  setToCanceled(): void {
+    if (this._status !== OrderStatusEnum.PENDING) {
+      throw new Error('Only pending orders can be canceled');
+    }
+    this._status = OrderStatusEnum.CANCELED;
+    this.validate();
+  }
+
+  removeItem(itemId: string): OrderItemModel {
+    const itemIndex = this._orderItems.findIndex((item) => item.id === itemId);
+    if (itemIndex === -1) {
+      throw new Error('Order item not found');
+    }
+
+    if (this._status !== OrderStatusEnum.PENDING) {
+      throw new Error('Order items can only be removed from pending orders');
+    }
+
+    const [removedItem] = this._orderItems.splice(itemIndex, 1);
+    this.validate();
+    return removedItem;
+  }
+
+  associateCustomer(customer: CustomerModel): void {
+    if (
+      this._status === OrderStatusEnum.FINISHED ||
+      this._status === OrderStatusEnum.CANCELED
+    ) {
+      throw new Error(
+        'Cannot associate customer to an order that is finished or canceled',
+      );
+    }
+
+    if (this._customer) {
+      throw new Error('This order already has a customer associated');
+    }
+
+    this._customer = customer;
+    this.validate();
   }
 
   static create(
     props: Omit<OrderProps, 'id' | 'status' | 'createdAt'>,
   ): OrderModel {
-    const order = new OrderModel({
-      ...props,
+    return new OrderModel({
       id: crypto.randomUUID(),
       status: OrderStatusEnum.PENDING,
+      orderItems: props.orderItems,
+      customer: props.customer,
+      storeId: props.storeId,
       createdAt: new Date(),
-      totalPrice:
-        props.orderItems && props.orderItems.length > 0 ? props.totalPrice : 0,
     });
-    order.validate();
-    return order;
   }
 
-  static fromProps(props: OrderProps): OrderModel {
-    const model = new OrderModel(props);
-    model.validate();
-    return model;
+  static restore(props: OrderProps): OrderModel {
+    return new OrderModel(props);
+  }
+
+  get totalPrice(): number {
+    return this._orderItems.reduce(
+      (acc, item) => acc + item.unitPrice * item.quantity,
+      0,
+    );
+  }
+
+  get id(): string {
+    return this._id;
+  }
+  get customer(): CustomerModel | undefined {
+    return this._customer;
+  }
+  get status(): OrderStatusEnum {
+    return this._status;
+  }
+  get storeId(): string {
+    return this._storeId;
+  }
+  get totemId(): string | undefined {
+    return this._totemId;
+  }
+  get orderItems(): OrderItemModel[] {
+    return this._orderItems;
+  }
+  get createdAt(): Date {
+    return this._createdAt;
   }
 }

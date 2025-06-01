@@ -1,12 +1,12 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Get,
-  NotFoundException,
   Param,
   Patch,
   Post,
+  Request,
+  UseGuards,
 } from '@nestjs/common';
 import { CreatePaymentDto } from '../../models/dto/create-payment.dto';
 import { PaymentModel } from '../../models/domain/payment.model';
@@ -14,8 +14,23 @@ import { PaymentInputPort } from '../../ports/input/payment.port';
 import { PaymentService } from '../../services/payment.service';
 import { PaymentIdDto } from '../../models/dto/payment-id.dto';
 import { UpdateStatusPaymentDto } from '../../models/dto/update-status-payment.dto';
-import { ApiBody, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiSecurity,
+  ApiTags,
+} from '@nestjs/swagger';
 import { PaymentResponseDto } from '../../models/dto/payment.dto';
+import {
+  RequestFromStore,
+  RequestFromStoreOrTotem,
+} from 'src/modules/auth/models/dtos/request.dto';
+import { StoreOrTotemGuard } from 'src/modules/auth/guards/store-or-totem.guard';
+import { BusinessException } from 'src/shared/dto/business-exception.dto';
+import { ApiKeyGuard } from 'src/modules/auth/guards/api-key.guard';
 
 @ApiTags('Payment')
 @Controller({
@@ -33,17 +48,22 @@ export class PaymentController implements PaymentInputPort {
   @ApiResponse({
     status: 400,
     description: 'Payment has not been created',
-    type: BadRequestException,
+    type: BusinessException,
   })
   @ApiBody({
     description: 'Payment data',
     type: CreatePaymentDto,
   })
+  @ApiOperation({ summary: 'Register payment' })
+  @ApiBearerAuth('access-token')
+  @ApiBearerAuth('totem-token')
+  @UseGuards(StoreOrTotemGuard)
   @Post()
   async create(
     @Body() createPaymentDto: CreatePaymentDto,
+    @Request() req: RequestFromStoreOrTotem,
   ): Promise<PaymentModel | null> {
-    return this.paymentService.savePayment(createPaymentDto);
+    return this.paymentService.savePayment(createPaymentDto, req.storeId);
   }
 
   @ApiResponse({
@@ -54,7 +74,7 @@ export class PaymentController implements PaymentInputPort {
   @ApiResponse({
     status: 404,
     description: 'Payment not found',
-    type: NotFoundException,
+    type: BusinessException,
   })
   @ApiParam({
     name: 'id',
@@ -62,6 +82,10 @@ export class PaymentController implements PaymentInputPort {
     type: String,
     required: true,
   })
+  @ApiOperation({ summary: 'Find Payment' })
+  @ApiBearerAuth('access-token')
+  @ApiBearerAuth('totem-token')
+  @UseGuards(StoreOrTotemGuard)
   @Get(':id')
   async findById(@Param() params: PaymentIdDto): Promise<PaymentModel> {
     return this.paymentService.findById(params.id);
@@ -75,7 +99,7 @@ export class PaymentController implements PaymentInputPort {
   @ApiResponse({
     status: 400,
     description: 'Payment status has not been updated',
-    type: BadRequestException,
+    type: BusinessException,
   })
   @ApiParam({
     name: 'id',
@@ -88,11 +112,15 @@ export class PaymentController implements PaymentInputPort {
     type: UpdateStatusPaymentDto,
     required: true,
   })
+  @ApiOperation({ summary: 'Update status Payment' })
+  @ApiSecurity('api-key')
+  @UseGuards(ApiKeyGuard)
   @Patch(':id/status')
   async updateStatus(
     @Param('id') id: string,
     @Body() dto: UpdateStatusPaymentDto,
+    @Request() req: RequestFromStore,
   ): Promise<PaymentModel | null> {
-    return this.paymentService.updateStatus(id, dto.status);
+    return this.paymentService.updateStatus(id, dto.status, req.storeId);
   }
 }

@@ -1,3 +1,6 @@
+import { BrazilianPhone } from 'src/shared/domain/brazilian-phone.vo';
+import { Email } from 'src/shared/domain/email.vo';
+
 export enum NotificationStatus {
   PENDING = 'PENDING',
   SENT = 'SENT',
@@ -14,25 +17,27 @@ export enum NotificationChannel {
 interface NotificationProps {
   id: string;
   channel: NotificationChannel;
-  destinationToken: string;
+  destinationToken: NotificationDestinationToken;
   message: string;
   status: NotificationStatus;
   errorMessage?: string;
   sentAt?: Date;
   createdAt: Date;
-  updatedAt?: Date;
+  updatedAt: Date;
 }
+
+export type NotificationDestinationToken = BrazilianPhone | Email | string;
 
 export class NotificationModel {
   id: string;
   channel: NotificationChannel;
-  destinationToken: string;
+  destinationToken: NotificationDestinationToken;
   message: string;
   status: NotificationStatus;
   errorMessage?: string;
   sentAt?: Date;
   createdAt: Date;
-  updatedAt?: Date;
+  updatedAt: Date;
 
   private constructor(props: NotificationProps) {
     this.id = props.id;
@@ -43,7 +48,7 @@ export class NotificationModel {
     this.errorMessage = props.errorMessage || undefined;
     this.sentAt = props.sentAt || undefined;
     this.createdAt = props.createdAt;
-    this.updatedAt = props.updatedAt || undefined;
+    this.updatedAt = props.updatedAt;
 
     this.validate();
   }
@@ -55,20 +60,34 @@ export class NotificationModel {
     if (!this.channel) {
       throw new Error('Channel is required');
     }
-
-    // TODO
     switch (this.channel) {
       case NotificationChannel.WHATSAPP:
-        // validate if it is a number
+        if (!(this.destinationToken instanceof BrazilianPhone)) {
+          throw new Error(
+            'Destination token must be a valid Brazilian phone number for WhatsApp',
+          );
+        }
         break;
       case NotificationChannel.EMAIL:
-        // validate if it is a valid email
+        if (!(this.destinationToken instanceof Email)) {
+          throw new Error(
+            'Destination token must be a valid email for Email channel',
+          );
+        }
         break;
       case NotificationChannel.SMS:
-        // validate if it is a number
+        if (!(this.destinationToken instanceof BrazilianPhone)) {
+          throw new Error(
+            'Destination token must be a valid Brazilian phone number for SMS',
+          );
+        }
         break;
       case NotificationChannel.MONITOR:
-        // validate if it is a monitor ID (maybe totem ID)
+        if (typeof this.destinationToken !== 'string') {
+          throw new Error(
+            'Destination token must be a string for Monitor channel',
+          );
+        }
         break;
       default:
         throw new Error('Invalid channel');
@@ -80,8 +99,21 @@ export class NotificationModel {
     if (!this.status) {
       throw new Error('Status is required');
     }
+
+    if (this.status === NotificationStatus.FAILED && !this.errorMessage) {
+      throw new Error('Error message is required when status is FAILED');
+    }
+    if (this.status === NotificationStatus.SENT && !this.sentAt) {
+      throw new Error('Sent at is required when status is SENT');
+    }
+    if (this.status === NotificationStatus.PENDING && this.sentAt) {
+      throw new Error('Sent at should not be set when status is PENDING');
+    }
     if (!this.createdAt) {
       throw new Error('Created at is required');
+    }
+    if (!this.updatedAt) {
+      throw new Error('Updated at is required');
     }
   }
 
@@ -101,7 +133,7 @@ export class NotificationModel {
 
   static create(
     channel: NotificationChannel,
-    destinationToken: string,
+    destinationToken: NotificationDestinationToken,
     message: string,
   ) {
     return new NotificationModel({

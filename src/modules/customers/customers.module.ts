@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CustomerEntity } from './models/entities/customer.entity';
 import { CustomerController } from './adapters/primary/customer-controller';
@@ -8,9 +8,13 @@ import {
   CUSTOMER_INPUT_PORT,
   CUSTOMER_REPOSITORY_PORT,
 } from './customers.tokens';
+import { OrderModule } from '../order/order.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([CustomerEntity])],
+  imports: [
+    TypeOrmModule.forFeature([CustomerEntity]),
+    forwardRef(() => OrderModule),
+  ],
   controllers: [CustomerController],
   providers: [
     CustomerService,
@@ -23,6 +27,6 @@ import {
       useClass: CustomerService,
     },
   ],
-  exports: [CUSTOMER_REPOSITORY_PORT],
+  exports: [CUSTOMER_REPOSITORY_PORT, CUSTOMER_INPUT_PORT, CustomerService],
 })
 export class CustomersModule {}

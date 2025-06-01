@@ -1,15 +1,32 @@
 import {
   Entity,
   Column,
-  PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  PrimaryColumn,
 } from 'typeorm';
-import { CustomerModel } from '../domain/customer.model';
 
 @Entity('customers')
 export class CustomerEntity {
-  @PrimaryGeneratedColumn('uuid')
+  static create(props: {
+    id: string;
+    cpf: string;
+    name: string;
+    email: string;
+    createdAt: Date;
+    updatedAt: Date;
+  }) {
+    const customer = new CustomerEntity();
+    customer.id = props.id;
+    customer.cpf = props.cpf;
+    customer.name = props.name;
+    customer.email = props.email;
+    customer.createdAt = props.createdAt;
+    customer.updatedAt = props.updatedAt;
+    return customer;
+  }
+
+  @PrimaryColumn('uuid')
   id: string;
 
   @Column({ unique: true, nullable: false, length: 11 })
@@ -26,21 +43,4 @@ export class CustomerEntity {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
-
-  toModel(): CustomerModel {
-    return CustomerModel.fromProps({
-      id: this.id,
-      cpf: this.cpf,
-      name: this.name,
-      email: this.email,
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt,
-    });
-  }
-
-  updateFromModel(model: Partial<CustomerModel>): void {
-    if (model.cpf) this.cpf = model.cpf;
-    if (model.name) this.name = model.name;
-    if (model.email) this.email = model.email;
-  }
 }
