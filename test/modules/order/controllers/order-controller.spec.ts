@@ -9,32 +9,32 @@ import { CreateOrderDto } from '../../../../src/modules/order/models/dto/create-
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { UpdateOrderStatusDto } from '../../../../src/modules/order/models/dto/update-order-status.dto';
 import { OrderRequestParamsDto } from '../../../../src/modules/order/models/dto/order-request-params.dto';
-import { OrderPaginationDto } from '../../../../src/modules/order/models/dto/order-pagination.dto';
 import { OrderResponseDto } from '../../../../src/modules/order/models/dto/order-response.dto';
 import { OrderIdDto } from '../../../../src/modules/order/models/dto/order-id.dto';
 import { OrderItemResponseDto } from '../../../../src/modules/order/models/dto/order-item-response.dto';
-import { CustomerInOrderModel } from '../../../../src/modules/order/models/domain/customer.model';
+import { CustomerOrderDto } from '../../../../src/modules/order/models/dto/customer-order.dto';
+import {
+  RequestFromStore,
+  RequestFromTotem,
+} from '../../../../src/modules/auth/models/dtos/request.dto';
 
 describe('OrderController', () => {
   let controller: OrderController;
   let mockOrderService: jest.Mocked<OrderService>;
 
-  const mockOrderItem = OrderItemModel.fromProps({
+  const mockOrderItem = OrderItemModel.restore({
     id: 'item-123',
-    orderId: 'order-123',
     productId: 'product-123',
     unitPrice: 10.5,
     quantity: 2,
-    subtotal: 21.0,
     createdAt: new Date(),
   });
 
   const mockOrderItems = [mockOrderItem];
 
-  const mockOrder = OrderModel.fromProps({
+  const mockOrder = OrderModel.restore({
     id: 'order-123',
     status: OrderStatusEnum.PENDING,
-    totalPrice: 21.0,
     storeId: 'store-123',
     totemId: 'totem-123',
     orderItems: mockOrderItems,
@@ -52,7 +52,6 @@ describe('OrderController', () => {
     orderItems: mockOrderItems.map((item) => {
       const dto = new OrderItemResponseDto();
       dto.id = item.id;
-      dto.orderId = item.orderId;
       dto.productId = item.productId;
       dto.quantity = item.quantity;
       dto.unitPrice = item.unitPrice;
@@ -61,6 +60,15 @@ describe('OrderController', () => {
       return dto;
     }),
   };
+
+  const mockRequest = {
+    storeId: 'store-123',
+    totemId: 'totem-123',
+  } as RequestFromTotem;
+
+  const mockStoreRequest = {
+    storeId: 'store-123',
+  } as RequestFromStore;
 
   beforeEach(async () => {
     mockOrderService = {
@@ -95,17 +103,20 @@ describe('OrderController', () => {
           {
             productId: 'product-123',
             quantity: 2,
-            unitPrice: 10.5,
           },
         ],
       };
 
       mockOrderService.create.mockResolvedValue(mockOrder);
 
-      const result = await controller.create(createOrderDto);
+      const result = await controller.create(createOrderDto, mockRequest);
 
-      expect(result).toEqual(mockOrder);
-      expect(mockOrderService.create).toHaveBeenCalledWith(createOrderDto);
+      expect(result).toEqual(mockOrderResponse);
+      expect(mockOrderService.create).toHaveBeenCalledWith(
+        createOrderDto,
+        mockRequest.storeId,
+        mockRequest.totemId,
+      );
     });
   });
 
@@ -117,8 +128,8 @@ describe('OrderController', () => {
         status: OrderStatusEnum.PENDING,
       };
 
-      const mockPagination: OrderPaginationDto = {
-        data: [mockOrderResponse],
+      const mockPagination = {
+        data: [mockOrder],
         total: 1,
         page: 1,
         limit: 10,
@@ -129,10 +140,21 @@ describe('OrderController', () => {
 
       mockOrderService.getAll.mockResolvedValue(mockPagination);
 
-      const result = await controller.getAll(params);
+      const result = await controller.getAll(params, mockStoreRequest);
 
-      expect(result).toEqual(mockPagination);
-      expect(mockOrderService.getAll).toHaveBeenCalledWith(params);
+      expect(result).toEqual({
+        data: [mockOrderResponse],
+        total: 1,
+        page: 1,
+        limit: 10,
+        totalPages: 1,
+        hasNextPage: false,
+        hasPreviousPage: false,
+      });
+      expect(mockOrderService.getAll).toHaveBeenCalledWith(
+        params,
+        mockStoreRequest.storeId,
+      );
     });
   });
 
@@ -141,10 +163,13 @@ describe('OrderController', () => {
       const orderIdDto: OrderIdDto = { id: 'order-123' };
       mockOrderService.findById.mockResolvedValue(mockOrder);
 
-      const result = await controller.findById(orderIdDto);
+      const result = await controller.findById(orderIdDto.id, mockStoreRequest);
 
-      expect(result).toEqual(mockOrder);
-      expect(mockOrderService.findById).toHaveBeenCalledWith(orderIdDto.id);
+      expect(result).toEqual(mockOrderResponse);
+      expect(mockOrderService.findById).toHaveBeenCalledWith(
+        orderIdDto.id,
+        mockStoreRequest.storeId,
+      );
     });
 
     it('should throw NotFoundException when order not found', async () => {
@@ -153,10 +178,13 @@ describe('OrderController', () => {
         new NotFoundException(`Order with id ${orderIdDto.id} not found`),
       );
 
-      await expect(controller.findById(orderIdDto)).rejects.toThrow(
-        NotFoundException,
+      await expect(
+        controller.findById(orderIdDto.id, mockStoreRequest),
+      ).rejects.toThrow(NotFoundException);
+      expect(mockOrderService.findById).toHaveBeenCalledWith(
+        orderIdDto.id,
+        mockStoreRequest.storeId,
       );
-      expect(mockOrderService.findById).toHaveBeenCalledWith(orderIdDto.id);
     });
   });
 
@@ -166,22 +194,32 @@ describe('OrderController', () => {
       const updateOrderStatusDto: UpdateOrderStatusDto = {
         status: OrderStatusEnum.READY,
       };
-      const updatedOrder = OrderModel.fromProps({
+      const updatedOrder = OrderModel.restore({
         ...mockOrder,
         status: OrderStatusEnum.READY,
+        id: 'order-123',
+        storeId: 'store-123',
+        totemId: 'totem-123',
+        orderItems: mockOrderItems,
+        createdAt: new Date(),
       });
 
       mockOrderService.updateStatus.mockResolvedValue(updatedOrder);
 
       const result = await controller.updateStatus(
-        orderIdDto,
+        orderIdDto.id,
         updateOrderStatusDto,
+        mockStoreRequest,
       );
 
-      expect(result).toEqual(updatedOrder);
+      expect(result).toEqual({
+        ...mockOrderResponse,
+        status: OrderStatusEnum.READY as string,
+      });
       expect(mockOrderService.updateStatus).toHaveBeenCalledWith(
         orderIdDto.id,
         updateOrderStatusDto.status,
+        mockStoreRequest.storeId,
       );
     });
 
@@ -195,11 +233,16 @@ describe('OrderController', () => {
       );
 
       await expect(
-        controller.updateStatus(orderIdDto, updateOrderStatusDto),
+        controller.updateStatus(
+          orderIdDto.id,
+          updateOrderStatusDto,
+          mockStoreRequest,
+        ),
       ).rejects.toThrow(NotFoundException);
       expect(mockOrderService.updateStatus).toHaveBeenCalledWith(
         orderIdDto.id,
         updateOrderStatusDto.status,
+        mockStoreRequest.storeId,
       );
     });
 
@@ -215,11 +258,16 @@ describe('OrderController', () => {
       );
 
       await expect(
-        controller.updateStatus(orderIdDto, updateOrderStatusDto),
+        controller.updateStatus(
+          orderIdDto.id,
+          updateOrderStatusDto,
+          mockStoreRequest,
+        ),
       ).rejects.toThrow(BadRequestException);
       expect(mockOrderService.updateStatus).toHaveBeenCalledWith(
         orderIdDto.id,
         updateOrderStatusDto.status,
+        mockStoreRequest.storeId,
       );
     });
   });
@@ -229,10 +277,13 @@ describe('OrderController', () => {
       const orderIdDto: OrderIdDto = { id: 'order-123' };
       mockOrderService.delete.mockResolvedValue(undefined);
 
-      const result = await controller.delete(orderIdDto);
+      const result = await controller.delete(orderIdDto.id, mockStoreRequest);
 
       expect(result).toBeUndefined();
-      expect(mockOrderService.delete).toHaveBeenCalledWith(orderIdDto.id);
+      expect(mockOrderService.delete).toHaveBeenCalledWith(
+        orderIdDto.id,
+        mockStoreRequest.storeId,
+      );
     });
 
     it('should throw NotFoundException when order not found', async () => {
@@ -241,10 +292,13 @@ describe('OrderController', () => {
         new NotFoundException(`Order with id ${orderIdDto.id} not found`),
       );
 
-      await expect(controller.delete(orderIdDto)).rejects.toThrow(
-        NotFoundException,
+      await expect(
+        controller.delete(orderIdDto.id, mockStoreRequest),
+      ).rejects.toThrow(NotFoundException);
+      expect(mockOrderService.delete).toHaveBeenCalledWith(
+        orderIdDto.id,
+        mockStoreRequest.storeId,
       );
-      expect(mockOrderService.delete).toHaveBeenCalledWith(orderIdDto.id);
     });
 
     it('should throw BadRequestException when order cannot be deleted', async () => {
@@ -255,10 +309,13 @@ describe('OrderController', () => {
         ),
       );
 
-      await expect(controller.delete(orderIdDto)).rejects.toThrow(
-        BadRequestException,
+      await expect(
+        controller.delete(orderIdDto.id, mockStoreRequest),
+      ).rejects.toThrow(BadRequestException);
+      expect(mockOrderService.delete).toHaveBeenCalledWith(
+        orderIdDto.id,
+        mockStoreRequest.storeId,
       );
-      expect(mockOrderService.delete).toHaveBeenCalledWith(orderIdDto.id);
     });
   });
 
@@ -267,17 +324,16 @@ describe('OrderController', () => {
       const orderId = 'order-123';
       const customerId = 'customer-123';
 
-      const customerModel: CustomerInOrderModel = {
+      const customerModel: CustomerOrderDto = {
         id: customerId,
         cpf: '12345678900',
         name: 'Test Customer',
         email: 'test@example.com',
       };
 
-      const updatedOrder = OrderModel.fromProps({
+      const updatedOrder = OrderModel.restore({
         id: orderId,
         status: OrderStatusEnum.PENDING,
-        totalPrice: 21.0,
         storeId: 'store-123',
         totemId: 'totem-123',
         customer: customerModel,
@@ -287,12 +343,20 @@ describe('OrderController', () => {
 
       mockOrderService.updateCustomerId.mockResolvedValue(updatedOrder);
 
-      const result = await controller.updateCustomerId(orderId, customerId);
+      const result = await controller.updateCustomerId(
+        orderId,
+        customerId,
+        mockStoreRequest,
+      );
 
-      expect(result).toEqual(updatedOrder);
+      expect(result).toEqual({
+        ...mockOrderResponse,
+        customer: customerModel,
+      });
       expect(mockOrderService.updateCustomerId).toHaveBeenCalledWith(
         orderId,
         customerId,
+        mockStoreRequest.storeId,
       );
     });
 
@@ -304,11 +368,12 @@ describe('OrderController', () => {
       );
 
       await expect(
-        controller.updateCustomerId(orderId, customerId),
+        controller.updateCustomerId(orderId, customerId, mockStoreRequest),
       ).rejects.toThrow(BadRequestException);
       expect(mockOrderService.updateCustomerId).toHaveBeenCalledWith(
         orderId,
         customerId,
+        mockStoreRequest.storeId,
       );
     });
 
@@ -320,11 +385,12 @@ describe('OrderController', () => {
       );
 
       await expect(
-        controller.updateCustomerId(orderId, customerId),
+        controller.updateCustomerId(orderId, customerId, mockStoreRequest),
       ).rejects.toThrow(NotFoundException);
       expect(mockOrderService.updateCustomerId).toHaveBeenCalledWith(
         orderId,
         customerId,
+        mockStoreRequest.storeId,
       );
     });
 
@@ -336,11 +402,12 @@ describe('OrderController', () => {
       );
 
       await expect(
-        controller.updateCustomerId(orderId, customerId),
+        controller.updateCustomerId(orderId, customerId, mockStoreRequest),
       ).rejects.toThrow(NotFoundException);
       expect(mockOrderService.updateCustomerId).toHaveBeenCalledWith(
         orderId,
         customerId,
+        mockStoreRequest.storeId,
       );
     });
   });
