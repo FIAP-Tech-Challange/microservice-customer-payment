@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import { Test, TestingModule } from '@nestjs/testing';
 import { TotemGuard } from '../../../../src/modules/auth/guards/totem.guard';
-import { StoresService } from '../../../../src/modules/stores/stores.service';
+
 import { UnauthorizedException } from '@nestjs/common';
 import { StoreModel } from '../../../../src/modules/stores/models/domain/store.model';
 import { TotemModel } from '../../../../src/modules/stores/models/domain/totem.model';
 import { ExecutionContext } from '@nestjs/common';
+import { StoresService } from 'src/modules/stores/services/stores.service';
 
 describe('TotemGuard', () => {
   let guard: TotemGuard;

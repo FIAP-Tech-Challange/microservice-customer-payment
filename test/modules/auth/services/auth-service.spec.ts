@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import { Test, TestingModule } from '@nestjs/testing';
-import { AuthService } from '../../../../src/modules/auth/auth.service';
-import { StoresService } from '../../../../src/modules/stores/stores.service';
 import { JwtService } from '@nestjs/jwt';
 import { UnauthorizedException } from '@nestjs/common';
 import { StoreModel } from '../../../../src/modules/stores/models/domain/store.model';
 import { Email } from '../../../../src/shared/domain/email.vo';
+import { AuthService } from 'src/modules/auth/services/auth.service';
+import { StoresService } from 'src/modules/stores/services/stores.service';
 
 describe('AuthService', () => {
   let service: AuthService;
