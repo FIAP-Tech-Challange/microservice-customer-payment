@@ -11,6 +11,7 @@ import { NotificationService } from '../../../../src/modules/notification/notifi
 import { Email } from '../../../../src/shared/domain/email.vo';
 import { CNPJ } from '../../../../src/modules/stores/models/domain/cnpj.vo';
 import { BrazilianPhone } from '../../../../src/shared/domain/brazilian-phone.vo';
+import { CategoryService } from 'src/modules/categories/services/category.service';
 
 jest.mock('../../../../src/shared/domain/email.vo', () => {
   return {
@@ -47,6 +48,7 @@ describe('StoresService', () => {
   let storesRepository: jest.Mocked<StoresRepositoryPort>;
   let totemsRepository: jest.Mocked<TotemsRepositoryPort>;
   let notificationService: jest.Mocked<NotificationService>;
+  let categoryService: jest.Mocked<CategoryService>;
 
   const originalCreate = StoreModel.create;
   beforeAll(() => {
@@ -89,10 +91,15 @@ describe('StoresService', () => {
       sendNotification: jest.fn().mockResolvedValue(undefined),
     } as unknown as jest.Mocked<NotificationService>;
 
+    categoryService = {
+      create: jest.fn().mockResolvedValue(undefined),
+    } as unknown as jest.Mocked<CategoryService>;
+
     service = new StoresService(
       storesRepository,
       totemsRepository,
       notificationService,
+      categoryService,
     );
   });
 

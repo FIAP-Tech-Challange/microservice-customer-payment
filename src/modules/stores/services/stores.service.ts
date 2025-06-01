@@ -22,6 +22,7 @@ import {
   TOTEMS_REPOSITORY_PORT_KEY,
   TotemsRepositoryPort,
 } from './../ports/output/totems.repository.port';
+import { CategoryService } from 'src/modules/categories/services/category.service';
 
 @Injectable()
 export class StoresService {
@@ -33,6 +34,7 @@ export class StoresService {
     @Inject(TOTEMS_REPOSITORY_PORT_KEY)
     private totemsRepository: TotemsRepositoryPort,
     private notificationService: NotificationService,
+    private categoryService: CategoryService,
   ) {}
 
   async create(dto: CreateStoreInputDto) {
@@ -67,6 +69,7 @@ export class StoresService {
       });
 
       await this.storesRepository.save(store);
+      await this.createCategoriesForNewStore(store);
 
       this.logger.log(`Store ${dto.name} successfully created`);
       await this.notificationService.sendNotification({
@@ -93,6 +96,28 @@ export class StoresService {
     await this.storesRepository.save(store);
 
     return totem;
+  }
+
+  private async createCategoriesForNewStore(store: StoreModel): Promise<void> {
+    this.logger.log(`Creating default categories for store ${store.id}`);
+
+    try {
+      await Promise.all([
+        this.categoryService.create('Lanche', store.id),
+        this.categoryService.create('Acompanhamento', store.id),
+        this.categoryService.create('Bebida', store.id),
+        this.categoryService.create('Sobremesa', store.id),
+      ]);
+
+      this.logger.log(`Default categories created for store ${store.id}`);
+    } catch (error) {
+      this.logger.error(
+        `Error creating default categories for store ${store.id}: ${error.message}`,
+      );
+      throw new BadRequestException(
+        `Error creating default categories for store: ${error.message}`,
+      );
+    }
   }
 
   async findByEmail(email: string) {
