@@ -10,10 +10,12 @@ import { JwtModule } from '@nestjs/jwt';
 import { NotificationModule } from '../notification/notification.module';
 import { TOTEMS_REPOSITORY_PORT_KEY } from './ports/output/totems.repository.port';
 import { TotemsRepositoryTypeORM } from './adapters/secondary/totems.repository.typeorm';
+import { CategoryModule } from '../categories/category.module';
 
 @Module({
   imports: [
     NotificationModule,
+    CategoryModule,
     JwtModule,
     TypeOrmModule.forFeature([TotemEntity, StoreEntity]),
   ],
