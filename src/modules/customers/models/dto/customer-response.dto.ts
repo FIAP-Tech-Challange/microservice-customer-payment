@@ -24,4 +24,14 @@ export class CustomerResponseDto {
     example: 'john.doe@example.com',
   })
   email: string;
+
+  @ApiProperty({
+    description: 'Date creation Customer',
+  })
+  createdAt: Date;
+
+  @ApiProperty({
+    description: 'Date update',
+  })
+  updateAt: Date;
 }
