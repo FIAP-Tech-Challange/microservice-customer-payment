@@ -1,5 +1,7 @@
 # Sistema de Gerenciamento de Pedidos
 
+[![NestJS CI Build, Test, and Healthcheck](https://github.com/your-username/tech-challenge-phase-one/actions/workflows/ci.yml/badge.svg)](https://github.com/your-username/tech-challenge-phase-one/actions/workflows/ci.yml)
+
 ## Introdução
 
 Este é um sistema de gerenciamento de pedidos. A aplicação permite o gerenciamento completo do fluxo de pedidos, desde a seleção de produtos, registro de clientes, processamento de pagamentos e notificações sobre o status do pedido.
@@ -57,6 +59,15 @@ npm run start:dev
 
 # Construir o projeto
 npm run build
+
+# Executar testes unitários
+npm test
+
+# Executar testes com relatório de cobertura
+npm run test:cov
+
+# Executar testes em modo de observação (útil durante o desenvolvimento)
+npm run test:watch
 
 # Iniciar em modo de produção
 npm run start:prod
