@@ -13,11 +13,10 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "test": "jest",
+    "test": "jest --setupFiles ./test/jest.setup.ts",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json",
     "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
     "typeorm:migration:generate": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:generate --dataSource src/db/data-source-cli.ts",
     "typeorm:migration:run": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:run --dataSource src/db/data-source-cli.ts",
@@ -93,9 +92,6 @@
     ],
     "moduleNameMapper": {
       "^src/(.*)$": "<rootDir>/src/$1"
-    },
-    "setupFiles": [
-      "<rootDir>/jest.setup.ts"
-    ]
+    }
   }
 }

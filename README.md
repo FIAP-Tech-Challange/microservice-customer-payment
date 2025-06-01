@@ -133,6 +133,41 @@ O projeto segue os princípios de Clean Architecture e Domain-Driven Design (DDD
 
 A organização do código está baseada em módulos que representam os diferentes domínios do negócio, cada um com sua própria estrutura de adaptadores, modelos, portas e serviços, garantindo um baixo acoplamento e alta coesão.
 
+## Testes
+
+### Executar todos os testes
+
+```bash
+npm test
+```
+
+### Executar testes em modo watch
+
+```bash
+npm run test:watch
+```
+
+### Executar testes com coverage
+
+```bash
+npm run test:cov
+```
+
+O projeto possui uma suíte abrangente de testes incluindo:
+
+- **Testes unitários** distribuídos em suites de teste
+- Testes para todos os módulos principais
+- Testes para modelos de domínio, serviços, controladores e adaptadores
+- Configuração automatizada de polyfills para crypto no ambiente de CI
+
+## CI/CD
+
+O projeto inclui um workflow de CI/CD configurado no GitHub Actions (`.github/workflows/ci.yml`) que:
+
+- Executa em push e pull requests para branchs main, qa e develop
+- Configura Node.js com cache de dependências
+- Executa todos os testes automaticamente
+
 ### Links Importantes
 
 - <a href="https://miro.com/app/board/uXjVIGlxRtY=/" target="_blank">Miro</a>

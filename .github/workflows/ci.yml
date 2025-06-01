@@ -17,7 +17,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18.18.0' # Specify exact version for consistency
+          node-version: '22' # Specify exact version for consistency
           cache: 'npm'
 
       - name: Install dependencies
