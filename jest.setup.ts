@@ -8,9 +8,28 @@ if (typeof global.crypto === 'undefined') {
       return crypto.randomFillSync(buffer);
     },
     subtle: crypto.webcrypto?.subtle,
+    randomUUID: function (): string {
+      return crypto.randomUUID
+        ? crypto.randomUUID()
+        : crypto.randomBytes(16).toString('hex');
+    },
   };
 } else if (!global.crypto.subtle && crypto.webcrypto?.subtle) {
   (global.crypto as any).subtle = crypto.webcrypto.subtle;
+
+  if (!(global.crypto as any).randomUUID) {
+    (global.crypto as any).randomUUID = function (): string {
+      return crypto.randomUUID
+        ? crypto.randomUUID()
+        : crypto.randomBytes(16).toString('hex');
+    };
+  }
+}
+
+if (!crypto.randomUUID) {
+  (crypto as any).randomUUID = function (): string {
+    return crypto.randomBytes(16).toString('hex');
+  };
 }
 
 (global as any).TextEncoder = global.TextEncoder || require('util').TextEncoder;
