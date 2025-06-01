@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/unbound-method */
-import { ConflictException, NotFoundException } from '@nestjs/common';
-import { StoresService } from '../../../../src/modules/stores/stores.service';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { StoresService } from '../../../../src/modules/stores/services/stores.service';
 import { StoreModel } from '../../../../src/modules/stores/models/domain/store.model';
 import { TotemModel } from '../../../../src/modules/stores/models/domain/totem.model';
 import { StoresRepositoryPort } from '../../../../src/modules/stores/ports/output/stores.repository.port';
+import { TotemsRepositoryPort } from '../../../../src/modules/stores/ports/output/totems.repository.port';
 import { CreateStoreInputDto } from '../../../../src/modules/stores/models/dtos/create-store.dto';
 import { NotificationService } from '../../../../src/modules/notification/notification.service';
 import { Email } from '../../../../src/shared/domain/email.vo';
@@ -44,6 +45,7 @@ jest.mock('../../../../src/shared/domain/brazilian-phone.vo', () => {
 describe('StoresService', () => {
   let service: StoresService;
   let storesRepository: jest.Mocked<StoresRepositoryPort>;
+  let totemsRepository: jest.Mocked<TotemsRepositoryPort>;
   let notificationService: jest.Mocked<NotificationService>;
 
   const originalCreate = StoreModel.create;
@@ -58,7 +60,7 @@ describe('StoresService', () => {
         phone: props.phone,
         verifyPassword: jest.fn().mockReturnValue(true),
         addTotem: jest.fn(),
-        inactivateTotem: jest.fn(),
+        removeTotem: jest.fn(),
         validate: jest.fn(),
         isActive: true,
         totems: [],
@@ -79,11 +81,19 @@ describe('StoresService', () => {
       save: jest.fn(),
     };
 
+    totemsRepository = {
+      remove: jest.fn(),
+    };
+
     notificationService = {
       sendNotification: jest.fn().mockResolvedValue(undefined),
     } as unknown as jest.Mocked<NotificationService>;
 
-    service = new StoresService(storesRepository, notificationService);
+    service = new StoresService(
+      storesRepository,
+      totemsRepository,
+      notificationService,
+    );
   });
 
   describe('create', () => {
@@ -127,10 +137,10 @@ describe('StoresService', () => {
       storesRepository.findByCnpj.mockResolvedValue(null);
 
       await expect(service.create(createStoreDto)).rejects.toThrow(
-        ConflictException,
+        BadRequestException,
       );
       await expect(service.create(createStoreDto)).rejects.toThrow(
-        'Store with this email already exists',
+        'Error create Store Store with this email already exists',
       );
     });
 
@@ -149,10 +159,10 @@ describe('StoresService', () => {
       storesRepository.findByCnpj.mockResolvedValue(existingStore);
 
       await expect(service.create(createStoreDto)).rejects.toThrow(
-        ConflictException,
+        BadRequestException,
       );
       await expect(service.create(createStoreDto)).rejects.toThrow(
-        'Store with this CNPJ already exists',
+        'Error create Store Store with this CNPJ already exists',
       );
     });
   });
@@ -276,22 +286,27 @@ describe('StoresService', () => {
     });
   });
 
-  describe('inactivateTotem', () => {
-    it('should inactivate a totem in a store', async () => {
+  describe('deleteTotem', () => {
+    it('should delete a totem from a store', async () => {
       const storeId = 'test-store-id';
       const totemId = 'test-totem-id';
 
+      const mockTotem = {
+        id: totemId,
+      } as unknown as TotemModel;
+
       const mockStore = {
         id: storeId,
-        inactivateTotem: jest.fn(),
+        removeTotem: jest.fn().mockReturnValue(mockTotem),
       } as unknown as StoreModel;
 
       storesRepository.findById.mockResolvedValue(mockStore);
 
-      await service.inactivateTotem(storeId, totemId);
+      await service.deleteTotem(storeId, totemId);
 
       expect(storesRepository.findById).toHaveBeenCalledWith(storeId);
-      expect(mockStore.inactivateTotem).toHaveBeenCalledWith(totemId);
+      expect(mockStore.removeTotem).toHaveBeenCalledWith(totemId);
+      expect(totemsRepository.remove).toHaveBeenCalledWith(mockTotem);
       expect(storesRepository.save).toHaveBeenCalledWith(mockStore);
     });
   });

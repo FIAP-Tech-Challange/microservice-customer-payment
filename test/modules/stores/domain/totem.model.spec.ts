@@ -13,7 +13,6 @@ describe('TotemModel', () => {
       expect(totem.id).toBeDefined();
       expect(totem.name).toBe(validProps.name);
       expect(totem.tokenAccess).toBeDefined();
-      expect(totem.isActive).toBe(true);
       expect(totem.createdAt).toBeDefined();
     });
 
@@ -29,7 +28,6 @@ describe('TotemModel', () => {
         id: 'test-id',
         name: 'Totem Name',
         tokenAccess: 'test-token',
-        isActive: true,
         createdAt: date,
       };
 
@@ -39,7 +37,6 @@ describe('TotemModel', () => {
       expect(totem.id).toBe(props.id);
       expect(totem.name).toBe(props.name);
       expect(totem.tokenAccess).toBe(props.tokenAccess);
-      expect(totem.isActive).toBe(props.isActive);
       expect(totem.createdAt).toBe(props.createdAt);
     });
 
@@ -48,33 +45,12 @@ describe('TotemModel', () => {
         id: 'test-id',
         name: '',
         tokenAccess: 'test-token',
-        isActive: true,
         createdAt: new Date(),
       };
 
       expect(() => TotemModel.restore(invalidProps)).toThrow(
         'Name is required',
       );
-    });
-  });
-
-  describe('activate/inactivate', () => {
-    it('should activate a totem', () => {
-      const totem = TotemModel.create({ name: 'Totem Name' });
-      totem.inactivate();
-      expect(totem.isActive).toBe(false);
-
-      totem.activate();
-
-      expect(totem.isActive).toBe(true);
-    });
-
-    it('should inactivate a totem', () => {
-      const totem = TotemModel.create({ name: 'Totem Name' });
-
-      totem.inactivate();
-
-      expect(totem.isActive).toBe(false);
     });
   });
 });

@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { ConflictException } from '@nestjs/common';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 import { StoreModel } from '../../../../src/modules/stores/models/domain/store.model';
 import { TotemModel } from '../../../../src/modules/stores/models/domain/totem.model';
 import { Email } from '../../../../src/shared/domain/email.vo';
@@ -29,7 +31,6 @@ describe('StoreModel', () => {
       expect(store.phone).toBeInstanceOf(BrazilianPhone);
       expect(store.passwordHash).toBeDefined();
       expect(store.salt).toBeDefined();
-      expect(store.isActive).toBe(true);
       expect(store.totems).toEqual([]);
       expect(store.createdAt).toBeDefined();
     });
@@ -59,7 +60,6 @@ describe('StoreModel', () => {
         salt: 'test-salt',
         passwordHash: 'hashed-password',
         phone: new BrazilianPhone('11999999999'),
-        isActive: true,
         totems: [],
         createdAt: new Date(),
       };
@@ -75,7 +75,6 @@ describe('StoreModel', () => {
       expect(store.phone).toBe(props.phone);
       expect(store.passwordHash).toBe(props.passwordHash);
       expect(store.salt).toBe(props.salt);
-      expect(store.isActive).toBe(props.isActive);
       expect(store.totems).toBe(props.totems);
       expect(store.createdAt).toBe(props.createdAt);
     });
@@ -205,8 +204,8 @@ describe('StoreModel', () => {
     });
   });
 
-  describe('inactivateTotem', () => {
-    it('should inactivate a totem in the store', () => {
+  describe('removeTotem', () => {
+    it('should remove a totem from the store', () => {
       const store = StoreModel.create({
         name: 'Store Name',
         fantasyName: 'Fantasy Name',
@@ -219,12 +218,13 @@ describe('StoreModel', () => {
       const totem = TotemModel.create({ name: 'Totem 1' });
       store.addTotem(totem);
 
-      store.inactivateTotem(totem.id);
+      const removedTotem = store.removeTotem(totem.id);
 
-      expect(store.totems[0].isActive).toBe(false);
+      expect(removedTotem).toEqual(totem);
+      expect(store.totems).toHaveLength(0);
     });
 
-    it('should throw error when inactivating a non-existent totem', () => {
+    it('should throw error when removing a non-existent totem', () => {
       const store = StoreModel.create({
         name: 'Store Name',
         fantasyName: 'Fantasy Name',
@@ -234,49 +234,16 @@ describe('StoreModel', () => {
         phone: new BrazilianPhone('11999999999'),
       });
 
-      expect(() => store.inactivateTotem('non-existent-id')).toThrow(
-        ConflictException,
+      expect(() => store.removeTotem('non-existent-id')).toThrow(
+        NotFoundException,
       );
-      expect(() => store.inactivateTotem('non-existent-id')).toThrow(
+      expect(() => store.removeTotem('non-existent-id')).toThrow(
         'Totem not found',
       );
     });
   });
 
-  describe('activate/inactivate', () => {
-    it('should activate a store', () => {
-      const store = StoreModel.create({
-        name: 'Store Name',
-        fantasyName: 'Fantasy Name',
-        email: new Email('email@example.com'),
-        cnpj: new CNPJ('11222333000181'),
-        plainPassword: 'password123',
-        phone: new BrazilianPhone('11999999999'),
-      });
-
-      store.inactivate();
-      expect(store.isActive).toBe(false);
-
-      store.activate();
-
-      expect(store.isActive).toBe(true);
-    });
-
-    it('should inactivate a store', () => {
-      const store = StoreModel.create({
-        name: 'Store Name',
-        fantasyName: 'Fantasy Name',
-        email: new Email('email@example.com'),
-        cnpj: new CNPJ('11222333000181'),
-        plainPassword: 'password123',
-        phone: new BrazilianPhone('11999999999'),
-      });
-
-      store.inactivate();
-
-      expect(store.isActive).toBe(false);
-    });
-  });
+  // No activate/inactivate methods available in current implementation
 
   describe('validation during restore', () => {
     it('should validate all required fields during restore', () => {
@@ -289,7 +256,6 @@ describe('StoreModel', () => {
         salt: 'test-salt',
         passwordHash: 'hashed-password',
         phone: new BrazilianPhone('11999999999'),
-        isActive: true,
         totems: [],
         createdAt: new Date(),
       };
@@ -332,10 +298,6 @@ describe('StoreModel', () => {
       expect(() =>
         StoreModel.restore({ ...baseProps, totems: null as any }),
       ).toThrow('Totems is required');
-
-      expect(() =>
-        StoreModel.restore({ ...baseProps, isActive: null as any }),
-      ).toThrow('Is active must be a boolean');
     });
   });
 });

@@ -1,13 +1,11 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/unbound-method */
 import { StoresController } from '../../../../src/modules/stores/adapters/primary/stores.controller';
-import { StoresService } from '../../../../src/modules/stores/stores.service';
+import { StoresService } from '../../../../src/modules/stores/services/stores.service';
 import { StoreModel } from '../../../../src/modules/stores/models/domain/store.model';
 import { TotemModel } from '../../../../src/modules/stores/models/domain/totem.model';
 import { CreateStoreInputDto } from '../../../../src/modules/stores/models/dtos/create-store.dto';
-import {
-  RequestFromStore,
-  RequestFromTotem,
-} from '../../../../src/modules/auth/models/dtos/request.dto';
+import { RequestFromStore } from '../../../../src/modules/auth/models/dtos/request.dto';
 import { StoreMapper } from '../../../../src/modules/stores/models/store.mapper';
 
 describe('StoresController', () => {
@@ -68,19 +66,19 @@ describe('StoresController', () => {
     });
   });
 
-  describe('inactivateTotem', () => {
-    it('should inactivate a totem', async () => {
+  describe('deleteTotem', () => {
+    it('should delete a totem', async () => {
       const req = {
         storeId: 'test-store-id',
       } as RequestFromStore;
 
       const totemId = 'test-totem-id';
 
-      storeService.inactivateTotem = jest.fn().mockResolvedValue(undefined);
+      storeService.deleteTotem = jest.fn().mockResolvedValue(undefined);
 
-      await controller.inactivateTotem(req, totemId);
+      await controller.deleteTotem(req, totemId);
 
-      expect(storeService.inactivateTotem).toHaveBeenCalledWith(
+      expect(storeService.deleteTotem).toHaveBeenCalledWith(
         req.storeId,
         totemId,
       );
@@ -100,7 +98,6 @@ describe('StoresController', () => {
         email: { toString: () => 'email@example.com' },
         cnpj: { toString: () => '12345678901234' },
         phone: { toString: () => '11999999999' },
-        isActive: true,
         totems: [],
       } as unknown as StoreModel;
 
@@ -111,7 +108,6 @@ describe('StoresController', () => {
         email: 'email@example.com',
         cnpj: '12345678901234',
         phone: '11999999999',
-        isActive: mockStore.isActive,
         totems: [],
       };
 
@@ -130,31 +126,5 @@ describe('StoresController', () => {
     });
   });
 
-  describe('pingFromTotem', () => {
-    it('should return totem information from the request', () => {
-      const req = {
-        storeId: 'test-store-id',
-        totemId: 'test-totem-id',
-        totemAccessToken: 'test-token',
-        headers: {},
-        query: {},
-        params: {},
-        body: {},
-        get: jest.fn(),
-        header: jest.fn(),
-        accepts: jest.fn(),
-        acceptsCharsets: jest.fn(),
-        acceptsEncodings: jest.fn(),
-        acceptsLanguages: jest.fn(),
-      } as unknown as RequestFromTotem;
-
-      const result = controller.pingFromTotem(req);
-
-      expect(result).toEqual({
-        storeId: req.storeId,
-        totemId: req.totemId,
-        totemAccessToken: req.totemAccessToken,
-      });
-    });
-  });
+  // No pingFromTotem method in the controller
 });
