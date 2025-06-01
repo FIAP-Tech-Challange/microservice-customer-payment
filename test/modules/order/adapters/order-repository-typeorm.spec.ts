@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/require-await */
 /* eslint-disable @typescript-eslint/unbound-method */
 import { Test, TestingModule } from '@nestjs/testing';
 import { OrderRepositoryTypeORM } from '../../../../src/modules/order/adapters/secondary/order.repository.typeorm';
@@ -13,6 +10,7 @@ import { OrderItemModel } from '../../../../src/modules/order/models/domain/orde
 import { OrderStatusEnum } from '../../../../src/modules/order/models/enum/order-status.enum';
 import { CustomerEntity } from '../../../../src/modules/customers/models/entities/customer.entity';
 import { CustomerModel } from '../../../../src/modules/customers/models/domain/customer.model';
+import { OrderMapper } from '../../../../src/modules/order/models/mapper/order.mapper';
 
 describe('OrderRepositoryTypeORM', () => {
   let repository: OrderRepositoryTypeORM;
@@ -89,6 +87,8 @@ describe('OrderRepositoryTypeORM', () => {
       remove: jest.fn(),
     } as unknown as jest.Mocked<Repository<OrderItemEntity>>;
 
+    jest.spyOn(OrderMapper, 'toDomain').mockImplementation(() => mockOrder);
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         OrderRepositoryTypeORM,
@@ -115,20 +115,17 @@ describe('OrderRepositoryTypeORM', () => {
       expect(orderRepository.save).toHaveBeenCalled();
     });
 
-    it('should throw error when order has empty items array', async () => {
-      const orderWithEmptyItems = OrderModel.restore({
-        id: 'order-123',
-        status: OrderStatusEnum.PENDING,
-        storeId: 'store-123',
-        totemId: 'totem-123',
-        orderItems: [],
-        createdAt: new Date(),
-      });
-
-      // The validation should happen in the OrderModel, not in the repository
-      expect(() => OrderModel.validate(orderWithEmptyItems)).toThrow(
-        'Order must have at least one item',
-      );
+    it('should validate that order requires at least one item', () => {
+      expect(() => {
+        OrderModel.restore({
+          id: 'order-123',
+          status: OrderStatusEnum.PENDING,
+          storeId: 'store-123',
+          totemId: 'totem-123',
+          orderItems: [],
+          createdAt: new Date(),
+        });
+      }).toThrow('Order must have at least one item');
     });
   });
 
@@ -182,11 +179,27 @@ describe('OrderRepositoryTypeORM', () => {
         take: limit,
         where: {
           store_id: storeId,
-          status,
+          ...(status ? { status } : {}),
         },
         relations: ['order_items', 'customer'],
         order: { created_at: 'DESC' },
       });
+    });
+
+    it('should return empty result when no orders found', async () => {
+      const page = 1;
+      const limit = 10;
+      const status = OrderStatusEnum.PENDING;
+      const storeId = 'store-123';
+
+      orderRepository.findAndCount.mockResolvedValue([[], 0]);
+
+      const result = await repository.getAll(page, limit, status, storeId);
+
+      expect(result).toBeDefined();
+      expect(result.data.length).toBe(0);
+      expect(result.total).toBe(0);
+      expect(result.totalPages).toBe(0);
     });
   });
 
@@ -204,7 +217,6 @@ describe('OrderRepositoryTypeORM', () => {
     it('should find an order by order item id', async () => {
       const orderItemId = 'item-123';
 
-      // Set up the mockOrderItemEntity with its order
       mockOrderItemEntity.order = mockOrderEntity;
       orderItemRepository.findOne.mockResolvedValue(mockOrderItemEntity);
 
