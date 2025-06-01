@@ -10,6 +10,26 @@ import { OrderEntity } from './order.entity';
 
 @Entity('order_item')
 export class OrderItemEntity {
+  static create(props: {
+    id: string;
+    order_id: string;
+    product_id: string;
+    unit_price: number;
+    subtotal: number;
+    quantity: number;
+    created_at: Date;
+  }) {
+    const orderItem = new OrderItemEntity();
+    orderItem.id = props.id;
+    orderItem.order_id = props.order_id;
+    orderItem.product_id = props.product_id;
+    orderItem.unit_price = props.unit_price;
+    orderItem.subtotal = props.subtotal;
+    orderItem.quantity = props.quantity;
+    orderItem.created_at = props.created_at;
+    return orderItem;
+  }
+
   @PrimaryGeneratedColumn('uuid')
   id: string;
 

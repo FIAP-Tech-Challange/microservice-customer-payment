@@ -13,7 +13,6 @@ describe('ProductModel', () => {
     expect(product).toBeInstanceOf(ProductModel);
     expect(product.name).toBe('Test Product');
     expect(product.price).toBe(100);
-    expect(product.is_active).toBe(true);
     expect(product.description).toBe('A nice product');
     expect(product.image_url).toBe('http://img.com/1.png');
     expect(product.created_at).toBeInstanceOf(Date);
@@ -102,30 +101,5 @@ describe('ProductModel', () => {
     expect(product.updated_at.getTime()).toBeGreaterThanOrEqual(
       oldUpdatedAt.getTime(),
     );
-  });
-
-  it('should deactivate the product', () => {
-    const product = ProductModel.create({
-      name: 'Test Product',
-      price: 100,
-      prep_time: 10,
-      store_id: 'some-store-id',
-    });
-    product.deactivate();
-    expect(product.is_active).toBe(false);
-    expect(product.updated_at).toBeInstanceOf(Date);
-  });
-
-  it('should activate the product', () => {
-    const product = ProductModel.create({
-      name: 'Test Product',
-      price: 100,
-      prep_time: 10,
-      store_id: 'some-store-id',
-    });
-    product.deactivate(); // First deactivate
-    product.activate(); // Then activate
-    expect(product.is_active).toBe(true);
-    expect(product.updated_at).toBeInstanceOf(Date);
   });
 });

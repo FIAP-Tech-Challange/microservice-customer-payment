@@ -49,11 +49,6 @@ export class CreateStore1748112156684 implements MigrationInterface {
             isNullable: false,
           },
           {
-            name: 'is_active',
-            type: 'boolean',
-            isNullable: false,
-          },
-          {
             name: 'created_at',
             type: 'timestamp',
             isNullable: false,

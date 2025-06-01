@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { StoresService } from '../stores/stores.service';
+import { StoresService } from '../../stores/services/stores.service';
 import { JwtService } from '@nestjs/jwt';
-import { StoreTokenInterface } from './models/dtos/token.dto';
+import { StoreTokenInterface } from '../models/dtos/token.dto';
 
 @Injectable()
 export class AuthService {

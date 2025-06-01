@@ -10,7 +10,7 @@ import { Email } from 'src/shared/domain/email.vo';
 import { CNPJ } from '../../models/domain/cnpj.vo';
 
 @Injectable()
-export class StoresRepositoryTypeorm implements StoresRepositoryPort {
+export class StoresRepositoryTypeORM implements StoresRepositoryPort {
   constructor(
     @InjectRepository(StoreEntity)
     private readonly storeEntity: Repository<StoreEntity>,

@@ -30,9 +30,6 @@ export class StoreEntity {
   password_hash: string;
 
   @Column()
-  is_active: boolean;
-
-  @Column()
   created_at: Date;
 
   @OneToMany(() => TotemEntity, (totem) => totem.store, {

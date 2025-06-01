@@ -9,3 +9,9 @@ export interface RequestFromTotem extends Request {
   totemAccessToken: string;
   totemId: string;
 }
+
+export interface RequestFromStoreOrTotem extends Request {
+  storeId: string;
+  totemAccessToken: string;
+  totemId: string;
+}
