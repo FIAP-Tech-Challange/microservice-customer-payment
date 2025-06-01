@@ -18,9 +18,19 @@ import {
   RequestFromTotem,
 } from '../../../../src/modules/auth/models/dtos/request.dto';
 
+import { OrderMapper } from '../../../../src/modules/order/models/mapper/order.mapper';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+import { StoreGuard } from '../../../../src/modules/auth/guards/store.guard';
+import { StoreOrTotemGuard } from '../../../../src/modules/auth/guards/store-or-totem.guard';
+import { StoresService } from '../../../../src/modules/stores/services/stores.service';
+
 describe('OrderController', () => {
   let controller: OrderController;
   let mockOrderService: jest.Mocked<OrderService>;
+  let mockJwtService: jest.Mocked<JwtService>;
+  let mockConfigService: jest.Mocked<ConfigService>;
+  let mockStoresService: jest.Mocked<StoresService>;
 
   const mockOrderItem = OrderItemModel.restore({
     id: 'item-123',
@@ -81,6 +91,28 @@ describe('OrderController', () => {
       updateCustomerId: jest.fn(),
     } as unknown as jest.Mocked<OrderService>;
 
+    mockJwtService = {
+      verifyAsync: jest.fn(),
+    } as unknown as jest.Mocked<JwtService>;
+
+    mockConfigService = {
+      get: jest.fn(),
+    } as unknown as jest.Mocked<ConfigService>;
+
+    mockStoresService = {
+      findByTotemAccessToken: jest.fn(),
+    } as unknown as jest.Mocked<StoresService>;
+
+    jest.spyOn(OrderMapper, 'toResponseDto').mockReturnValue(mockOrderResponse);
+
+    const mockStoreGuard = {
+      canActivate: jest.fn().mockReturnValue(true),
+    };
+
+    const mockStoreOrTotemGuard = {
+      canActivate: jest.fn().mockReturnValue(true),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       controllers: [OrderController],
       providers: [
@@ -88,8 +120,25 @@ describe('OrderController', () => {
           provide: OrderService,
           useValue: mockOrderService,
         },
+        {
+          provide: JwtService,
+          useValue: mockJwtService,
+        },
+        {
+          provide: ConfigService,
+          useValue: mockConfigService,
+        },
+        {
+          provide: StoresService,
+          useValue: mockStoresService,
+        },
       ],
-    }).compile();
+    })
+      .overrideGuard(StoreGuard)
+      .useValue(mockStoreGuard)
+      .overrideGuard(StoreOrTotemGuard)
+      .useValue(mockStoreOrTotemGuard)
+      .compile();
 
     controller = module.get<OrderController>(OrderController);
   });
@@ -97,8 +146,6 @@ describe('OrderController', () => {
   describe('create', () => {
     it('should create an order with items when valid data is provided', async () => {
       const createOrderDto: CreateOrderDto = {
-        storeId: 'store-123',
-        totemId: 'totem-123',
         orderItems: [
           {
             productId: 'product-123',
@@ -206,16 +253,21 @@ describe('OrderController', () => {
 
       mockOrderService.updateStatus.mockResolvedValue(updatedOrder);
 
+      const updatedOrderResponse = {
+        ...mockOrderResponse,
+        status: OrderStatusEnum.READY as string,
+      };
+      jest
+        .spyOn(OrderMapper, 'toResponseDto')
+        .mockReturnValueOnce(updatedOrderResponse);
+
       const result = await controller.updateStatus(
         orderIdDto.id,
         updateOrderStatusDto,
         mockStoreRequest,
       );
 
-      expect(result).toEqual({
-        ...mockOrderResponse,
-        status: OrderStatusEnum.READY as string,
-      });
+      expect(result).toEqual(updatedOrderResponse);
       expect(mockOrderService.updateStatus).toHaveBeenCalledWith(
         orderIdDto.id,
         updateOrderStatusDto.status,
@@ -324,24 +376,22 @@ describe('OrderController', () => {
       const orderId = 'order-123';
       const customerId = 'customer-123';
 
-      const customerModel: CustomerOrderDto = {
+      const customerDtoResponse: CustomerOrderDto = {
         id: customerId,
         cpf: '12345678900',
         name: 'Test Customer',
         email: 'test@example.com',
       };
 
-      const updatedOrder = OrderModel.restore({
-        id: orderId,
-        status: OrderStatusEnum.PENDING,
-        storeId: 'store-123',
-        totemId: 'totem-123',
-        customer: customerModel,
-        orderItems: mockOrderItems,
-        createdAt: new Date(),
-      });
+      const expectedResponse = {
+        ...mockOrderResponse,
+        customer: customerDtoResponse,
+      };
 
-      mockOrderService.updateCustomerId.mockResolvedValue(updatedOrder);
+      const toResponseDtoSpy = jest.spyOn(OrderMapper, 'toResponseDto');
+      toResponseDtoSpy.mockReturnValueOnce(expectedResponse);
+
+      mockOrderService.updateCustomerId.mockResolvedValue(mockOrder);
 
       const result = await controller.updateCustomerId(
         orderId,
@@ -349,10 +399,7 @@ describe('OrderController', () => {
         mockStoreRequest,
       );
 
-      expect(result).toEqual({
-        ...mockOrderResponse,
-        customer: customerModel,
-      });
+      expect(result).toEqual(expectedResponse);
       expect(mockOrderService.updateCustomerId).toHaveBeenCalledWith(
         orderId,
         customerId,
@@ -407,6 +454,56 @@ describe('OrderController', () => {
       expect(mockOrderService.updateCustomerId).toHaveBeenCalledWith(
         orderId,
         customerId,
+        mockStoreRequest.storeId,
+      );
+    });
+  });
+
+  describe('deleteOrderItem', () => {
+    it('should delete an order item and return the updated order', async () => {
+      const orderItemId = 'item-123';
+      mockOrderService.deleteOrderItem.mockResolvedValue(mockOrder);
+
+      const result = await controller.deleteOrderItem(
+        orderItemId,
+        mockStoreRequest,
+      );
+
+      expect(result).toEqual(mockOrderResponse);
+      expect(mockOrderService.deleteOrderItem).toHaveBeenCalledWith(
+        orderItemId,
+        mockStoreRequest.storeId,
+      );
+    });
+
+    it('should throw NotFoundException when order item not found', async () => {
+      const orderItemId = 'item-123';
+      mockOrderService.deleteOrderItem.mockRejectedValue(
+        new NotFoundException(`OrderItem with id ${orderItemId} not found`),
+      );
+
+      await expect(
+        controller.deleteOrderItem(orderItemId, mockStoreRequest),
+      ).rejects.toThrow(NotFoundException);
+      expect(mockOrderService.deleteOrderItem).toHaveBeenCalledWith(
+        orderItemId,
+        mockStoreRequest.storeId,
+      );
+    });
+
+    it('should throw BadRequestException when order item cannot be deleted', async () => {
+      const orderItemId = 'item-123';
+      mockOrderService.deleteOrderItem.mockRejectedValue(
+        new BadRequestException(
+          `OrderItem with id ${orderItemId} cannot be deleted`,
+        ),
+      );
+
+      await expect(
+        controller.deleteOrderItem(orderItemId, mockStoreRequest),
+      ).rejects.toThrow(BadRequestException);
+      expect(mockOrderService.deleteOrderItem).toHaveBeenCalledWith(
+        orderItemId,
         mockStoreRequest.storeId,
       );
     });
