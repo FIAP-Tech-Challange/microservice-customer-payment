@@ -17,7 +17,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '18.18.0' # Specify exact version for consistency
           cache: 'npm'
 
       - name: Install dependencies
@@ -31,8 +31,11 @@ jobs:
 
       - name: Run tests
         run: |
-          # Node.js 18+ compatibility: ensure crypto module is available
-          NODE_OPTIONS="--max_old_space_size=4096" npm test -- --json --outputFile=test-results.json
+          # Debug Node.js and crypto availability
+          node -e "console.log('Node version:', process.version); console.log('Crypto available:', typeof require('crypto').randomUUID === 'function')"
+
+          # Run tests with explicit crypto handling
+          NODE_OPTIONS="--max_old_space_size=4096 --no-warnings" npm test -- --no-cache --detectOpenHandles --json --outputFile=test-results.json
         env:
           # Set explicit environment variables to handle crypto issues
           NODE_ENV: test
