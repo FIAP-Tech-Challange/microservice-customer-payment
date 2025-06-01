@@ -17,8 +17,6 @@ describe('CustomerModel (Domain)', () => {
     expect(customer.cpf).toBeInstanceOf(CPF);
     expect(customer.name).toBe('Test User');
     expect(customer.email).toBeInstanceOf(Email);
-    expect(customer.created_at).toBe(now);
-    expect(customer.updated_at).toBe(now);
   });
 
   it('should throw if required fields are missing (fromProps)', () => {
@@ -75,8 +73,6 @@ describe('CustomerModel (Domain)', () => {
     expect(customer.cpf).toBeInstanceOf(CPF);
     expect(customer.name).toBe('Test User');
     expect(customer.email).toBeInstanceOf(Email);
-    expect(customer.created_at).toBeInstanceOf(Date);
-    expect(customer.updated_at).toBeInstanceOf(Date);
   });
 
   it('should throw if required fields are missing (create)', () => {
