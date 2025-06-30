@@ -5,29 +5,50 @@ import { ValidateStorePasswordUseCase } from '../useCases/validateStorePassword.
 import { StoreDTO } from '../DTOs/store.dto';
 import { FindStoreByEmailUseCase } from '../useCases/findStoreByEmail.useCase';
 import { StorePresenter } from '../presenters/store.presenter';
+import { CoreResponse } from 'src-clean/common/DTOs/coreResponse';
+import { UnexpectedError } from 'src-clean/common/exceptions/unexpectedError';
 
 export class StoreCoreController {
   constructor(private dataSource: DataSource) {}
 
   async validateStorePassword(
     dto: ValidateStorePasswordInputDTO,
-  ): Promise<boolean> {
-    const gateway = new StoreGateway(this.dataSource);
-    const useCase = new ValidateStorePasswordUseCase(gateway);
+  ): Promise<CoreResponse<boolean>> {
+    try {
+      const gateway = new StoreGateway(this.dataSource);
+      const useCase = new ValidateStorePasswordUseCase(gateway);
 
-    const isValid = await useCase.execute({
-      email: dto.email,
-      password: dto.password,
-    });
+      const [err, isValid] = await useCase.execute({
+        email: dto.email,
+        password: dto.password,
+      });
 
-    return isValid;
+      if (err) return [err, undefined];
+
+      return [undefined, isValid];
+    } catch (error) {
+      console.error(error);
+      throw new UnexpectedError(
+        'Something went wrong while validating password',
+      );
+    }
   }
 
-  async findStoreByEmail(email: string): Promise<StoreDTO> {
-    const gateway = new StoreGateway(this.dataSource);
-    const useCase = new FindStoreByEmailUseCase(gateway);
-    const store = await useCase.execute(email);
+  async findStoreByEmail(email: string): Promise<CoreResponse<StoreDTO>> {
+    try {
+      const gateway = new StoreGateway(this.dataSource);
+      const useCase = new FindStoreByEmailUseCase(gateway);
 
-    return StorePresenter.toDto(store);
+      const [err, store] = await useCase.execute(email);
+
+      if (err) return [err, undefined];
+
+      return [undefined, StorePresenter.toDto(store)];
+    } catch (error) {
+      console.error(error);
+      throw new UnexpectedError(
+        'Something went wrong while finding store by email',
+      );
+    }
   }
 }

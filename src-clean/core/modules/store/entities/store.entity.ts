@@ -1,4 +1,6 @@
 import { randomUUID, pbkdf2Sync } from 'node:crypto';
+import { CoreResponse } from 'src-clean/common/DTOs/coreResponse';
+import { ResourceInvalidException } from 'src-clean/common/exceptions/resourceInvalidException';
 import { BrazilianPhone } from 'src-clean/core/common/valueObjects/brazilian-phone.vo';
 import { CNPJ } from 'src-clean/core/common/valueObjects/cnpj.vo';
 import { Email } from 'src-clean/core/common/valueObjects/email.vo';
@@ -57,28 +59,28 @@ export class Store {
 
   private validate() {
     if (!this.name) {
-      throw new Error('Name is required');
+      throw new ResourceInvalidException('Name is required');
     }
     if (!(this.email instanceof Email)) {
-      throw new Error('Email must be an Email value object');
+      throw new ResourceInvalidException('Email must be an Email value object');
     }
     if (!this.salt) {
-      throw new Error('Salt is required');
+      throw new ResourceInvalidException('Salt is required');
     }
     if (!this.passwordHash) {
-      throw new Error('Password hash is required');
+      throw new ResourceInvalidException('Password hash is required');
     }
     if (!this.id) {
-      throw new Error('ID is required');
+      throw new ResourceInvalidException('ID is required');
     }
     if (!(this.cnpj instanceof CNPJ)) {
-      throw new Error('CNPJ must be a CNPJ value object');
+      throw new ResourceInvalidException('CNPJ must be a CNPJ value object');
     }
     if (!this.fantasyName) {
-      throw new Error('Fantasy name is required');
+      throw new ResourceInvalidException('Fantasy name is required');
     }
     if (!this.phone) {
-      throw new Error('Phone is required');
+      throw new ResourceInvalidException('Phone is required');
     }
   }
 
@@ -89,7 +91,7 @@ export class Store {
     cnpj: CNPJ;
     plainPassword: string;
     phone: BrazilianPhone;
-  }): Store {
+  }): CoreResponse<Store> {
     const id = randomUUID();
     const salt = randomUUID();
     const passwordHash = pbkdf2Sync(
@@ -100,20 +102,31 @@ export class Store {
       'sha512',
     ).toString('hex');
 
-    return new Store({
-      id,
-      name: props.name,
-      fantasyName: props.fantasyName,
-      phone: props.phone,
-      email: props.email,
-      cnpj: props.cnpj,
-      salt,
-      passwordHash,
-      createdAt: new Date(),
-    });
+    try {
+      const store = new Store({
+        id,
+        name: props.name,
+        fantasyName: props.fantasyName,
+        phone: props.phone,
+        email: props.email,
+        cnpj: props.cnpj,
+        salt,
+        passwordHash,
+        createdAt: new Date(),
+      });
+
+      return [undefined, store];
+    } catch (error) {
+      return [error, undefined];
+    }
   }
 
-  static restore(props: StoreProps): Store {
-    return new Store(props);
+  static restore(props: StoreProps): CoreResponse<Store> {
+    try {
+      const store = new Store(props);
+      return [undefined, store];
+    } catch (error) {
+      return [error, undefined];
+    }
   }
 }

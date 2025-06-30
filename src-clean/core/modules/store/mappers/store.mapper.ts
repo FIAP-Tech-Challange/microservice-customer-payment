@@ -3,9 +3,10 @@ import { Store } from '../entities/store.entity';
 import { CNPJ } from 'src-clean/core/common/valueObjects/cnpj.vo';
 import { Email } from 'src-clean/core/common/valueObjects/email.vo';
 import { BrazilianPhone } from 'src-clean/core/common/valueObjects/brazilian-phone.vo';
+import { CoreResponse } from 'src-clean/common/DTOs/coreResponse';
 
 export class StoreMapper {
-  static toEntity(dto: StoreDataSourceDTO): Store {
+  static toEntity(dto: StoreDataSourceDTO): CoreResponse<Store> {
     const cnpj = new CNPJ(dto.cnpj);
     const email = new Email(dto.email);
     const phone = new BrazilianPhone(dto.phone);

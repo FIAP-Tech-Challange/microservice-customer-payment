@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { StoreTokenInterface } from '../dtos/token.dto';
 import { DataSource } from 'src-clean/common/dataSource/dataSource.interface';
 import { StoreCoreController } from 'src-clean/core/modules/store/controllers/store.controller';
+import { UnexpectedError } from 'src-clean/common/exceptions/unexpectedError';
 
 @Injectable()
 export class AuthService {
@@ -11,12 +12,28 @@ export class AuthService {
   async login(email: string, password: string, dataSource: DataSource) {
     const controller = new StoreCoreController(dataSource);
 
-    const store = await controller.findStoreByEmail(email);
+    const [err, store] = await controller.findStoreByEmail(email);
 
-    const isValid = await controller.validateStorePassword({
+    if (err) {
+      if (err.code === UnexpectedError.CODE) {
+        throw new Error('Ops! Something went wrong');
+      }
+
+      throw new UnauthorizedException('Email or password invalid');
+    }
+
+    const [isValidErr, isValid] = await controller.validateStorePassword({
       email: email,
       password: password,
     });
+
+    if (isValidErr) {
+      if (isValidErr.code === UnexpectedError.CODE) {
+        throw new Error('Ops! Something went wrong');
+      }
+
+      throw new UnauthorizedException('Email or password invalid');
+    }
 
     if (!isValid) {
       throw new UnauthorizedException('Email or password invalid');
