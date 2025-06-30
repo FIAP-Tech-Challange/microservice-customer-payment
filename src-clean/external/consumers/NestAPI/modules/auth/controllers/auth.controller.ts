@@ -11,8 +11,8 @@ import { ApiKeyGuard } from '../guards/api-key.guard';
 import { BusinessException } from 'src/shared/dto/business-exception.dto';
 import { AuthService } from '../services/auth.service';
 import { DataSourceProxy } from 'src-clean/external/dataSources/dataSource.proxy';
-import { InMemoryGeneralDataSource } from 'src-clean/external/dataSources/general/inMemory/inMemoryGeneralDataSource';
 import { FakePaymentDataSource } from 'src-clean/external/dataSources/payment/fake/fakePaymentDataSource';
+import { createPostgresGeneralDataSource } from 'src-clean/external/dataSources/general/postgres/createPostgresDataSource';
 
 @ApiTags('Auth')
 @Controller({
@@ -45,7 +45,7 @@ export class AuthController {
   @Post('login')
   async login(@Body() dto: SignInInputDto): Promise<SignInOutputDto> {
     const dataSource = new DataSourceProxy(
-      new InMemoryGeneralDataSource(),
+      await createPostgresGeneralDataSource(),
       new FakePaymentDataSource(),
     );
 
