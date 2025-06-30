@@ -4,7 +4,8 @@ import { HealthModule } from './infra/health/health.module';
 import applicationConfig from './infra/config/application.config';
 import databaseConfig from './infra/config/database.config';
 import paidMarketConfig from './infra/config/paid-market.config';
-import { DatabaseModule } from './common/database/database.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { StoreModule } from './modules/store/store.module';
 
 @Module({
   imports: [
@@ -13,7 +14,8 @@ import { DatabaseModule } from './common/database/database.module';
       load: [applicationConfig, databaseConfig, paidMarketConfig],
     }),
     HealthModule,
-    DatabaseModule,
+    AuthModule,
+    StoreModule,
   ],
   controllers: [],
   providers: [],

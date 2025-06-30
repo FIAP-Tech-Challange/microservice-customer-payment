@@ -6,11 +6,32 @@ export class InMemoryGeneralDataSource implements GeneralDataSource {
 
   constructor() {}
 
+  findStoreByCnpj(cnpj: string): Promise<StoreDataSourceDTO | null> {
+    for (const store of this.stores.values()) {
+      if (store.cnpj === cnpj) return Promise.resolve(store);
+    }
+
+    return Promise.resolve(null);
+  }
+
+  findStoreByName(name: string): Promise<StoreDataSourceDTO | null> {
+    for (const store of this.stores.values()) {
+      if (store.name === name) return Promise.resolve(store);
+    }
+
+    return Promise.resolve(null);
+  }
+
   findStoreByEmail(email: string): Promise<StoreDataSourceDTO | null> {
     for (const store of this.stores.values()) {
       if (store.email === email) return Promise.resolve(store);
     }
 
     return Promise.resolve(null);
+  }
+
+  saveStore(store: StoreDataSourceDTO): Promise<void> {
+    this.stores.set(store.id, store);
+    return Promise.resolve();
   }
 }

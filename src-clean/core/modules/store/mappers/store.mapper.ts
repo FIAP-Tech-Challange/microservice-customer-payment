@@ -14,7 +14,7 @@ export class StoreMapper {
     return Store.restore({
       id: dto.id,
       name: dto.name,
-      fantasyName: dto.name,
+      fantasyName: dto.fantasy_name,
       salt: dto.salt,
       passwordHash: dto.password_hash,
       createdAt: new Date(dto.created_at),
