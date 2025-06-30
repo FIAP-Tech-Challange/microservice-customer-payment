@@ -1,7 +1,7 @@
-import { CleanPostgresGeneralDataSource } from './cleanPostgresGeneralDataSource';
+import { PostgresGeneralDataSource } from './postgresGeneralDataSource';
 import { PostgresDataSourceConfig } from './postgresDataSourceConfig';
 
-export async function createPostgresGeneralDataSource(): Promise<CleanPostgresGeneralDataSource> {
+export async function createPostgresGeneralDataSource(): Promise<PostgresGeneralDataSource> {
   const dataSource = PostgresDataSourceConfig.create({
     host: process.env.DB_HOST || 'localhost',
     port: parseInt(process.env.DB_PORT || '5432'),
@@ -12,5 +12,5 @@ export async function createPostgresGeneralDataSource(): Promise<CleanPostgresGe
 
   await dataSource.initialize();
 
-  return new CleanPostgresGeneralDataSource(dataSource);
+  return new PostgresGeneralDataSource(dataSource);
 }

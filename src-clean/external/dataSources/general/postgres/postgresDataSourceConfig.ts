@@ -19,7 +19,7 @@ export class PostgresDataSourceConfig {
       password: config.password,
       database: config.database,
       entities: [StoreEntity],
-      synchronize: false, // Use migrations in production
+      synchronize: false,
       logging: false,
     });
   }

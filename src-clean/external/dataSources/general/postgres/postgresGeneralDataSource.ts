@@ -3,7 +3,7 @@ import { GeneralDataSource } from '../general.dataSource';
 import { StoreDataSourceDTO } from 'src-clean/common/dataSource/DTOs/storeDataSource.dto';
 import { StoreEntity } from './entities/store.entity';
 
-export class CleanPostgresGeneralDataSource implements GeneralDataSource {
+export class PostgresGeneralDataSource implements GeneralDataSource {
   private storeRepository: Repository<StoreEntity>;
 
   constructor(private dataSource: DataSource) {
