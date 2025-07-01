@@ -1,15 +1,31 @@
+import { CoreResponse } from 'src-clean/common/DTOs/coreResponse';
+import { ResourceInvalidException } from 'src-clean/common/exceptions/resourceInvalidException';
+
 export class CNPJ {
   private readonly value: string;
 
-  constructor(cnpj: string) {
+  private constructor(cnpj: string) {
     const cleanedCNPJ = this.clean(cnpj);
 
     if (!this.isValid(cleanedCNPJ)) {
-      throw new Error('Invalid CNPJ');
+      throw new ResourceInvalidException('Invalid CNPJ');
     }
 
     this.value = cleanedCNPJ;
     Object.freeze(this);
+  }
+
+  public static create(cnpj: string): CoreResponse<CNPJ> {
+    try {
+      const cnpjInstance = new CNPJ(cnpj);
+
+      return { value: cnpjInstance, error: undefined };
+    } catch (error) {
+      return {
+        error: error as ResourceInvalidException,
+        value: undefined,
+      };
+    }
   }
 
   private clean(cnpj: string): string {

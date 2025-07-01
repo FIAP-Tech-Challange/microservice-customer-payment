@@ -1,5 +1,6 @@
 import { StoreDTO } from '../DTOs/store.dto';
 import { Store } from '../entities/store.entity';
+import { TotemPresenter } from './totem.presenter';
 
 export class StorePresenter {
   static toDto(store: Store): StoreDTO {
@@ -8,6 +9,7 @@ export class StorePresenter {
       name: store.name,
       fantasyName: store.fantasyName,
       email: store.email.toString(),
+      totems: store.totems.map((totem) => TotemPresenter.toDto(totem)),
     };
   }
 }

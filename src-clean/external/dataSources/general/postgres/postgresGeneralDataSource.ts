@@ -27,6 +27,12 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
       salt: store.salt,
       password_hash: store.password_hash,
       created_at: store.created_at.toISOString(),
+      totems: store.totems.map((totem) => ({
+        id: totem.id,
+        name: totem.name,
+        token_access: totem.token_access,
+        created_at: totem.created_at.toISOString(),
+      })),
     };
   }
 
@@ -47,6 +53,12 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
       salt: store.salt,
       password_hash: store.password_hash,
       created_at: store.created_at.toISOString(),
+      totems: store.totems.map((totem) => ({
+        id: totem.id,
+        name: totem.name,
+        token_access: totem.token_access,
+        created_at: totem.created_at.toISOString(),
+      })),
     };
   }
 
@@ -67,6 +79,12 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
       salt: store.salt,
       password_hash: store.password_hash,
       created_at: store.created_at.toISOString(),
+      totems: store.totems.map((totem) => ({
+        id: totem.id,
+        name: totem.name,
+        token_access: totem.token_access,
+        created_at: totem.created_at.toISOString(),
+      })),
     };
   }
 

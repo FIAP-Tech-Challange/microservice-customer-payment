@@ -1,15 +1,31 @@
+import { CoreResponse } from 'src-clean/common/DTOs/coreResponse';
+import { ResourceInvalidException } from 'src-clean/common/exceptions/resourceInvalidException';
+
 export class CPF {
   private readonly digits: string;
 
-  constructor(rawCpf: string) {
+  private constructor(rawCpf: string) {
     this.digits = CPF.cleanAndValidate(rawCpf);
     Object.freeze(this);
+  }
+
+  public static create(cpf: string): CoreResponse<CPF> {
+    try {
+      const cpfInstance = new CPF(cpf);
+
+      return { value: cpfInstance, error: undefined };
+    } catch (error) {
+      return {
+        error: error as ResourceInvalidException,
+        value: undefined,
+      };
+    }
   }
 
   private static cleanAndValidate(rawCpf: string): string {
     const digitsOnly = rawCpf.replace(/\D/g, '');
     if (!CPF.isValidCPF(digitsOnly)) {
-      throw new Error('Invalid CPF');
+      throw new ResourceInvalidException('Invalid CPF');
     }
     return digitsOnly;
   }

@@ -4,12 +4,34 @@ import { CNPJ } from 'src-clean/core/common/valueObjects/cnpj.vo';
 import { Email } from 'src-clean/core/common/valueObjects/email.vo';
 import { BrazilianPhone } from 'src-clean/core/common/valueObjects/brazilian-phone.vo';
 import { CoreResponse } from 'src-clean/common/DTOs/coreResponse';
+import { TotemMapper } from './totem.mapper';
+import { Totem } from '../entities/totem.entity';
+import { CoreException } from 'src-clean/common/exceptions/coreException';
 
 export class StoreMapper {
   static toEntity(dto: StoreDataSourceDTO): CoreResponse<Store> {
-    const cnpj = new CNPJ(dto.cnpj);
-    const email = new Email(dto.email);
-    const phone = new BrazilianPhone(dto.phone);
+    const cnpj = CNPJ.create(dto.cnpj);
+    if (cnpj.error) return { error: cnpj.error, value: undefined };
+
+    const email = Email.create(dto.email);
+    if (email.error) return { error: email.error, value: undefined };
+
+    const phone = BrazilianPhone.create(dto.phone);
+    if (phone.error) return { error: phone.error, value: undefined };
+
+    const totems: Totem[] = [];
+
+    try {
+      dto.totems.forEach((totem) => {
+        const { error, value } = TotemMapper.toEntity(totem);
+
+        if (error) throw error;
+
+        totems.push(value);
+      });
+    } catch (error) {
+      return { error: error as CoreException, value: undefined };
+    }
 
     return Store.restore({
       id: dto.id,
@@ -18,9 +40,10 @@ export class StoreMapper {
       salt: dto.salt,
       passwordHash: dto.password_hash,
       createdAt: new Date(dto.created_at),
-      phone: phone,
-      email: email,
-      cnpj: cnpj,
+      phone: phone.value,
+      email: email.value,
+      cnpj: cnpj.value,
+      totems: totems,
     });
   }
 
@@ -35,6 +58,7 @@ export class StoreMapper {
       cnpj: entity.cnpj.toString(),
       email: entity.email.toString(),
       phone: entity.phone.toString(),
+      totems: entity.totems.map((totem) => TotemMapper.toPersistenceDTO(totem)),
     };
   }
 }

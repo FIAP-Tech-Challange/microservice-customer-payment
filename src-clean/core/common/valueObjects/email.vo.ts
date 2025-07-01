@@ -1,13 +1,29 @@
+import { CoreResponse } from 'src-clean/common/DTOs/coreResponse';
+import { ResourceInvalidException } from 'src-clean/common/exceptions/resourceInvalidException';
+
 export class Email {
   private readonly value: string;
 
-  constructor(email: string) {
+  private constructor(email: string) {
     const normalized = email.toLowerCase().trim();
     if (!Email.isValid(normalized)) {
-      throw new Error('Invalid email address');
+      throw new ResourceInvalidException('Invalid email address');
     }
     this.value = normalized;
     Object.freeze(this);
+  }
+
+  public static create(email: string): CoreResponse<Email> {
+    try {
+      const emailInstance = new Email(email);
+
+      return { value: emailInstance, error: undefined };
+    } catch (error) {
+      return {
+        error: error as ResourceInvalidException,
+        value: undefined,
+      };
+    }
   }
 
   private static isValid(email: string): boolean {

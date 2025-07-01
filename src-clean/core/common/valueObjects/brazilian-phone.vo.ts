@@ -1,9 +1,25 @@
+import { CoreResponse } from 'src-clean/common/DTOs/coreResponse';
+import { ResourceInvalidException } from 'src-clean/common/exceptions/resourceInvalidException';
+
 export class BrazilianPhone {
   private readonly digits: string;
 
-  constructor(rawPhone: string) {
+  private constructor(rawPhone: string) {
     this.digits = BrazilianPhone.cleanAndValidate(rawPhone);
     Object.freeze(this);
+  }
+
+  public static create(phone: string): CoreResponse<BrazilianPhone> {
+    try {
+      const phoneInstance = new BrazilianPhone(phone);
+
+      return { value: phoneInstance, error: undefined };
+    } catch (error) {
+      return {
+        error: error as ResourceInvalidException,
+        value: undefined,
+      };
+    }
   }
 
   private static cleanAndValidate(rawPhone: string): string {
@@ -18,7 +34,7 @@ export class BrazilianPhone {
       /^55(\d{2})([2-5]\d{7})$/.test(digitsOnly); // Landline
 
     if (!isValid) {
-      throw new Error('Invalid Brazilian phone number');
+      throw new ResourceInvalidException('Invalid Brazilian phone number');
     }
 
     if (digitsOnly.length === 11 || digitsOnly.length === 10) {

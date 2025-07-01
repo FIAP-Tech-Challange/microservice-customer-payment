@@ -5,6 +5,7 @@ import { ResourceInvalidException } from 'src-clean/common/exceptions/resourceIn
 import { BrazilianPhone } from 'src-clean/core/common/valueObjects/brazilian-phone.vo';
 import { CNPJ } from 'src-clean/core/common/valueObjects/cnpj.vo';
 import { Email } from 'src-clean/core/common/valueObjects/email.vo';
+import { Totem } from './totem.entity';
 
 interface StoreProps {
   id: string;
@@ -16,34 +17,77 @@ interface StoreProps {
   passwordHash: string;
   cnpj: CNPJ;
   createdAt: Date;
+  totems: Totem[];
 }
 
 export class Store {
-  id: string;
-  cnpj: CNPJ;
-  name: string;
-  fantasyName: string;
-  email: Email;
-  phone: BrazilianPhone;
+  private _id: string;
+  private _cnpj: CNPJ;
+  private _name: string;
+  private _fantasyName: string;
+  private _email: Email;
+  private _phone: BrazilianPhone;
 
   // TODO: create password value object
-  salt: string;
-  passwordHash: string;
-  createdAt: Date;
+  private _salt: string;
+  private _passwordHash: string;
+  private _createdAt: Date;
+  private _totems: Totem[];
 
   private constructor(props: StoreProps) {
-    this.id = props.id;
-    this.name = props.name;
-    this.cnpj = props.cnpj;
-    this.email = props.email;
-    this.fantasyName = props.fantasyName;
-    this.phone = props.phone;
-    this.fantasyName = props.fantasyName;
-    this.salt = props.salt;
-    this.passwordHash = props.passwordHash;
-    this.createdAt = props.createdAt;
+    this._id = props.id;
+    this._name = props.name;
+    this._cnpj = props.cnpj;
+    this._email = props.email;
+    this._fantasyName = props.fantasyName;
+    this._phone = props.phone;
+    this._fantasyName = props.fantasyName;
+    this._salt = props.salt;
+    this._passwordHash = props.passwordHash;
+    this._createdAt = props.createdAt;
+    this._totems = props.totems;
 
     this.validate();
+  }
+
+  get id() {
+    return this._id;
+  }
+
+  get cnpj() {
+    return this._cnpj;
+  }
+
+  get name() {
+    return this._name;
+  }
+
+  get fantasyName() {
+    return this._fantasyName;
+  }
+
+  get email() {
+    return this._email;
+  }
+
+  get phone() {
+    return this._phone;
+  }
+
+  get salt() {
+    return this._salt;
+  }
+
+  get passwordHash() {
+    return this._passwordHash;
+  }
+
+  get createdAt() {
+    return this._createdAt;
+  }
+
+  get totems() {
+    return this._totems;
   }
 
   verifyPassword(plainPassword: string): boolean {
@@ -83,6 +127,13 @@ export class Store {
     if (!this.phone) {
       throw new ResourceInvalidException('Phone is required');
     }
+    if (!this.totems) {
+      throw new ResourceInvalidException('Totems is required');
+    } else {
+      if (this.totems.some((totem) => totem instanceof Totem)) {
+        throw new ResourceInvalidException('All totems must be valid');
+      }
+    }
   }
 
   static create(props: {
@@ -114,6 +165,7 @@ export class Store {
         salt,
         passwordHash,
         createdAt: new Date(),
+        totems: [],
       });
 
       return { value: store, error: undefined };

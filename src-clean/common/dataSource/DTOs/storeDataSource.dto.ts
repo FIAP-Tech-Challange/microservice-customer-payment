@@ -1,3 +1,5 @@
+import { TotemDataSourceDTO } from './totemDataSource.dto';
+
 export interface StoreDataSourceDTO {
   id: string;
   cnpj: string;
@@ -8,4 +10,5 @@ export interface StoreDataSourceDTO {
   salt: string;
   password_hash: string;
   created_at: string;
+  totems: TotemDataSourceDTO[];
 }

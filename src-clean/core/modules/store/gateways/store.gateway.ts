@@ -2,12 +2,14 @@ import { DataSource } from 'src-clean/common/dataSource/dataSource.interface';
 import { StoreMapper } from '../mappers/store.mapper';
 import { CoreResponse } from 'src-clean/common/DTOs/coreResponse';
 import { Store } from '../entities/store.entity';
+import { Email } from 'src-clean/core/common/valueObjects/email.vo';
+import { CNPJ } from 'src-clean/core/common/valueObjects/cnpj.vo';
 
 export class StoreGateway {
   constructor(private dataSource: DataSource) {}
 
-  async findStoreByEmail(email: string): Promise<CoreResponse<Store | null>> {
-    const storeDTO = await this.dataSource.findStoreByEmail(email);
+  async findStoreByEmail(email: Email): Promise<CoreResponse<Store | null>> {
+    const storeDTO = await this.dataSource.findStoreByEmail(email.toString());
 
     if (!storeDTO) return { error: undefined, value: null };
 
@@ -18,8 +20,8 @@ export class StoreGateway {
     return { error: undefined, value: dto };
   }
 
-  async findStoreByCnpj(cnpj: string): Promise<CoreResponse<Store | null>> {
-    const storeDTO = await this.dataSource.findStoreByCnpj(cnpj);
+  async findStoreByCnpj(cnpj: CNPJ): Promise<CoreResponse<Store | null>> {
+    const storeDTO = await this.dataSource.findStoreByCnpj(cnpj.toString());
 
     if (!storeDTO) return { error: undefined, value: null };
 

@@ -6,23 +6,19 @@ import { Email } from 'src-clean/core/common/valueObjects/email.vo';
 import { CNPJ } from 'src-clean/core/common/valueObjects/cnpj.vo';
 import { BrazilianPhone } from 'src-clean/core/common/valueObjects/brazilian-phone.vo';
 import { ResourceConflictException } from 'src-clean/common/exceptions/resourceConflictException';
-import { CoreException } from 'src-clean/common/exceptions/coreException';
 
 export class CreateStoreUseCase {
   constructor(private storeGateway: StoreGateway) {}
 
   async execute(dto: CreateStoreInputDTO): Promise<CoreResponse<Store>> {
-    let email: Email;
-    let cnpj: CNPJ;
-    let phone: BrazilianPhone;
+    const { error: emailErr, value: email } = Email.create(dto.email);
+    if (emailErr) return { error: emailErr, value: undefined };
 
-    try {
-      email = new Email(dto.email);
-      cnpj = new CNPJ(dto.cnpj);
-      phone = new BrazilianPhone(dto.phone);
-    } catch (error) {
-      return { error: error as CoreException, value: undefined };
-    }
+    const { error: cnpjErr, value: cnpj } = CNPJ.create(dto.cnpj);
+    if (cnpjErr) return { error: cnpjErr, value: undefined };
+
+    const { error: phoneErr, value: phone } = BrazilianPhone.create(dto.phone);
+    if (phoneErr) return { error: phoneErr, value: undefined };
 
     const { error: createErr, value: store } = Store.create({
       name: dto.name,
@@ -35,7 +31,7 @@ export class CreateStoreUseCase {
     if (createErr) return { error: createErr, value: undefined };
 
     const { error: findErr, value: existingStoreEmail } =
-      await this.storeGateway.findStoreByEmail(dto.email);
+      await this.storeGateway.findStoreByEmail(email);
     if (findErr) return { error: findErr, value: undefined };
     if (existingStoreEmail) {
       return {
@@ -47,7 +43,7 @@ export class CreateStoreUseCase {
     }
 
     const { error: findErrCnpj, value: existingStoreCnpj } =
-      await this.storeGateway.findStoreByCnpj(dto.cnpj);
+      await this.storeGateway.findStoreByCnpj(cnpj);
     if (findErrCnpj) return { error: findErrCnpj, value: undefined };
     if (existingStoreCnpj) {
       return {

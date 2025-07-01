@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryColumn } from 'typeorm';
+import { Entity, Column, PrimaryColumn, OneToMany } from 'typeorm';
+import { TotemEntity } from './totem.entity';
 
 @Entity('stores')
 export class StoreEntity {
@@ -28,4 +29,10 @@ export class StoreEntity {
 
   @Column()
   created_at: Date;
+
+  @OneToMany(() => TotemEntity, (totem) => totem.store, {
+    cascade: true,
+    eager: true,
+  })
+  totems: TotemEntity[];
 }

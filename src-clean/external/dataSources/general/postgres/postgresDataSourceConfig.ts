@@ -1,5 +1,6 @@
 import { DataSource } from 'typeorm';
 import { StoreEntity } from './entities/store.entity';
+import { TotemEntity } from './entities/totem.entity';
 
 export interface PostgresConfig {
   host: string;
@@ -18,7 +19,7 @@ export class PostgresDataSourceConfig {
       username: config.username,
       password: config.password,
       database: config.database,
-      entities: [StoreEntity],
+      entities: [StoreEntity, TotemEntity],
       synchronize: false,
       logging: false,
     });
