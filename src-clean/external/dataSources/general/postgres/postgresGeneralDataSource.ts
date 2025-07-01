@@ -10,6 +10,32 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
     this.storeRepository = this.dataSource.getRepository(StoreEntity);
   }
 
+  async findStoreById(id: string): Promise<StoreDataSourceDTO | null> {
+    const store = await this.storeRepository.findOne({
+      where: { id: id },
+    });
+
+    if (!store) return null;
+
+    return {
+      id: store.id,
+      name: store.name,
+      fantasy_name: store.fantasy_name,
+      email: store.email,
+      cnpj: store.cnpj,
+      phone: store.phone,
+      salt: store.salt,
+      password_hash: store.password_hash,
+      created_at: store.created_at.toISOString(),
+      totems: store.totems.map((totem) => ({
+        id: totem.id,
+        name: totem.name,
+        token_access: totem.token_access,
+        created_at: totem.created_at.toISOString(),
+      })),
+    };
+  }
+
   async findStoreByCnpj(cnpj: string): Promise<StoreDataSourceDTO | null> {
     const store = await this.storeRepository.findOne({
       where: { cnpj: cnpj },

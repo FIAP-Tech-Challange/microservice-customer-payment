@@ -5,6 +5,9 @@ export class InMemoryGeneralDataSource implements GeneralDataSource {
   private stores: Map<string, StoreDataSourceDTO> = new Map();
 
   constructor() {}
+  findStoreById(id: string): Promise<StoreDataSourceDTO | null> {
+    return Promise.resolve(this.stores.get(id) || null);
+  }
 
   findStoreByCnpj(cnpj: string): Promise<StoreDataSourceDTO | null> {
     for (const store of this.stores.values()) {

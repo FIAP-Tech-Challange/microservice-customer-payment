@@ -6,6 +6,7 @@ import { BrazilianPhone } from 'src-clean/core/common/valueObjects/brazilian-pho
 import { CNPJ } from 'src-clean/core/common/valueObjects/cnpj.vo';
 import { Email } from 'src-clean/core/common/valueObjects/email.vo';
 import { Totem } from './totem.entity';
+import { ResourceConflictException } from 'src-clean/common/exceptions/resourceConflictException';
 
 interface StoreProps {
   id: string;
@@ -133,6 +134,34 @@ export class Store {
       if (this.totems.some((totem) => totem instanceof Totem)) {
         throw new ResourceInvalidException('All totems must be valid');
       }
+    }
+  }
+
+  addTotem(totem: Totem): CoreResponse<undefined> {
+    try {
+      this.totems.forEach((t) => {
+        if (t.name === totem.name) {
+          throw new ResourceConflictException(
+            'Totem with this name already exists',
+          );
+        }
+
+        if (t.tokenAccess === totem.tokenAccess) {
+          throw new ResourceConflictException(
+            'Totem with this token access already exists',
+          );
+        }
+
+        if (t.id === totem.id) {
+          throw new ResourceConflictException(
+            'Totem with this id already exists',
+          );
+        }
+      });
+      this.totems.push(totem);
+      return { error: undefined, value: undefined };
+    } catch (error) {
+      return { error: error as CoreException, value: undefined };
     }
   }
 

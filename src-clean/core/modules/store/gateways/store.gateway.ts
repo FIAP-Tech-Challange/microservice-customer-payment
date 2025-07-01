@@ -8,6 +8,16 @@ import { CNPJ } from 'src-clean/core/common/valueObjects/cnpj.vo';
 export class StoreGateway {
   constructor(private dataSource: DataSource) {}
 
+  async findStoreById(id: string): Promise<CoreResponse<Store | null>> {
+    const storeDTO = await this.dataSource.findStoreById(id);
+    if (!storeDTO) return { error: undefined, value: null };
+
+    const dtoMapper = StoreMapper.toEntity(storeDTO);
+    if (dtoMapper.error) return { error: dtoMapper.error, value: undefined };
+
+    return { error: undefined, value: dtoMapper.value };
+  }
+
   async findStoreByEmail(email: Email): Promise<CoreResponse<Store | null>> {
     const storeDTO = await this.dataSource.findStoreByEmail(email.toString());
 

@@ -9,6 +9,9 @@ export class DataSourceProxy implements DataSource {
     private generalDataSource: GeneralDataSource,
     private paymentDataSource: PaymentDataSource,
   ) {}
+  findStoreById(id: string): Promise<StoreDataSourceDTO | null> {
+    return this.generalDataSource.findStoreById(id);
+  }
 
   findStoreByCnpj(cnpj: string): Promise<StoreDataSourceDTO | null> {
     return this.generalDataSource.findStoreByCnpj(cnpj);

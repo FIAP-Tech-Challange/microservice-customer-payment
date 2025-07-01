@@ -9,9 +9,33 @@ import { CoreResponse } from 'src-clean/common/DTOs/coreResponse';
 import { UnexpectedError } from 'src-clean/common/exceptions/unexpectedError';
 import { CreateStoreInputDTO } from '../DTOs/createStoreInput.dto';
 import { CreateStoreUseCase } from '../useCases/createStore.useCase';
+import { AddTotemInputDTO } from '../DTOs/addTotemInput.dto';
+import { TotemDTO } from '../DTOs/totem.dto';
+import { AddTotemUseCase } from '../useCases/addTotem.useCase';
+import { TotemPresenter } from '../presenters/totem.presenter';
 
 export class StoreCoreController {
   constructor(private dataSource: DataSource) {}
+
+  async addTotemToStore(
+    dto: AddTotemInputDTO,
+  ): Promise<CoreResponse<TotemDTO>> {
+    try {
+      const gateway = new StoreGateway(this.dataSource);
+      const useCase = new AddTotemUseCase(gateway);
+
+      const totem = await useCase.execute(dto);
+      if (totem.error) return { error: totem.error, value: undefined };
+
+      return { error: undefined, value: TotemPresenter.toDto(totem.value) };
+    } catch (error) {
+      console.error(error);
+      return {
+        error: new UnexpectedError('Something went wrong while adding totem'),
+        value: undefined,
+      };
+    }
+  }
 
   async validateStorePassword(
     dto: ValidateStorePasswordInputDTO,
