@@ -11,9 +11,11 @@ export class ValidateStorePasswordUseCase {
   ): Promise<CoreResponse<boolean>> {
     const findStoreUseCase = new FindStoreByEmailUseCase(this.storeGateway);
 
-    const [err, store] = await findStoreUseCase.execute(dto.email);
-    if (err) return [err, undefined];
+    const { error: err, value: store } = await findStoreUseCase.execute(
+      dto.email,
+    );
+    if (err) return { error: err, value: undefined };
 
-    return [undefined, store.verifyPassword(dto.password)];
+    return { error: undefined, value: store.verifyPassword(dto.password) };
   }
 }

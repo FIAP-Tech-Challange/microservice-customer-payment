@@ -20,19 +20,22 @@ export class StoreCoreController {
       const gateway = new StoreGateway(this.dataSource);
       const useCase = new ValidateStorePasswordUseCase(gateway);
 
-      const [err, isValid] = await useCase.execute({
+      const { error: err, value: isValid } = await useCase.execute({
         email: dto.email,
         password: dto.password,
       });
 
-      if (err) return [err, undefined];
+      if (err) return { error: err, value: undefined };
 
-      return [undefined, isValid];
+      return { error: undefined, value: isValid };
     } catch (error) {
       console.error(error);
-      throw new UnexpectedError(
-        'Something went wrong while validating password',
-      );
+      return {
+        error: new UnexpectedError(
+          'Something went wrong while validating password',
+        ),
+        value: undefined,
+      };
     }
   }
 
@@ -41,16 +44,19 @@ export class StoreCoreController {
       const gateway = new StoreGateway(this.dataSource);
       const useCase = new FindStoreByEmailUseCase(gateway);
 
-      const [err, store] = await useCase.execute(email);
+      const { error: err, value: store } = await useCase.execute(email);
 
-      if (err) return [err, undefined];
+      if (err) return { error: err, value: undefined };
 
-      return [undefined, StorePresenter.toDto(store)];
+      return { error: undefined, value: StorePresenter.toDto(store) };
     } catch (error) {
       console.error(error);
-      throw new UnexpectedError(
-        'Something went wrong while finding store by email',
-      );
+      return {
+        error: new UnexpectedError(
+          'Something went wrong while finding store by email',
+        ),
+        value: undefined,
+      };
     }
   }
 
@@ -59,14 +65,17 @@ export class StoreCoreController {
       const gateway = new StoreGateway(this.dataSource);
       const useCase = new CreateStoreUseCase(gateway);
 
-      const [err, store] = await useCase.execute(dto);
+      const { error: err, value: store } = await useCase.execute(dto);
 
-      if (err) return [err, undefined];
+      if (err) return { error: err, value: undefined };
 
-      return [undefined, StorePresenter.toDto(store)];
+      return { error: undefined, value: StorePresenter.toDto(store) };
     } catch (error) {
       console.error(error);
-      throw new UnexpectedError('Something went wrong while creating store');
+      return {
+        error: new UnexpectedError('Something went wrong while creating store'),
+        value: undefined,
+      };
     }
   }
 }

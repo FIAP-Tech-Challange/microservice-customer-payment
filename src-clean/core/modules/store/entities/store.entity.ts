@@ -1,5 +1,6 @@
 import { randomUUID, pbkdf2Sync } from 'node:crypto';
 import { CoreResponse } from 'src-clean/common/DTOs/coreResponse';
+import { CoreException } from 'src-clean/common/exceptions/coreException';
 import { ResourceInvalidException } from 'src-clean/common/exceptions/resourceInvalidException';
 import { BrazilianPhone } from 'src-clean/core/common/valueObjects/brazilian-phone.vo';
 import { CNPJ } from 'src-clean/core/common/valueObjects/cnpj.vo';
@@ -115,18 +116,18 @@ export class Store {
         createdAt: new Date(),
       });
 
-      return [undefined, store];
+      return { value: store, error: undefined };
     } catch (error) {
-      return [error, undefined];
+      return { error: error as CoreException, value: undefined };
     }
   }
 
   static restore(props: StoreProps): CoreResponse<Store> {
     try {
       const store = new Store(props);
-      return [undefined, store];
+      return { value: store, error: undefined };
     } catch (error) {
-      return [error, undefined];
+      return { error: error as CoreException, value: undefined };
     }
   }
 }

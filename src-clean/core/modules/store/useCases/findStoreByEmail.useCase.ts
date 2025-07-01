@@ -7,13 +7,17 @@ export class FindStoreByEmailUseCase {
   constructor(private storeGateway: StoreGateway) {}
 
   async execute(email: string): Promise<CoreResponse<Store>> {
-    const [err, store] = await this.storeGateway.findStoreByEmail(email);
-    if (err) return [err, undefined];
+    const { error: err, value: store } =
+      await this.storeGateway.findStoreByEmail(email);
+    if (err) return { error: err, value: undefined };
 
     if (!store) {
-      throw new ResourceNotFoundException('Store not found');
+      return {
+        error: new ResourceNotFoundException('Store not found'),
+        value: undefined,
+      };
     }
 
-    return [undefined, store];
+    return { error: undefined, value: store };
   }
 }

@@ -28,7 +28,9 @@ export class StoreController {
       new FakePaymentDataSource(),
     );
 
-    const [err, store] = await new StoreCoreController(dataSource).createStore({
+    const { error: err, value: store } = await new StoreCoreController(
+      dataSource,
+    ).createStore({
       name: body.name,
       fantasyName: body.fantasyName,
       email: body.email,

@@ -12,7 +12,8 @@ export class AuthService {
   async login(email: string, password: string, dataSource: DataSource) {
     const controller = new StoreCoreController(dataSource);
 
-    const [err, store] = await controller.findStoreByEmail(email);
+    const { error: err, value: store } =
+      await controller.findStoreByEmail(email);
 
     if (err) {
       if (err.code === UnexpectedError.CODE) {
@@ -22,10 +23,11 @@ export class AuthService {
       throw new UnauthorizedException('Email or password invalid');
     }
 
-    const [isValidErr, isValid] = await controller.validateStorePassword({
-      email: email,
-      password: password,
-    });
+    const { error: isValidErr, value: isValid } =
+      await controller.validateStorePassword({
+        email: email,
+        password: password,
+      });
 
     if (isValidErr) {
       if (isValidErr.code === UnexpectedError.CODE) {
