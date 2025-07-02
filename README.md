@@ -171,5 +171,5 @@ O projeto inclui um workflow de CI/CD configurado no GitHub Actions (`.github/wo
 ### Links Importantes
 
 - <a href="https://miro.com/app/board/uXjVIGlxRtY=/" target="_blank">Miro</a>
-- <a href="https://www.youtube.com/" target="_blank">Video Youtube</a>
+- <a href="https://www.youtube.com/watch?v=tXqlNT2I7s4" target="_blank">Video Youtube</a>
 - <a href="https://app.brmodeloweb.com/#!/publicview/68213be2acb39fc7c317bb53" target="_blank">Modelo do banco de dados</a>
