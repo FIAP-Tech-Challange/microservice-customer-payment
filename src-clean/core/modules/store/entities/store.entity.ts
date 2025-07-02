@@ -1,12 +1,13 @@
-import { randomUUID, pbkdf2Sync } from 'node:crypto';
 import { CoreResponse } from 'src-clean/common/DTOs/coreResponse';
 import { CoreException } from 'src-clean/common/exceptions/coreException';
 import { ResourceInvalidException } from 'src-clean/common/exceptions/resourceInvalidException';
+import { ResourceConflictException } from 'src-clean/common/exceptions/resourceConflictException';
 import { BrazilianPhone } from 'src-clean/core/common/valueObjects/brazilian-phone.vo';
 import { CNPJ } from 'src-clean/core/common/valueObjects/cnpj.vo';
 import { Email } from 'src-clean/core/common/valueObjects/email.vo';
 import { Totem } from './totem.entity';
-import { ResourceConflictException } from 'src-clean/common/exceptions/resourceConflictException';
+import { generateUUID } from 'src-clean/core/common/utils/uuid.helper';
+import { encodeString } from 'src-clean/core/common/utils/encoder.helper';
 
 interface StoreProps {
   id: string;
@@ -92,13 +93,7 @@ export class Store {
   }
 
   verifyPassword(plainPassword: string): boolean {
-    const hash = pbkdf2Sync(
-      plainPassword,
-      this.salt,
-      100_000,
-      64,
-      'sha512',
-    ).toString('hex');
+    const hash = encodeString(plainPassword, this.salt);
 
     return hash === this.passwordHash;
   }
@@ -173,15 +168,9 @@ export class Store {
     plainPassword: string;
     phone: BrazilianPhone;
   }): CoreResponse<Store> {
-    const id = randomUUID();
-    const salt = randomUUID();
-    const passwordHash = pbkdf2Sync(
-      props.plainPassword,
-      salt,
-      100_000,
-      64,
-      'sha512',
-    ).toString('hex');
+    const id = generateUUID();
+    const salt = generateUUID();
+    const passwordHash = encodeString(props.plainPassword, salt);
 
     try {
       const store = new Store({
