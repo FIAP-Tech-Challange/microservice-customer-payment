@@ -30,7 +30,6 @@ export class Store {
   private _email: Email;
   private _phone: BrazilianPhone;
 
-  // TODO: create password value object
   private _salt: string;
   private _passwordHash: string;
   private _createdAt: Date;
