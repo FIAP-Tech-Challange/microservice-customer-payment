@@ -220,7 +220,6 @@ describe('CNPJ Value Object', () => {
 
       validCNPJs.forEach((cnpj) => {
         const result = CNPJ.create(cnpj);
-        console.log(result);
         expect(result.error).toBeUndefined();
         expect(result.value).toBeInstanceOf(CNPJ);
       });
