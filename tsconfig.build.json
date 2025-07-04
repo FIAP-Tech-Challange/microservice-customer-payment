@@ -4,6 +4,7 @@
     "node_modules",
     "test",
     "dist",
+    "src",
     "**/*spec.ts",
     "**/*.setup.ts",
     "jest.setup.ts"
