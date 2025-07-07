@@ -2,6 +2,7 @@ import { PaymentDataSourceDTO } from './DTOs/paymentDataSource.dto';
 import { StoreDataSourceDTO } from './DTOs/storeDataSource.dto';
 import { ProductDataSourceDTO } from './DTOs/productDataSource.dto';
 import { CategoryDataSourceDTO } from './DTOs/categoryDataSource.dto';
+import { CustomerDataSourceDTO, CustomerPaginationDataSourceDTO, FindAllCustomersParamsDTO } from './DTOs/customerDataSource.dto';
 
 export interface DataSource {
   saveCategory(categoryDTO: void): unknown;
@@ -16,4 +17,12 @@ export interface DataSource {
   saveProduct(product: ProductDataSourceDTO): Promise<void>;
   findProductByName(name: string): ProductDataSourceDTO | PromiseLike<ProductDataSourceDTO | null> | null;
   getPayment(paymentId: string): Promise<PaymentDataSourceDTO | null>;
+  
+  // Customer methods
+  findCustomerById(id: string): Promise<CustomerDataSourceDTO | null>;
+  findCustomerByCpf(cpf: string): Promise<CustomerDataSourceDTO | null>;
+  findAllCustomers(params: FindAllCustomersParamsDTO): Promise<CustomerPaginationDataSourceDTO>;
+  saveCustomer(customer: CustomerDataSourceDTO): Promise<CustomerDataSourceDTO>;
+  updateCustomer(customer: CustomerDataSourceDTO): Promise<CustomerDataSourceDTO>;
+  deleteCustomer(id: string): Promise<boolean>;
 }
