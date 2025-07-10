@@ -125,7 +125,7 @@ export class Store {
     if (!this.totems) {
       throw new ResourceInvalidException('Totems is required');
     } else {
-      if (this.totems.some((totem) => totem instanceof Totem)) {
+      if (this.totems.some((totem) => !(totem instanceof Totem))) {
         throw new ResourceInvalidException('All totems must be valid');
       }
     }
