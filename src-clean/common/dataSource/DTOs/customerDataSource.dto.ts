@@ -20,4 +20,5 @@ export interface FindAllCustomersParamsDTO {
   limit?: number;
   cpf?: string;
   name?: string;
+  email?: string;
 }

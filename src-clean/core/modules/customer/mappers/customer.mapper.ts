@@ -29,13 +29,13 @@ export class CustomerMapper {
 
     const customerProps = {
       id: dto.id,
-      cpf: cpf!,
+      cpf,
       name: dto.name,
-      email: email!,
+      email,
       createdAt: dto.createdAt,
       updatedAt: dto.updatedAt,
     };
 
-    return Customer.fromProps(customerProps);
+    return Customer.restore(customerProps);
   }
 }

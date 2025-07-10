@@ -71,7 +71,9 @@ export class Customer {
     }
 
     if (this._name.trim().length < 3) {
-      throw new ResourceInvalidException('Customer name must be at least 3 characters long');
+      throw new ResourceInvalidException(
+        'Customer name must be at least 3 characters long',
+      );
     }
 
     if (!this._email) {
@@ -105,9 +107,9 @@ export class Customer {
 
       const customer = new Customer({
         id: randomUUID(),
-        cpf: cpf!,
+        cpf,
         name: props.name.trim(),
-        email: email!,
+        email,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -121,41 +123,9 @@ export class Customer {
     }
   }
 
-  public static fromProps(props: CustomerProps): CoreResponse<Customer> {
+  public static restore(props: CustomerProps): CoreResponse<Customer> {
     try {
       const customer = new Customer(props);
-      return { value: customer, error: undefined };
-    } catch (error) {
-      return {
-        error: error as CoreException,
-        value: undefined,
-      };
-    }
-  }
-
-  public update(props: {
-    name?: string;
-    email?: string;
-  }): CoreResponse<Customer> {
-    try {
-      const updatedProps: CustomerProps = {
-        id: this._id,
-        cpf: this._cpf,
-        name: props.name?.trim() || this._name,
-        email: this._email,
-        createdAt: this._createdAt,
-        updatedAt: new Date(),
-      };
-
-      if (props.email) {
-        const { error: emailError, value: email } = Email.create(props.email);
-        if (emailError) {
-          return { error: emailError, value: undefined };
-        }
-        updatedProps.email = email!;
-      }
-
-      const customer = new Customer(updatedProps);
       return { value: customer, error: undefined };
     } catch (error) {
       return {

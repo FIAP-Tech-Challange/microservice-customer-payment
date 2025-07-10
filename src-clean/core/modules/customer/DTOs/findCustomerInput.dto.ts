@@ -7,8 +7,9 @@ export interface FindCustomerByCpfInputDTO {
 }
 
 export interface FindAllCustomersInputDTO {
-  page?: number;
-  limit?: number;
   cpf?: string;
   name?: string;
+  email?: string;
+  page?: number;
+  size?: number;
 }
