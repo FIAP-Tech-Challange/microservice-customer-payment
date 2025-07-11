@@ -1,8 +1,10 @@
+import { PaginatedResponse } from 'src-clean/core/common/DTOs/paginatedResponse.dto';
 import { CustomerResponseDTO } from '../DTOs/customerResponse.dto';
 import { Customer } from '../entities/customer.entity';
+import { CustomerDTO } from '../DTOs/customer.dto';
 
 export class CustomerPresenter {
-  static toResponse(customer: Customer): CustomerResponseDTO {
+  static toDTO(customer: Customer): CustomerResponseDTO {
     return {
       id: customer.id,
       cpf: customer.cpf.format(),
@@ -10,6 +12,20 @@ export class CustomerPresenter {
       email: customer.email.toString(),
       createdAt: customer.createdAt,
       updatedAt: customer.updatedAt,
+    };
+  }
+
+  static toPaginatedDTO(
+    customerPaginated: PaginatedResponse<Customer>,
+  ): PaginatedResponse<CustomerDTO> {
+    return {
+      page: customerPaginated.page,
+      limit: customerPaginated.limit,
+      total: customerPaginated.total,
+      totalPages: customerPaginated.totalPages,
+      data: customerPaginated.data.map((customer) =>
+        CustomerPresenter.toDTO(customer),
+      ),
     };
   }
 }
