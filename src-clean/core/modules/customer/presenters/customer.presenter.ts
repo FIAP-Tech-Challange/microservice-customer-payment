@@ -1,7 +1,4 @@
-import {
-  CustomerListResponseDTO,
-  CustomerResponseDTO,
-} from '../DTOs/customerResponseDTO';
+import { CustomerResponseDTO } from '../DTOs/customerResponse.dto';
 import { Customer } from '../entities/customer.entity';
 
 export class CustomerPresenter {
@@ -13,12 +10,6 @@ export class CustomerPresenter {
       email: customer.email.toString(),
       createdAt: customer.createdAt,
       updatedAt: customer.updatedAt,
-    };
-  }
-
-  static toListResponse(customers: Customer[]): CustomerListResponseDTO {
-    return {
-      customers: customers.map((customer) => this.toResponse(customer)),
     };
   }
 }

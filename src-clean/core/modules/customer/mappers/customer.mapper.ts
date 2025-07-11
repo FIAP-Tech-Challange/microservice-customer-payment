@@ -1,11 +1,11 @@
 import { CoreResponse } from 'src-clean/common/DTOs/coreResponse';
 import { Customer } from '../entities/customer.entity';
-import { CustomerDTO } from '../DTOs/customer.dto';
 import { CPF } from 'src-clean/core/common/valueObjects/cpf.vo';
 import { Email } from 'src-clean/core/common/valueObjects/email.vo';
+import { CustomerDataSourceDTO } from 'src-clean/common/dataSource/DTOs/customerDataSource.dto';
 
 export class CustomerMapper {
-  static toDTO(customer: Customer): CustomerDTO {
+  static toDTO(customer: Customer): CustomerDataSourceDTO {
     return {
       id: customer.id,
       cpf: customer.cpf.toString(),
@@ -16,7 +16,7 @@ export class CustomerMapper {
     };
   }
 
-  static toEntity(dto: CustomerDTO): CoreResponse<Customer> {
+  static toEntity(dto: CustomerDataSourceDTO): CoreResponse<Customer> {
     const { error: cpfError, value: cpf } = CPF.create(dto.cpf);
     if (cpfError) {
       return { error: cpfError, value: undefined };

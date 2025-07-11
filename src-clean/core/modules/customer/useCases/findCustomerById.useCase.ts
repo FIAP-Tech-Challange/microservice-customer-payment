@@ -2,14 +2,13 @@ import { CoreResponse } from 'src-clean/common/DTOs/coreResponse';
 import { ResourceNotFoundException } from 'src-clean/common/exceptions/resourceNotFoundException';
 import { Customer } from '../entities/customer.entity';
 import { CustomerGateway } from '../gateways/customer.gateway';
-import { FindCustomerByIdInputDTO } from '../DTOs/findCustomerInput.dto';
 
 export class FindCustomerByIdUseCase {
   constructor(private customerGateway: CustomerGateway) {}
 
-  async execute(dto: FindCustomerByIdInputDTO): Promise<CoreResponse<Customer>> {
-    const { error: findError, value: customer } = 
-      await this.customerGateway.findCustomerById(dto.id);
+  async execute(id: string): Promise<CoreResponse<Customer>> {
+    const { error: findError, value: customer } =
+      await this.customerGateway.findCustomerById(id);
 
     if (findError) {
       return { error: findError, value: undefined };
@@ -17,7 +16,9 @@ export class FindCustomerByIdUseCase {
 
     if (!customer) {
       return {
-        error: new ResourceNotFoundException(`Customer with ID ${dto.id} not found`),
+        error: new ResourceNotFoundException(
+          `Customer with ID ${id} not found`,
+        ),
         value: undefined,
       };
     }

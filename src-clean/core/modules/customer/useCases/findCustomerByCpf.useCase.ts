@@ -2,14 +2,17 @@ import { CoreResponse } from 'src-clean/common/DTOs/coreResponse';
 import { ResourceNotFoundException } from 'src-clean/common/exceptions/resourceNotFoundException';
 import { Customer } from '../entities/customer.entity';
 import { CustomerGateway } from '../gateways/customer.gateway';
-import { FindCustomerByCpfInputDTO } from '../DTOs/findCustomerInput.dto';
+import { CPF } from 'src-clean/core/common/valueObjects/cpf.vo';
 
 export class FindCustomerByCpfUseCase {
   constructor(private customerGateway: CustomerGateway) {}
 
-  async execute(dto: FindCustomerByCpfInputDTO): Promise<CoreResponse<Customer>> {
-    const { error: findError, value: customer } = 
-      await this.customerGateway.findCustomerByCpf(dto.cpf);
+  async execute(cpf: string): Promise<CoreResponse<Customer>> {
+    const cpfObject = CPF.create(cpf);
+    if (cpfObject.error) return { error: cpfObject.error, value: undefined };
+
+    const { error: findError, value: customer } =
+      await this.customerGateway.findCustomerByCpf(cpfObject.value);
 
     if (findError) {
       return { error: findError, value: undefined };
@@ -17,7 +20,9 @@ export class FindCustomerByCpfUseCase {
 
     if (!customer) {
       return {
-        error: new ResourceNotFoundException(`Customer with CPF ${dto.cpf} not found`),
+        error: new ResourceNotFoundException(
+          `Customer with CPF ${cpf} not found`,
+        ),
         value: undefined,
       };
     }

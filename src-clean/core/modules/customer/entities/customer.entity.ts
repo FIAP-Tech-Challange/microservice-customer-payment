@@ -1,7 +1,7 @@
-import { randomUUID } from 'node:crypto';
 import { CoreResponse } from 'src-clean/common/DTOs/coreResponse';
 import { CoreException } from 'src-clean/common/exceptions/coreException';
 import { ResourceInvalidException } from 'src-clean/common/exceptions/resourceInvalidException';
+import { generateUUID } from 'src-clean/core/common/utils/uuid.helper';
 import { CPF } from 'src-clean/core/common/valueObjects/cpf.vo';
 import { Email } from 'src-clean/core/common/valueObjects/email.vo';
 
@@ -90,26 +90,16 @@ export class Customer {
   }
 
   public static create(props: {
-    cpf: string;
+    cpf: CPF;
     name: string;
-    email: string;
+    email: Email;
   }): CoreResponse<Customer> {
     try {
-      const { error: cpfError, value: cpf } = CPF.create(props.cpf);
-      if (cpfError) {
-        return { error: cpfError, value: undefined };
-      }
-
-      const { error: emailError, value: email } = Email.create(props.email);
-      if (emailError) {
-        return { error: emailError, value: undefined };
-      }
-
       const customer = new Customer({
-        id: randomUUID(),
-        cpf,
+        id: generateUUID(),
+        cpf: props.cpf,
         name: props.name.trim(),
-        email,
+        email: props.email,
         createdAt: new Date(),
         updatedAt: new Date(),
       });

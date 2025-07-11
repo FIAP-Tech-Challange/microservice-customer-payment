@@ -1,4 +1,4 @@
-export interface CustomerDataSourceDTO {
+export interface CustomerResponseDTO {
   id: string;
   cpf: string;
   name: string;
