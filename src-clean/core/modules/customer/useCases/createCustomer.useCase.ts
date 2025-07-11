@@ -18,7 +18,7 @@ export class CreateCustomerUseCase {
       return { error: createError, value: undefined };
     }
 
-    const { error: findError, value: existingCustomer } = 
+    const { error: findError, value: existingCustomer } =
       await this.customerGateway.findCustomerByCpf(dto.cpf);
 
     if (findError) {
@@ -27,13 +27,15 @@ export class CreateCustomerUseCase {
 
     if (existingCustomer) {
       return {
-        error: new ResourceConflictException('Customer with this CPF already exists'),
+        error: new ResourceConflictException(
+          'Customer with this CPF already exists',
+        ),
         value: undefined,
       };
     }
 
-    const { error: saveError, value: savedCustomer } = 
-      await this.customerGateway.saveCustomer(customer!);
+    const { error: saveError, value: savedCustomer } =
+      await this.customerGateway.saveCustomer(customer);
 
     if (saveError) {
       return { error: saveError, value: undefined };

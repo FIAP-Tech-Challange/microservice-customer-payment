@@ -1,7 +1,7 @@
-import { randomUUID } from 'node:crypto';
 import { CoreResponse } from 'src-clean/common/DTOs/coreResponse';
 import { CoreException } from 'src-clean/common/exceptions/coreException';
 import { ResourceInvalidException } from 'src-clean/common/exceptions/resourceInvalidException';
+import { generateUUID } from 'src-clean/core/common/utils/uuid.helper';
 
 interface ProductProps {
   id: string;
@@ -13,7 +13,7 @@ interface ProductProps {
   createdAt: Date;
   updatedAt: Date;
   storeId: string;
-  }
+}
 
 export class Product {
   private _id: string;
@@ -25,7 +25,7 @@ export class Product {
   private _createdAt: Date;
   private _updatedAt: Date;
   private _storeId: string;
-    tokenAccess: string;
+  tokenAccess: string;
 
   private constructor(props: ProductProps) {
     this._id = props.id;
@@ -79,16 +79,24 @@ export class Product {
 
   private validate() {
     if (!this._name || this._name.length < 3) {
-      throw new ResourceInvalidException('Product name must be at least 3 characters long.');
+      throw new ResourceInvalidException(
+        'Product name must be at least 3 characters long.',
+      );
     }
     if (this._price <= 0) {
-      throw new ResourceInvalidException('Product price must be greater than zero.');
+      throw new ResourceInvalidException(
+        'Product price must be greater than zero.',
+      );
     }
     if (this._prepTime < 0) {
-      throw new ResourceInvalidException('Product prep time cannot be negative.');
+      throw new ResourceInvalidException(
+        'Product prep time cannot be negative.',
+      );
     }
     if (!this._storeId) {
-      throw new ResourceInvalidException('Store ID is required for the product.');
+      throw new ResourceInvalidException(
+        'Store ID is required for the product.',
+      );
     }
   }
 
@@ -99,12 +107,10 @@ export class Product {
     prepTime: number;
     imageUrl?: string;
     storeId: string;
-    createdAt?: Date;
-    updatedAt?: Date;
   }): CoreResponse<Product> {
-    const id = randomUUID();
+    const id = generateUUID();
     const now = new Date();
-  
+
     try {
       const product = new Product({
         id,
@@ -117,7 +123,7 @@ export class Product {
         updatedAt: now,
         storeId: props.storeId,
       });
-  
+
       return { value: product, error: undefined };
     } catch (error) {
       return { error: error as CoreException, value: undefined };

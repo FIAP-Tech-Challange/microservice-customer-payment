@@ -10,25 +10,36 @@ import {
 } from './DTOs/customerDataSource.dto';
 
 export interface DataSource {
+  // Totem
   findTotemByAccessToken(
     accessToken: string,
   ): Promise<TotemDataSourceDTO | null>;
-  saveCategory(categoryDTO: void): unknown;
-  findCategoryById(id: string): Promise<CategoryDataSourceDTO | null>;
-  findCategoryByName(name: string): Promise<CategoryDataSourceDTO | null>;
-  
+
+  // Store
   findStoreByEmail(email: string): Promise<StoreDataSourceDTO | null>;
   findStoreByCnpj(cnpj: string): Promise<StoreDataSourceDTO | null>;
   findStoreByName(name: string): Promise<StoreDataSourceDTO | null>;
   findStoreById(id: string): Promise<StoreDataSourceDTO | null>;
   saveStore(store: StoreDataSourceDTO): Promise<void>;
-  findProductById(id: string): Promise<ProductDataSourceDTO | null>;
+
+  // Product/Category
   saveProduct(product: ProductDataSourceDTO): Promise<void>;
-  findProductByName(name: string): ProductDataSourceDTO | PromiseLike<ProductDataSourceDTO | null> | null;
-  
+  findProductById(id: string): Promise<ProductDataSourceDTO | null>;
+  findProductByNameAndStoreId(
+    name: string,
+    storeId: string,
+  ): Promise<ProductDataSourceDTO | null>;
+  saveCategory(categoryDTO: CategoryDataSourceDTO): Promise<void>;
+  findCategoryById(id: string): Promise<CategoryDataSourceDTO | null>;
+  findCategoryByNameAndStoreId(
+    name: string,
+    storeId: string,
+  ): Promise<CategoryDataSourceDTO | null>;
+
+  // Payment
   getPayment(paymentId: string): Promise<PaymentDataSourceDTO | null>;
 
-  // Customer methods
+  // Customer
   findCustomerById(id: string): Promise<CustomerDataSourceDTO | null>;
   findCustomerByCpf(cpf: string): Promise<CustomerDataSourceDTO | null>;
   findAllCustomers(
