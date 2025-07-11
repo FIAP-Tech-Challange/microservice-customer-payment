@@ -3,12 +3,20 @@ import { StoreDataSourceDTO } from 'src-clean/common/dataSource/DTOs/storeDataSo
 import { GeneralDataSource } from './general/general.dataSource';
 import { PaymentDataSource } from './payment/payment.dataSource';
 import { PaymentDataSourceDTO } from 'src-clean/common/dataSource/DTOs/paymentDataSource.dto';
+import { TotemDataSourceDTO } from 'src-clean/common/dataSource/DTOs/totemDataSource.dto';
 
 export class DataSourceProxy implements DataSource {
   constructor(
     private generalDataSource: GeneralDataSource,
     private paymentDataSource: PaymentDataSource,
   ) {}
+
+  findTotemByAccessToken(
+    accessToken: string,
+  ): Promise<TotemDataSourceDTO | null> {
+    return this.generalDataSource.findTotemByAccessToken(accessToken);
+  }
+
   findStoreById(id: string): Promise<StoreDataSourceDTO | null> {
     return this.generalDataSource.findStoreById(id);
   }

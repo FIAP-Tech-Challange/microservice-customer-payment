@@ -13,6 +13,8 @@ import { AddTotemInputDTO } from '../DTOs/addTotemInput.dto';
 import { TotemDTO } from '../DTOs/totem.dto';
 import { AddTotemUseCase } from '../useCases/addTotem.useCase';
 import { TotemPresenter } from '../presenters/totem.presenter';
+import { TotemGateway } from '../gateways/totem.gateway';
+import { FindStoreTotemByAccessTokenUseCase } from '../useCases/findStoreTotemByAccessToken.useCase';
 
 export class StoreCoreController {
   constructor(private dataSource: DataSource) {}
@@ -98,6 +100,29 @@ export class StoreCoreController {
       console.error(error);
       return {
         error: new UnexpectedError('Something went wrong while creating store'),
+        value: undefined,
+      };
+    }
+  }
+
+  async findStoreTotemByAccessToken(
+    accessToken: string,
+  ): Promise<CoreResponse<TotemDTO>> {
+    try {
+      const gateway = new TotemGateway(this.dataSource);
+      const useCase = new FindStoreTotemByAccessTokenUseCase(gateway);
+
+      const totem = await useCase.execute(accessToken);
+
+      if (totem.error) return { error: totem.error, value: undefined };
+
+      return { error: undefined, value: TotemPresenter.toDto(totem.value) };
+    } catch (error) {
+      console.error(error);
+      return {
+        error: new UnexpectedError(
+          'Something went wrong while finding totem by access token',
+        ),
         value: undefined,
       };
     }
