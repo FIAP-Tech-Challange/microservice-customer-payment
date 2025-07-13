@@ -1,6 +1,5 @@
 import { PaymentDataSourceDTO } from './DTOs/paymentDataSource.dto';
 import { StoreDataSourceDTO } from './DTOs/storeDataSource.dto';
-import { ProductDataSourceDTO } from './DTOs/productDataSource.dto';
 import { CategoryDataSourceDTO } from './DTOs/categoryDataSource.dto';
 import { TotemDataSourceDTO } from './DTOs/totemDataSource.dto';
 import { CustomerDataSourceDTO } from './DTOs/customerDataSource.dto';
@@ -22,12 +21,6 @@ export interface DataSource {
   saveStore(store: StoreDataSourceDTO): Promise<void>;
 
   // Product/Category
-  saveProduct(product: ProductDataSourceDTO): Promise<void>;
-  findProductById(id: string): Promise<ProductDataSourceDTO | null>;
-  findProductByNameAndStoreId(
-    name: string,
-    storeId: string,
-  ): Promise<ProductDataSourceDTO | null>;
   saveCategory(categoryDTO: CategoryDataSourceDTO): Promise<void>;
   findCategoryById(id: string): Promise<CategoryDataSourceDTO | null>;
   findCategoryByNameAndStoreId(
