@@ -6,34 +6,41 @@ import { Email } from 'src-clean/core/common/valueObjects/email.vo';
 import { CNPJ } from 'src-clean/core/common/valueObjects/cnpj.vo';
 import { BrazilianPhone } from 'src-clean/core/common/valueObjects/brazilian-phone.vo';
 import { ResourceConflictException } from 'src-clean/common/exceptions/resourceConflictException';
+import { CreateCategoryUseCase } from '../../product/useCases/createCategory.useCase';
+import { CategoryGateway } from '../../product/gateways/category.gateway';
 
 export class CreateStoreUseCase {
-  constructor(private storeGateway: StoreGateway) {}
+  constructor(
+    private storeGateway: StoreGateway,
+    private categoryGateway: CategoryGateway,
+  ) {}
 
   async execute(dto: CreateStoreInputDTO): Promise<CoreResponse<Store>> {
-    const { error: emailErr, value: email } = Email.create(dto.email);
-    if (emailErr) return { error: emailErr, value: undefined };
+    const email = Email.create(dto.email);
+    if (email.error) return { error: email.error, value: undefined };
 
-    const { error: cnpjErr, value: cnpj } = CNPJ.create(dto.cnpj);
-    if (cnpjErr) return { error: cnpjErr, value: undefined };
+    const cnpj = CNPJ.create(dto.cnpj);
+    if (cnpj.error) return { error: cnpj.error, value: undefined };
 
-    const { error: phoneErr, value: phone } = BrazilianPhone.create(dto.phone);
-    if (phoneErr) return { error: phoneErr, value: undefined };
+    const phone = BrazilianPhone.create(dto.phone);
+    if (phone.error) return { error: phone.error, value: undefined };
 
-    const { error: createErr, value: store } = Store.create({
+    const store = Store.create({
       name: dto.name,
       fantasyName: dto.fantasyName,
-      email,
-      cnpj,
+      email: email.value,
+      cnpj: cnpj.value,
       plainPassword: dto.plainPassword,
-      phone,
+      phone: phone.value,
     });
-    if (createErr) return { error: createErr, value: undefined };
+    if (store.error) return { error: store.error, value: undefined };
 
-    const { error: findErr, value: existingStoreEmail } =
-      await this.storeGateway.findStoreByEmail(email);
-    if (findErr) return { error: findErr, value: undefined };
-    if (existingStoreEmail) {
+    const findByEmail = await this.storeGateway.findStoreByEmail(email.value);
+    if (findByEmail.error) {
+      return { error: findByEmail.error, value: undefined };
+    }
+
+    if (findByEmail.value) {
       return {
         error: new ResourceConflictException(
           'Store with this email already exists',
@@ -42,10 +49,9 @@ export class CreateStoreUseCase {
       };
     }
 
-    const { error: findErrCnpj, value: existingStoreCnpj } =
-      await this.storeGateway.findStoreByCnpj(cnpj);
-    if (findErrCnpj) return { error: findErrCnpj, value: undefined };
-    if (existingStoreCnpj) {
+    const findByCnpj = await this.storeGateway.findStoreByCnpj(cnpj.value);
+    if (findByCnpj.error) return { error: findByCnpj.error, value: undefined };
+    if (findByCnpj.value) {
       return {
         error: new ResourceConflictException(
           'Store with this CNPJ already exists',
@@ -54,10 +60,9 @@ export class CreateStoreUseCase {
       };
     }
 
-    const { error: findErrName, value: existingStoreName } =
-      await this.storeGateway.findStoreByName(dto.name);
-    if (findErrName) return { error: findErrName, value: undefined };
-    if (existingStoreName) {
+    const findByName = await this.storeGateway.findStoreByName(dto.name);
+    if (findByName.error) return { error: findByName.error, value: undefined };
+    if (findByName.value) {
       return {
         error: new ResourceConflictException(
           'Store with this name already exists',
@@ -66,9 +71,33 @@ export class CreateStoreUseCase {
       };
     }
 
-    const { error: saveErr } = await this.storeGateway.saveStore(store);
-    if (saveErr) return { error: saveErr, value: undefined };
+    const saveStore = await this.storeGateway.saveStore(store.value);
+    if (saveStore.error) return { error: saveStore.error, value: undefined };
 
-    return { error: undefined, value: store };
+    const createCategoryUseCase = new CreateCategoryUseCase(
+      this.categoryGateway,
+      this.storeGateway,
+    );
+
+    await Promise.all([
+      createCategoryUseCase.execute({
+        name: 'Lanche',
+        storeId: store.value.id,
+      }),
+      createCategoryUseCase.execute({
+        name: 'Acompanhamento',
+        storeId: store.value.id,
+      }),
+      createCategoryUseCase.execute({
+        name: 'Bebida',
+        storeId: store.value.id,
+      }),
+      createCategoryUseCase.execute({
+        name: 'Sobremesa',
+        storeId: store.value.id,
+      }),
+    ]);
+
+    return { error: undefined, value: store.value };
   }
 }
