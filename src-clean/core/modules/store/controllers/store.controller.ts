@@ -15,6 +15,7 @@ import { AddTotemUseCase } from '../useCases/addTotem.useCase';
 import { TotemPresenter } from '../presenters/totem.presenter';
 import { TotemGateway } from '../gateways/totem.gateway';
 import { FindStoreTotemByAccessTokenUseCase } from '../useCases/findStoreTotemByAccessToken.useCase';
+import { CategoryGateway } from '../../product/gateways/category.gateway';
 
 export class StoreCoreController {
   constructor(private dataSource: DataSource) {}
@@ -88,8 +89,9 @@ export class StoreCoreController {
 
   async createStore(dto: CreateStoreInputDTO): Promise<CoreResponse<StoreDTO>> {
     try {
-      const gateway = new StoreGateway(this.dataSource);
-      const useCase = new CreateStoreUseCase(gateway);
+      const storeGateway = new StoreGateway(this.dataSource);
+      const categoryGateway = new CategoryGateway(this.dataSource);
+      const useCase = new CreateStoreUseCase(storeGateway, categoryGateway);
 
       const { error: err, value: store } = await useCase.execute(dto);
 
