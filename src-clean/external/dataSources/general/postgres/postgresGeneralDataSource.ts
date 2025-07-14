@@ -2,12 +2,196 @@ import { DataSource, Repository } from 'typeorm';
 import { GeneralDataSource } from '../general.dataSource';
 import { StoreDataSourceDTO } from 'src-clean/common/dataSource/DTOs/storeDataSource.dto';
 import { StoreEntity } from './entities/store.entity';
+import { OrderDataSourceDto } from 'src-clean/common/dataSource/DTOs/orderDataSource.dto';
+import { OrderEntity } from './entities/order.entity';
+import { OrderItemEntity } from './entities/order-item.entity';
+import { OrderStatusEnum } from 'src-clean/core/modules/order/entities/order.entity';
+import { NotFoundException } from '@nestjs/common';
+import { OrderDataSourcePaginationDto } from 'src-clean/common/dataSource/DTOs/orderDataSourcePagination.dto';
 
 export class PostgresGeneralDataSource implements GeneralDataSource {
   private storeRepository: Repository<StoreEntity>;
+  private orderRepository: Repository<OrderEntity>;
+  private orderItemRepository: Repository<OrderItemEntity>;
 
   constructor(private dataSource: DataSource) {
     this.storeRepository = this.dataSource.getRepository(StoreEntity);
+    this.orderRepository = this.dataSource.getRepository(OrderEntity);
+    this.orderItemRepository = this.dataSource.getRepository(OrderItemEntity);
+  }
+
+  async saveOrder(order: OrderDataSourceDto): Promise<void> {
+    const orderCreate = this.orderRepository.create({
+      id: order.id,
+      store_id: order.store_id,
+      totem_id: order.totem_id,
+      customer_id: order.customer_id,
+      total_price: order.total_price,
+      status: order.status as OrderStatusEnum,
+      created_at: new Date(order.created_at),
+      order_items: order.order_items.map((item) => ({
+        id: item.id,
+        product_id: item.product_id,
+        unit_price: item.unit_price,
+        subtotal: item.subtotal,
+        quantity: item.quantity,
+        created_at: new Date(item.created_at),
+      })),
+    });
+
+    await this.orderRepository.save(orderCreate);
+  }
+
+  async findOrderById(id: string): Promise<OrderDataSourceDto | null> {
+    const order = await this.orderRepository.findOne({
+      where: { id: id },
+      relations: ['order_items', 'customer'],
+    });
+
+    if (!order) return null;
+
+    return {
+      id: order.id,
+      store_id: order.store_id,
+      totem_id: order.totem_id,
+      customer_id: order.customer_id,
+      total_price: order.total_price,
+      status: order.status,
+      created_at: order.created_at.toISOString(),
+      order_items: order.order_items.map((item) => ({
+        id: item.id,
+        order_id: item.order_id,
+        product_id: item.product_id,
+        unit_price: item.unit_price,
+        subtotal: item.subtotal,
+        quantity: item.quantity,
+        created_at: item.created_at.toISOString(),
+      })),
+    };
+  }
+
+  async findByOrderItemId(id: string): Promise<OrderDataSourceDto | null> {
+    const orderItem = await this.orderItemRepository.findOne({
+      where: { id },
+      relations: ['order', 'order.customer'],
+    });
+
+    if (!orderItem || !orderItem.order) return null;
+
+    const order = orderItem.order;
+    const orderItems = order.order_items || [];
+
+    return {
+      id: order.id,
+      store_id: order.store_id,
+      totem_id: order.totem_id,
+      customer_id: order.customer_id,
+      total_price: order.total_price,
+      status: order.status,
+      created_at:
+        order.created_at instanceof Date
+          ? order.created_at.toISOString()
+          : order.created_at,
+      order_items: orderItems.map((item: OrderItemEntity) => ({
+        id: item.id,
+        order_id: item.order,
+        product_id: item.product_id,
+        unit_price: item.unit_price,
+        subtotal: item.subtotal,
+        quantity: item.quantity,
+        created_at:
+          item.created_at instanceof Date
+            ? item.created_at.toISOString()
+            : item.created_at,
+      })),
+    };
+  }
+
+  async deleteOrder(order: OrderDataSourceDto): Promise<void> {
+    const result = await this.orderRepository.delete(order.id);
+
+    if (result.affected === 0) {
+      throw new NotFoundException(`Order id ${order.id} not found`);
+    }
+  }
+
+  async deleteOrderItem(orderItem: string): Promise<void> {
+    const result = await this.orderItemRepository.delete(orderItem);
+
+    if (result.affected === 0) {
+      throw new NotFoundException(`Order id ${orderItem} not found`);
+    }
+  }
+
+  async getAllOrders(
+    page: number,
+    limit: number,
+    status: string,
+    storeId: string,
+  ): Promise<OrderDataSourcePaginationDto> {
+    const params: {
+      skip: number;
+      take: number;
+      relations?: string[];
+      order: { [key: string]: 'ASC' | 'DESC' };
+      where?: Record<string, unknown>;
+    } = {
+      skip: (page - 1) * limit,
+      take: limit,
+      relations: ['order_items', 'customer'],
+      order: { created_at: 'DESC' },
+    };
+
+    if (status) {
+      params.where = { status: status as OrderStatusEnum };
+    }
+
+    if (storeId) {
+      params.where = { ...params?.where, store_id: storeId };
+    }
+
+    const orders = await this.orderRepository.findAndCount(params);
+
+    if (!orders || orders[0].length === 0) {
+      return {
+        data: [],
+        total: 0,
+        page,
+        limit,
+        totalPages: 0,
+        hasNextPage: false,
+        hasPreviousPage: false,
+      };
+    }
+
+    const orderDataSource = orders[0].map((order) => ({
+      id: order.id,
+      store_id: order.store_id,
+      totem_id: order.totem_id,
+      customer_id: order.customer_id,
+      total_price: order.total_price,
+      status: order.status,
+      created_at: order.created_at.toISOString(),
+      order_items: order.order_items.map((item) => ({
+        id: item.id,
+        order_id: item.order_id,
+        product_id: item.product_id,
+        unit_price: item.unit_price,
+        subtotal: item.subtotal,
+        quantity: item.quantity,
+        created_at: item.created_at.toISOString(),
+      })),
+    }));
+
+    return {
+      data: orderDataSource,
+      total: orders[1],
+      page,
+      limit,
+      totalPages: Math.ceil(orders[1] / limit),
+      hasNextPage: page * limit < orders[1],
+      hasPreviousPage: page > 1,
+    };
   }
 
   async findStoreById(id: string): Promise<StoreDataSourceDTO | null> {
