@@ -1,6 +1,6 @@
-import { randomUUID } from 'node:crypto';
 import { CoreResponse } from 'src-clean/common/DTOs/coreResponse';
 import { ResourceInvalidException } from 'src-clean/common/exceptions/resourceInvalidException';
+import { generateUUID } from 'src-clean/core/common/utils/uuid.helper';
 
 export class Totem {
   private _id: string;
@@ -50,9 +50,9 @@ export class Totem {
   static create(props: { name: string }): CoreResponse<Totem> {
     try {
       const totem = new Totem({
-        id: randomUUID(),
+        id: generateUUID(),
         name: props.name,
-        tokenAccess: randomUUID(),
+        tokenAccess: generateUUID(),
         createdAt: new Date(),
       });
 

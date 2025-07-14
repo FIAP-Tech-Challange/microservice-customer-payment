@@ -1,9 +1,9 @@
-import { randomUUID } from 'node:crypto';
 import { CoreResponse } from 'src-clean/common/DTOs/coreResponse';
 import { CoreException } from 'src-clean/common/exceptions/coreException';
 import { ResourceInvalidException } from 'src-clean/common/exceptions/resourceInvalidException';
 import { Product } from './product.entity';
 import { ResourceConflictException } from 'src-clean/common/exceptions/resourceConflictException';
+import { generateUUID } from 'src-clean/core/common/utils/uuid.helper';
 
 interface CategoryProps {
   id: string;
@@ -12,7 +12,7 @@ interface CategoryProps {
   updatedAt: Date;
   products: Product[];
   storeId: string;
-}   
+}
 
 export class Category {
   private _id: string;
@@ -56,13 +56,15 @@ export class Category {
   get storeId() {
     return this._storeId;
   }
-  
+
   private validate() {
     if (!this._id) {
       throw new ResourceInvalidException('Category must have an id');
     }
     if (!this._name || this._name.length < 3) {
-      throw new ResourceInvalidException('Category name must be at least 3 characters long');
+      throw new ResourceInvalidException(
+        'Category name must be at least 3 characters long',
+      );
     }
     if (!this._createdAt) {
       throw new ResourceInvalidException('Category must have a creation date');
@@ -83,14 +85,14 @@ export class Category {
             'Product with this name already exists in the category',
           );
         }
-  
+
         if (p.id === product.id) {
           throw new ResourceConflictException(
             'Product with this id already exists in the category',
           );
         }
       });
-  
+
       this._products.push(product);
       this._updatedAt = new Date();
       return { error: undefined, value: undefined };
@@ -101,24 +103,21 @@ export class Category {
 
   static create(props: {
     name: string;
-    products: Product[];
     storeId: string;
-    createdAt?: Date;
-    updatedAt?: Date;
   }): CoreResponse<Category> {
-    const id = randomUUID();
+    const id = generateUUID();
     const now = new Date();
-  
+
     try {
       const category = new Category({
         id,
         name: props.name,
-        products: props.products,
         storeId: props.storeId,
+        products: [],
         createdAt: now,
         updatedAt: now,
       });
-  
+
       return { value: category, error: undefined };
     } catch (error) {
       return { error: error as CoreException, value: undefined };
@@ -133,5 +132,4 @@ export class Category {
       return { error: error as CoreException, value: undefined };
     }
   }
-
 }
