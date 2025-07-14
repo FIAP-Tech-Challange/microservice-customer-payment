@@ -1,5 +1,8 @@
-import { PaymentDataSourceDTO } from 'src-clean/common/dataSource/DTOs/paymentDataSource.dto';
+import { PaymentCreateExternalDataSourceResponseDTO } from 'src-clean/common/dataSource/DTOs/paymentCreateExternalDataSourceResponse.dto';
+import { PaymentExternalDataSourceDTO } from 'src-clean/common/dataSource/DTOs/paymentExternalDataSource.dto';
 
 export interface PaymentDataSource {
-  getPayment(paymentId: string): Promise<PaymentDataSourceDTO | null>;
+  createPaymentExternal(
+    paymentDTO: PaymentExternalDataSourceDTO,
+  ): Promise<PaymentCreateExternalDataSourceResponseDTO>;
 }

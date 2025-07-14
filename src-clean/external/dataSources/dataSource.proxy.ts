@@ -2,13 +2,15 @@ import { DataSource } from 'src-clean/common/dataSource/dataSource.interface';
 import { StoreDataSourceDTO } from 'src-clean/common/dataSource/DTOs/storeDataSource.dto';
 import { GeneralDataSource } from './general/general.dataSource';
 import { PaymentDataSource } from './payment/payment.dataSource';
-import { PaymentDataSourceDTO } from 'src-clean/common/dataSource/DTOs/paymentDataSource.dto';
 import { TotemDataSourceDTO } from 'src-clean/common/dataSource/DTOs/totemDataSource.dto';
 import { CustomerDataSourceDTO } from 'src-clean/common/dataSource/DTOs/customerDataSource.dto';
 import { PaginatedDataSourceParamsDTO } from 'src-clean/common/dataSource/DTOs/paginatedDataSourceParams.dto';
 import { FindAllCustomersDataSourceFiltersDTO } from 'src-clean/common/dataSource/DTOs/findAllCustomersDataSourceFilters.dto';
 import { PaginatedDataSourceResponseDTO } from 'src-clean/common/dataSource/DTOs/paginatedDataSourceResponse.dto';
 import { CategoryDataSourceDTO } from 'src-clean/common/dataSource/DTOs/categoryDataSource.dto';
+import { PaymentCreateExternalDataSourceResponseDTO } from 'src-clean/common/dataSource/DTOs/paymentCreateExternalDataSourceResponse.dto';
+import { PaymentDataSourceDTO } from 'src-clean/common/dataSource/DTOs/paymentDataSource.dto';
+import { PaymentExternalDataSourceDTO } from 'src-clean/common/dataSource/DTOs/paymentExternalDataSource.dto';
 
 export class DataSourceProxy implements DataSource {
   constructor(
@@ -61,7 +63,15 @@ export class DataSourceProxy implements DataSource {
 
   // Payment
   getPayment(paymentId: string): Promise<PaymentDataSourceDTO | null> {
-    return this.paymentDataSource.getPayment(paymentId);
+    return this.generalDataSource.getPayment(paymentId);
+  }
+  savePayment(paymentDTO: PaymentDataSourceDTO): Promise<void> {
+    return this.generalDataSource.savePayment(paymentDTO);
+  }
+  createPaymentExternal(
+    paymentDTO: PaymentExternalDataSourceDTO,
+  ): Promise<PaymentCreateExternalDataSourceResponseDTO> {
+    return this.paymentDataSource.createPaymentExternal(paymentDTO);
   }
 
   // Customer

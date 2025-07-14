@@ -1,4 +1,3 @@
-import { PaymentDataSourceDTO } from './DTOs/paymentDataSource.dto';
 import { StoreDataSourceDTO } from './DTOs/storeDataSource.dto';
 import { CategoryDataSourceDTO } from './DTOs/categoryDataSource.dto';
 import { TotemDataSourceDTO } from './DTOs/totemDataSource.dto';
@@ -6,6 +5,9 @@ import { CustomerDataSourceDTO } from './DTOs/customerDataSource.dto';
 import { FindAllCustomersDataSourceFiltersDTO } from './DTOs/findAllCustomersDataSourceFilters.dto';
 import { PaginatedDataSourceParamsDTO } from './DTOs/paginatedDataSourceParams.dto';
 import { PaginatedDataSourceResponseDTO } from './DTOs/paginatedDataSourceResponse.dto';
+import { PaymentDataSourceDTO } from './DTOs/paymentDataSource.dto';
+import { PaymentCreateExternalDataSourceResponseDTO } from './DTOs/paymentCreateExternalDataSourceResponse.dto';
+import { PaymentExternalDataSourceDTO } from './DTOs/paymentExternalDataSource.dto';
 
 export interface DataSource {
   // Totem
@@ -32,7 +34,11 @@ export interface DataSource {
   ): Promise<CategoryDataSourceDTO | null>;
 
   // Payment
+  savePayment(paymentDTO: PaymentDataSourceDTO): Promise<void>;
   getPayment(paymentId: string): Promise<PaymentDataSourceDTO | null>;
+  createPaymentExternal(
+    paymentDTO: PaymentExternalDataSourceDTO,
+  ): Promise<PaymentCreateExternalDataSourceResponseDTO>;
 
   // Customer
   findCustomerById(id: string): Promise<CustomerDataSourceDTO | null>;
