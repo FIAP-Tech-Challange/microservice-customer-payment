@@ -13,9 +13,11 @@ import { AddTotemInputDTO } from '../DTOs/addTotemInput.dto';
 import { TotemDTO } from '../DTOs/totem.dto';
 import { AddTotemUseCase } from '../useCases/addTotem.useCase';
 import { TotemPresenter } from '../presenters/totem.presenter';
-import { TotemGateway } from '../gateways/totem.gateway';
-import { FindStoreTotemByAccessTokenUseCase } from '../useCases/findStoreTotemByAccessToken.useCase';
+import { FindStoreByTotemAccessTokenUseCase } from '../useCases/findStoreByTotemAccessToken.useCase';
 import { CategoryGateway } from '../../product/gateways/category.gateway';
+import { CreateCategoryUseCase } from '../../product/useCases/createCategory.useCase';
+import { CreateStoreWithDefaultCategoriesUseCase } from '../useCases/createStoreWithDeafaultCategories.useCase';
+import { FindStoreByIdUseCase } from '../useCases/findStoreById.useCase';
 
 export class StoreCoreController {
   constructor(private dataSource: DataSource) {}
@@ -25,9 +27,14 @@ export class StoreCoreController {
   ): Promise<CoreResponse<TotemDTO>> {
     try {
       const gateway = new StoreGateway(this.dataSource);
-      const useCase = new AddTotemUseCase(gateway);
 
-      const totem = await useCase.execute(dto);
+      const findStoreByIdUseCase = new FindStoreByIdUseCase(gateway);
+      const addTotemUseCase = new AddTotemUseCase(
+        gateway,
+        findStoreByIdUseCase,
+      );
+
+      const totem = await addTotemUseCase.execute(dto);
       if (totem.error) return { error: totem.error, value: undefined };
 
       return { error: undefined, value: TotemPresenter.toDto(totem.value) };
@@ -45,7 +52,8 @@ export class StoreCoreController {
   ): Promise<CoreResponse<boolean>> {
     try {
       const gateway = new StoreGateway(this.dataSource);
-      const useCase = new ValidateStorePasswordUseCase(gateway);
+      const findStoreByEmailUseCase = new FindStoreByEmailUseCase(gateway);
+      const useCase = new ValidateStorePasswordUseCase(findStoreByEmailUseCase);
 
       const { error: err, value: isValid } = await useCase.execute({
         email: dto.email,
@@ -90,8 +98,19 @@ export class StoreCoreController {
   async createStore(dto: CreateStoreInputDTO): Promise<CoreResponse<StoreDTO>> {
     try {
       const storeGateway = new StoreGateway(this.dataSource);
+      const createStoreUseCase = new CreateStoreUseCase(storeGateway);
+      const findStoreByIdUseCase = new FindStoreByIdUseCase(storeGateway);
+
       const categoryGateway = new CategoryGateway(this.dataSource);
-      const useCase = new CreateStoreUseCase(storeGateway, categoryGateway);
+      const createCategoryUseCase = new CreateCategoryUseCase(
+        categoryGateway,
+        findStoreByIdUseCase,
+      );
+
+      const useCase = new CreateStoreWithDefaultCategoriesUseCase(
+        createStoreUseCase,
+        createCategoryUseCase,
+      );
 
       const { error: err, value: store } = await useCase.execute(dto);
 
@@ -107,23 +126,23 @@ export class StoreCoreController {
     }
   }
 
-  async findStoreTotemByAccessToken(
+  async findStoreByTotemAccessToken(
     accessToken: string,
-  ): Promise<CoreResponse<TotemDTO>> {
+  ): Promise<CoreResponse<StoreDTO>> {
     try {
-      const gateway = new TotemGateway(this.dataSource);
-      const useCase = new FindStoreTotemByAccessTokenUseCase(gateway);
+      const gateway = new StoreGateway(this.dataSource);
+      const useCase = new FindStoreByTotemAccessTokenUseCase(gateway);
 
-      const totem = await useCase.execute(accessToken);
+      const store = await useCase.execute(accessToken);
 
-      if (totem.error) return { error: totem.error, value: undefined };
+      if (store.error) return { error: store.error, value: undefined };
 
-      return { error: undefined, value: TotemPresenter.toDto(totem.value) };
+      return { error: undefined, value: StorePresenter.toDto(store.value) };
     } catch (error) {
       console.error(error);
       return {
         error: new UnexpectedError(
-          'Something went wrong while finding totem by access token',
+          'Something went wrong while finding store by totem access token',
         ),
         value: undefined,
       };

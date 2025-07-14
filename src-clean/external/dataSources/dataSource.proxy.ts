@@ -39,6 +39,11 @@ export class DataSourceProxy implements DataSource {
   saveStore(store: StoreDataSourceDTO): Promise<void> {
     return this.generalDataSource.saveStore(store);
   }
+  findStoreByTotemAccessToken(
+    accessToken: string,
+  ): Promise<StoreDataSourceDTO | null> {
+    return this.generalDataSource.findStoreByTotemAccessToken(accessToken);
+  }
 
   // Product/Category
   saveCategory(categoryDTO: CategoryDataSourceDTO): Promise<void> {

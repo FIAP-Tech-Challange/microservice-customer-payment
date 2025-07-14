@@ -5,6 +5,7 @@ import { CNPJ } from 'src-clean/core/common/valueObjects/cnpj.vo';
 import { Email } from 'src-clean/core/common/valueObjects/email.vo';
 import { Store } from 'src-clean/core/modules/store/entities/store.entity';
 import { StoreGateway } from 'src-clean/core/modules/store/gateways/store.gateway';
+import { FindStoreByEmailUseCase } from 'src-clean/core/modules/store/useCases/findStoreByEmail.useCase';
 import { ValidateStorePasswordUseCase } from 'src-clean/core/modules/store/useCases/validateStorePassword.useCase';
 import { DataSourceProxy } from 'src-clean/external/dataSources/dataSource.proxy';
 import { InMemoryGeneralDataSource } from 'src-clean/external/dataSources/general/inMemory/inMemoryGeneralDataSource';
@@ -13,6 +14,7 @@ import { FakePaymentDataSource } from 'src-clean/external/dataSources/payment/fa
 describe('ValidateStorePasswordUseCase', () => {
   let useCase: ValidateStorePasswordUseCase;
   let storeGateway: StoreGateway;
+  let findStoreByEmailUseCase: FindStoreByEmailUseCase;
 
   beforeEach(() => {
     const inMemoryDataSource = new InMemoryGeneralDataSource();
@@ -23,7 +25,8 @@ describe('ValidateStorePasswordUseCase', () => {
     );
 
     storeGateway = new StoreGateway(dataSource);
-    useCase = new ValidateStorePasswordUseCase(storeGateway);
+    findStoreByEmailUseCase = new FindStoreByEmailUseCase(storeGateway);
+    useCase = new ValidateStorePasswordUseCase(findStoreByEmailUseCase);
   });
 
   it('should validate password successfully for existing store with correct password', async () => {

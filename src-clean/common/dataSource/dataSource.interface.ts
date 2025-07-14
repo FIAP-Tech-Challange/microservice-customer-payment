@@ -19,6 +19,9 @@ export interface DataSource {
   findStoreByName(name: string): Promise<StoreDataSourceDTO | null>;
   findStoreById(id: string): Promise<StoreDataSourceDTO | null>;
   saveStore(store: StoreDataSourceDTO): Promise<void>;
+  findStoreByTotemAccessToken(
+    accessToken: string,
+  ): Promise<StoreDataSourceDTO | null>;
 
   // Product/Category
   saveCategory(categoryDTO: CategoryDataSourceDTO): Promise<void>;

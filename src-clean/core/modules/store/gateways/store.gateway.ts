@@ -59,4 +59,19 @@ export class StoreGateway {
     await this.dataSource.saveStore(storeDTO);
     return { error: undefined, value: undefined };
   }
+
+  async findStoreByTotemAccessToken(
+    accessToken: string,
+  ): Promise<CoreResponse<Store | null>> {
+    const storeDTO =
+      await this.dataSource.findStoreByTotemAccessToken(accessToken);
+
+    if (!storeDTO) return { error: undefined, value: null };
+
+    const { error: mapErr, value: dto } = StoreMapper.toEntity(storeDTO);
+
+    if (mapErr) return { error: mapErr, value: undefined };
+
+    return { error: undefined, value: dto };
+  }
 }

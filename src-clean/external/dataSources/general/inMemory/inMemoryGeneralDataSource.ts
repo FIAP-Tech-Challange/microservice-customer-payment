@@ -58,6 +58,18 @@ export class InMemoryGeneralDataSource implements GeneralDataSource {
     return Promise.resolve();
   }
 
+  findStoreByTotemAccessToken(
+    accessToken: string,
+  ): Promise<StoreDataSourceDTO | null> {
+    for (const store of this.stores.values()) {
+      for (const totem of store.totems) {
+        if (totem.token_access === accessToken) return Promise.resolve(store);
+      }
+    }
+
+    return Promise.resolve(null);
+  }
+
   // Product/Category
   saveCategory(categoryDTO: CategoryDataSourceDTO): Promise<void> {
     this.productCategories.set(categoryDTO.id, categoryDTO);
