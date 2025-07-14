@@ -1,3 +1,5 @@
+import { OrderDataSourceDto } from 'src-clean/common/dataSource/DTOs/orderDataSource.dto';
+import { OrderDataSourcePaginationDto } from 'src-clean/common/dataSource/DTOs/orderDataSourcePagination.dto';
 import { CategoryDataSourceDTO } from 'src-clean/common/dataSource/DTOs/categoryDataSource.dto';
 import { CustomerDataSourceDTO } from 'src-clean/common/dataSource/DTOs/customerDataSource.dto';
 import { FindAllCustomersDataSourceFiltersDTO } from 'src-clean/common/dataSource/DTOs/findAllCustomersDataSourceFilters.dto';
@@ -37,4 +39,17 @@ export interface GeneralDataSource {
   ): Promise<PaginatedDataSourceResponseDTO<CustomerDataSourceDTO>>;
   saveCustomer(customer: CustomerDataSourceDTO): Promise<void>;
   deleteCustomer(id: string): Promise<void>;
+  
+  // Order
+  saveOrder(order: OrderDataSourceDto): Promise<void>;
+  deleteOrder(order: OrderDataSourceDto): Promise<void>;
+  deleteOrderItem(orderItem: string): Promise<void>;
+  getAllOrders(
+    page: number,
+    limit: number,
+    status: string,
+    storeId: string,
+  ): Promise<OrderDataSourcePaginationDto>;
+  findOrderById(id: string): Promise<OrderDataSourceDto | null>;
+  findByOrderItemId(id: string): Promise<OrderDataSourceDto | null>;
 }
