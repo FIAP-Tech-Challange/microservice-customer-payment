@@ -8,6 +8,12 @@ import { OrderItemEntity } from './entities/order-item.entity';
 import { OrderStatusEnum } from 'src-clean/core/modules/order/entities/order.entity';
 import { NotFoundException } from '@nestjs/common';
 import { OrderDataSourcePaginationDto } from 'src-clean/common/dataSource/DTOs/orderDataSourcePagination.dto';
+import { CategoryDataSourceDTO } from 'src-clean/common/dataSource/DTOs/categoryDataSource.dto';
+import { CustomerDataSourceDTO } from 'src-clean/common/dataSource/DTOs/customerDataSource.dto';
+import { FindAllCustomersDataSourceFiltersDTO } from 'src-clean/common/dataSource/DTOs/findAllCustomersDataSourceFilters.dto';
+import { PaginatedDataSourceParamsDTO } from 'src-clean/common/dataSource/DTOs/paginatedDataSourceParams.dto';
+import { PaginatedDataSourceResponseDTO } from 'src-clean/common/dataSource/DTOs/paginatedDataSourceResponse.dto';
+import { TotemDataSourceDTO } from 'src-clean/common/dataSource/DTOs/totemDataSource.dto';
 
 export class PostgresGeneralDataSource implements GeneralDataSource {
   private storeRepository: Repository<StoreEntity>;
@@ -18,6 +24,45 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
     this.storeRepository = this.dataSource.getRepository(StoreEntity);
     this.orderRepository = this.dataSource.getRepository(OrderEntity);
     this.orderItemRepository = this.dataSource.getRepository(OrderItemEntity);
+  }
+
+  findTotemByAccessToken(
+    accessToken: string,
+  ): Promise<TotemDataSourceDTO | null> {
+    throw new Error('Method not implemented.');
+  }
+  saveCategory(categoryDTO: CategoryDataSourceDTO): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  findCategoryById(id: string): Promise<CategoryDataSourceDTO | null> {
+    throw new Error('Method not implemented.');
+  }
+  findCategoryByNameAndStoreId(
+    name: string,
+    storeId: string,
+  ): Promise<CategoryDataSourceDTO | null> {
+    throw new Error('Method not implemented.');
+  }
+  findCustomerById(id: string): Promise<CustomerDataSourceDTO | null> {
+    throw new Error('Method not implemented.');
+  }
+  findCustomerByCpf(cpf: string): Promise<CustomerDataSourceDTO | null> {
+    throw new Error('Method not implemented.');
+  }
+  findCustomerByEmail(email: string): Promise<CustomerDataSourceDTO | null> {
+    throw new Error('Method not implemented.');
+  }
+  findAllCustomers(
+    paginatedParams: PaginatedDataSourceParamsDTO,
+    filters: FindAllCustomersDataSourceFiltersDTO,
+  ): Promise<PaginatedDataSourceResponseDTO<CustomerDataSourceDTO>> {
+    throw new Error('Method not implemented.');
+  }
+  saveCustomer(customer: CustomerDataSourceDTO): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  deleteCustomer(id: string): Promise<void> {
+    throw new Error('Method not implemented.');
   }
 
   async saveOrder(order: OrderDataSourceDto): Promise<void> {
