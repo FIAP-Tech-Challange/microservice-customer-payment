@@ -1,19 +1,23 @@
 import { generateUUID } from 'src-clean/core/common/utils/uuid.helper';
-import { PaymentStatusEnum } from './paymentStatus.enum';
+import { PaymentStatusEnum } from '../enums/paymentStatus.enum';
 import { CoreResponse } from 'src-clean/common/DTOs/coreResponse';
 import { CoreException } from 'src-clean/common/exceptions/coreException';
 import { ResourceConflictException } from 'src-clean/common/exceptions/resourceConflictException';
-import { PaymentPlatformDataSourceEnum } from 'src-clean/common/dataSource/enums/paymentPlatformDataSource.enum';
-import { PaymentTypeDataSourceEnum } from 'src-clean/common/dataSource/enums/paymentTypeDataSource.enum';
+import { PaymentTypeEnum } from '../enums/paymentType.enum';
+import { PaymentPlatformEnum } from '../enums/paymentPlatform.enum';
+import { isValidPaymentType } from 'src-clean/core/common/utils/isValidPaymentType';
+import { isValidPaymentStatus } from 'src-clean/core/common/utils/isValidPaymentStatus';
+import { isValidPaymentPlatform } from 'src-clean/core/common/utils/isValidPaymentPlatform';
+import { ResourceInvalidException } from 'src-clean/common/exceptions/resourceInvalidException';
 
 interface PaymentProps {
   id: string;
   orderId: string;
   storeId: string;
-  paymentType: PaymentTypeDataSourceEnum;
+  paymentType: PaymentTypeEnum;
   status: PaymentStatusEnum;
   total: number;
-  platform: PaymentPlatformDataSourceEnum | null;
+  platform: PaymentPlatformEnum | null;
   externalId: string | null;
   qrCode: string | null;
   createdAt: Date;
@@ -24,12 +28,12 @@ export class Payment {
   private _id: string;
   private _orderId: string;
   private _storeId: string;
-  private _paymentType: PaymentTypeDataSourceEnum;
+  private _paymentType: PaymentTypeEnum;
   private _status: PaymentStatusEnum;
   private _total: number;
   private _externalId: string | null;
   private _qrCode: string | null;
-  private _platform: PaymentPlatformDataSourceEnum | null;
+  private _platform: PaymentPlatformEnum | null;
   private _createdAt: Date;
   private _updatedAt: Date;
 
@@ -85,7 +89,7 @@ export class Payment {
 
   associateExternal(
     externalId: string,
-    platform: PaymentPlatformDataSourceEnum,
+    platform: PaymentPlatformEnum,
     qrCode: string | null,
   ): CoreResponse<undefined> {
     if (this._externalId) {
@@ -101,7 +105,7 @@ export class Payment {
     this._platform = platform;
     this._updatedAt = new Date();
 
-    if (qrCode && this._paymentType === PaymentTypeDataSourceEnum.QR) {
+    if (qrCode && this._paymentType === PaymentTypeEnum.QR) {
       this._qrCode = qrCode;
     }
 
@@ -115,55 +119,59 @@ export class Payment {
 
   private validate() {
     if (!this._id) {
-      throw new Error('ID is required');
+      throw new ResourceInvalidException('ID is required');
     }
     if (!this._orderId) {
-      throw new Error('Order ID is required');
+      throw new ResourceInvalidException('Order ID is required');
     }
     if (!this._storeId) {
-      throw new Error('Store ID is required');
+      throw new ResourceInvalidException('Store ID is required');
     }
     if (!this._paymentType) {
-      throw new Error('Payment Type is required');
+      throw new ResourceInvalidException('Payment Type is required');
+    } else if (isValidPaymentType(this._paymentType)) {
+      throw new ResourceInvalidException('Payment type is not valid');
     }
     if (!this._status) {
-      throw new Error('Status is required');
+      throw new ResourceInvalidException('Status is required');
+    } else if (isValidPaymentStatus(this._status)) {
+      throw new ResourceInvalidException('Status is not valid');
+    }
+    if (this._platform && isValidPaymentPlatform(this._platform)) {
+      throw new ResourceInvalidException('Payment is not valid');
     }
     if (this._total <= 0) {
-      throw new Error('Total must be greater than 0');
+      throw new ResourceInvalidException('Total must be greater than 0');
     }
     if (!this._createdAt) {
-      throw new Error('Created at is required');
+      throw new ResourceInvalidException('Created at is required');
     }
     if (!this._updatedAt) {
-      throw new Error('Updated at is required');
+      throw new ResourceInvalidException('Updated at is required');
     }
   }
 
-  static create(
-    props: Omit<
-      PaymentProps,
-      | 'id'
-      | 'status'
-      | 'createdAt'
-      | 'updatedAt'
-      | 'externalId'
-      | 'qrCode'
-      | 'platform'
-    >,
-  ): CoreResponse<Payment> {
+  static create(props: {
+    orderId: string;
+    storeId: string;
+    total: number;
+    paymentType: PaymentTypeEnum;
+  }): CoreResponse<Payment> {
     const now = new Date();
 
     try {
       const payment = new Payment({
         id: generateUUID(),
+        orderId: props.orderId,
+        storeId: props.storeId,
+        total: props.total,
+        paymentType: props.paymentType,
         status: PaymentStatusEnum.PENDING,
         createdAt: now,
         updatedAt: now,
         externalId: null,
         qrCode: null,
         platform: null,
-        ...props,
       });
       return { error: undefined, value: payment };
     } catch (error) {

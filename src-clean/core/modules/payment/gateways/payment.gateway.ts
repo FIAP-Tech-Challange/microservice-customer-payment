@@ -2,7 +2,7 @@ import { DataSource } from 'src-clean/common/dataSource/dataSource.interface';
 import { Payment } from '../entities/payment.entity';
 import { CoreResponse } from 'src-clean/common/DTOs/coreResponse';
 import { PaymentMapper } from '../mappers/payment.mapper';
-import { PaymentPlatformDataSourceEnum } from 'src-clean/common/dataSource/enums/paymentPlatformDataSource.enum';
+import { PaymentPlatformEnum } from '../enums/paymentPlatform.enum';
 
 export class PaymentGateway {
   constructor(private dataSource: DataSource) {}
@@ -13,9 +13,9 @@ export class PaymentGateway {
     const { externalId, paymentPlatform, qrCode } =
       await this.dataSource.createPaymentExternal(externalDTO);
 
-    const platform = PaymentPlatformDataSourceEnum[
+    const platform = PaymentPlatformEnum[
       paymentPlatform
-    ] as PaymentPlatformDataSourceEnum;
+    ] as PaymentPlatformEnum;
 
     payment.associateExternal(externalId, platform, qrCode);
 

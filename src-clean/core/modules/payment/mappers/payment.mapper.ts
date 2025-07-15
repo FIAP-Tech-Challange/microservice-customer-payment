@@ -1,11 +1,12 @@
 import { PaymentDataSourceDTO } from 'src-clean/common/dataSource/DTOs/paymentDataSource.dto';
 import { Payment } from '../entities/payment.entity';
 import { CoreResponse } from 'src-clean/common/DTOs/coreResponse';
-import { PaymentTypeEnum } from '../entities/paymentType.enum';
-import { PaymentStatusEnum } from '../entities/paymentStatus.enum';
 import { UnexpectedError } from 'src-clean/common/exceptions/unexpectedError';
-import { PaymentPlatformDataSourceEnum } from 'src-clean/common/dataSource/enums/paymentPlatformDataSource.enum';
 import { PaymentExternalDataSourceDTO } from 'src-clean/common/dataSource/DTOs/paymentExternalDataSource.dto';
+import { PaymentStatusEnum } from '../enums/paymentStatus.enum';
+import { PaymentTypeEnum } from '../enums/paymentType.enum';
+import { PaymentPlatformEnum } from '../enums/paymentPlatform.enum';
+import { PaymentTypeDataSourceEnum } from 'src-clean/common/dataSource/enums/paymentTypeDataSource.enum';
 
 export class PaymentMapper {
   static toPersistenceDTO(entity: Payment): CoreResponse<PaymentDataSourceDTO> {
@@ -38,13 +39,11 @@ export class PaymentMapper {
   static toExternalDTO(entity: Payment): PaymentExternalDataSourceDTO {
     return {
       id: entity.id,
-      order_id: entity.orderId,
-      store_id: entity.storeId,
-      status: entity.status,
+      external_id: entity.externalId,
       total: entity.total,
-      payment_type: entity.paymentType,
-      created_at: entity.createdAt.toISOString(),
-      updated_at: entity.updatedAt.toISOString(),
+      payment_type: PaymentTypeDataSourceEnum[
+        entity.paymentType
+      ] as PaymentTypeDataSourceEnum,
     };
   }
 
@@ -57,10 +56,9 @@ export class PaymentMapper {
       dto.status
     ] as PaymentStatusEnum;
 
-    const platform: PaymentPlatformDataSourceEnum =
-      PaymentPlatformDataSourceEnum[
-        dto.platform
-      ] as PaymentPlatformDataSourceEnum;
+    const platform: PaymentPlatformEnum = PaymentPlatformEnum[
+      dto.platform
+    ] as PaymentPlatformEnum;
 
     return Payment.restore({
       id: dto.id,

@@ -35,10 +35,16 @@ export interface DataSource {
 
   // Payment
   savePayment(paymentDTO: PaymentDataSourceDTO): Promise<void>;
-  getPayment(paymentId: string): Promise<PaymentDataSourceDTO | null>;
+  findPaymentById(paymentId: string): Promise<PaymentDataSourceDTO | null>;
   createPaymentExternal(
     paymentDTO: PaymentExternalDataSourceDTO,
   ): Promise<PaymentCreateExternalDataSourceResponseDTO>;
+  rejectPaymentExternal(
+    paymentDTO: PaymentExternalDataSourceDTO,
+  ): Promise<void>;
+  approvePaymentExternal(
+    paymentDTO: PaymentExternalDataSourceDTO,
+  ): Promise<void>;
 
   // Customer
   findCustomerById(id: string): Promise<CustomerDataSourceDTO | null>;

@@ -1,10 +1,8 @@
+import { PaymentTypeDataSourceEnum } from '../enums/paymentTypeDataSource.enum';
+
 export interface PaymentExternalDataSourceDTO {
   id: string;
-  order_id: string;
-  store_id: string;
-  payment_type: string;
-  status: string;
+  external_id: string | null;
+  payment_type: PaymentTypeDataSourceEnum;
   total: number;
-  created_at: string;
-  updated_at: string;
 }

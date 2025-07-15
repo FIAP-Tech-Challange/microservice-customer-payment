@@ -17,7 +17,7 @@ export class InitiatePaymentUseCase {
 
     const order = (await this.findOrderByIdUseCase.execute(
       dto.orderId,
-    )) as CoreResponse<any>;
+    )) as CoreResponse<{ id: string; total: number }>;
     if (order.error) return { error: order.error, value: undefined };
 
     const createPayment = Payment.create({

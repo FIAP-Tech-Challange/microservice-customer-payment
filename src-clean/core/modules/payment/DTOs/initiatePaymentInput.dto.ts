@@ -1,7 +1,7 @@
-import { PaymentTypeDataSourceEnum } from 'src-clean/common/dataSource/enums/paymentTypeDataSource.enum';
+import { PaymentTypeEnum } from '../enums/paymentType.enum';
 
 export type InitiatePaymentInputDTO = {
   orderId: string;
   storeId: string;
-  paymentType: PaymentTypeDataSourceEnum;
+  paymentType: PaymentTypeEnum;
 };
