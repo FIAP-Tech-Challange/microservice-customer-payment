@@ -87,6 +87,46 @@ export class Payment {
     return this._updatedAt;
   }
 
+  approve(): CoreResponse<undefined> {
+    if (this._status !== PaymentStatusEnum.PENDING) {
+      return {
+        error: new ResourceConflictException(
+          'Payment must be pending to be Approved',
+        ),
+        value: undefined,
+      };
+    }
+
+    this._status = PaymentStatusEnum.APPROVED;
+
+    try {
+      this.validate();
+      return { error: undefined, value: undefined };
+    } catch (error) {
+      return { error: error as CoreException, value: undefined };
+    }
+  }
+
+  reject(): CoreResponse<undefined> {
+    if (this._status !== PaymentStatusEnum.PENDING) {
+      return {
+        error: new ResourceConflictException(
+          'Payment must be pending to be Rejected',
+        ),
+        value: undefined,
+      };
+    }
+
+    this._status = PaymentStatusEnum.REFUSED;
+
+    try {
+      this.validate();
+      return { error: undefined, value: undefined };
+    } catch (error) {
+      return { error: error as CoreException, value: undefined };
+    }
+  }
+
   associateExternal(
     externalId: string,
     platform: PaymentPlatformEnum,
