@@ -8,6 +8,9 @@ import { PaginatedDataSourceResponseDTO } from './DTOs/paginatedDataSourceRespon
 import { PaymentDataSourceDTO } from './DTOs/paymentDataSource.dto';
 import { PaymentCreateExternalDataSourceResponseDTO } from './DTOs/paymentCreateExternalDataSourceResponse.dto';
 import { PaymentExternalDataSourceDTO } from './DTOs/paymentExternalDataSource.dto';
+import { OrderDataSourceDto } from './DTOs/orderDataSource.dto';
+import { OrderPaginationDto } from 'src-clean/core/modules/order/DTOs/order-pagination.dto';
+import { ProductDataSourceDTO } from './DTOs/productDataSource.dto';
 
 export interface DataSource {
   // Totem
@@ -32,6 +35,11 @@ export interface DataSource {
     name: string,
     storeId: string,
   ): Promise<CategoryDataSourceDTO | null>;
+  findProductById(id: string): Promise<ProductDataSourceDTO | null>;
+  saveProduct(product: ProductDataSourceDTO): Promise<void>;
+  findProductByName(
+    name: string,
+  ): ProductDataSourceDTO | PromiseLike<ProductDataSourceDTO | null> | null;
 
   // Payment
   savePayment(paymentDTO: PaymentDataSourceDTO): Promise<void>;
@@ -56,4 +64,17 @@ export interface DataSource {
   ): Promise<PaginatedDataSourceResponseDTO<CustomerDataSourceDTO>>;
   saveCustomer(customer: CustomerDataSourceDTO): Promise<void>;
   deleteCustomer(id: string): Promise<void>;
+  
+  // Order
+  saveOrder(order: OrderDataSourceDto): Promise<void>;
+  findOrderById(id: string): Promise<OrderDataSourceDto | null>;
+  findByOrderItemId(id: string): Promise<OrderDataSourceDto | null>;
+  deleteOrder(order: OrderDataSourceDto): Promise<void>;
+  deleteOrderItem(orderItem: string): Promise<void>;
+  getAllOrders(
+    page: number,
+    limit: number,
+    status: string,
+    storeId: string,
+  ): Promise<OrderPaginationDto>;
 }
