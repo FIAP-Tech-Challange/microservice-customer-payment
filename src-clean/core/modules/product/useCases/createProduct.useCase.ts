@@ -3,15 +3,23 @@ import { CreateProductInputDTO } from '../DTOs/createProductInput.dto';
 import { Product } from '../entities/product.entity';
 import { FindCategoryByIdUseCase } from './findCategoryById.useCase';
 import { CategoryGateway } from '../gateways/category.gateway';
+import { FindStoreByIdUseCase } from '../../store/useCases/findStoreById.useCase';
 
 export class CreateProductUseCase {
-  constructor(private categoryGateway: CategoryGateway) {}
+  constructor(
+    private categoryGateway: CategoryGateway,
+    private findStoreByIdUseCase: FindStoreByIdUseCase,
+    private findCategoryByIdUseCase: FindCategoryByIdUseCase,
+  ) {}
 
   async execute(dto: CreateProductInputDTO): Promise<CoreResponse<Product>> {
-    const category = await new FindCategoryByIdUseCase(
-      this.categoryGateway,
-    ).execute(dto.categoryId);
+    const store = await this.findStoreByIdUseCase.execute(dto.storeId);
+    if (store.error) return { error: store.error, value: undefined };
 
+    const category = await this.findCategoryByIdUseCase.execute(
+      dto.categoryId,
+      dto.storeId,
+    );
     if (category.error) return { error: category.error, value: undefined };
 
     const product = Product.create({

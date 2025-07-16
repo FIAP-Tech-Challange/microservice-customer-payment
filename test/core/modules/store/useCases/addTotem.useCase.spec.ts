@@ -7,6 +7,7 @@ import { Store } from 'src-clean/core/modules/store/entities/store.entity';
 import { Totem } from 'src-clean/core/modules/store/entities/totem.entity';
 import { StoreGateway } from 'src-clean/core/modules/store/gateways/store.gateway';
 import { AddTotemUseCase } from 'src-clean/core/modules/store/useCases/addTotem.useCase';
+import { FindStoreByIdUseCase } from 'src-clean/core/modules/store/useCases/findStoreById.useCase';
 import { DataSourceProxy } from 'src-clean/external/dataSources/dataSource.proxy';
 import { InMemoryGeneralDataSource } from 'src-clean/external/dataSources/general/inMemory/inMemoryGeneralDataSource';
 import { FakePaymentDataSource } from 'src-clean/external/dataSources/payment/fake/fakePaymentDataSource';
@@ -14,6 +15,7 @@ import { FakePaymentDataSource } from 'src-clean/external/dataSources/payment/fa
 describe('AddTotemUseCase', () => {
   let useCase: AddTotemUseCase;
   let storeGateway: StoreGateway;
+  let findStoreByIdUseCase: FindStoreByIdUseCase;
 
   beforeEach(() => {
     const inMemoryDataSource = new InMemoryGeneralDataSource();
@@ -24,7 +26,8 @@ describe('AddTotemUseCase', () => {
     );
 
     storeGateway = new StoreGateway(dataSource);
-    useCase = new AddTotemUseCase(storeGateway);
+    findStoreByIdUseCase = new FindStoreByIdUseCase(storeGateway);
+    useCase = new AddTotemUseCase(storeGateway, findStoreByIdUseCase);
   });
 
   it('should add a totem to a store', async () => {

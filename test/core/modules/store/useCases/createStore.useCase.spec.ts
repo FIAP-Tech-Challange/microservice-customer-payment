@@ -1,5 +1,4 @@
 import { ResourceConflictException } from 'src-clean/common/exceptions/resourceConflictException';
-import { CategoryGateway } from 'src-clean/core/modules/product/gateways/category.gateway';
 import { Store } from 'src-clean/core/modules/store/entities/store.entity';
 import { StoreGateway } from 'src-clean/core/modules/store/gateways/store.gateway';
 import { CreateStoreUseCase } from 'src-clean/core/modules/store/useCases/createStore.useCase';
@@ -10,7 +9,6 @@ import { FakePaymentDataSource } from 'src-clean/external/dataSources/payment/fa
 describe('CreateStoreUseCase', () => {
   let useCase: CreateStoreUseCase;
   let storeGateway: StoreGateway;
-  let categoryGateway: CategoryGateway;
 
   beforeEach(() => {
     const inMemoryDataSource = new InMemoryGeneralDataSource();
@@ -21,9 +19,7 @@ describe('CreateStoreUseCase', () => {
     );
 
     storeGateway = new StoreGateway(dataSource);
-    categoryGateway = new CategoryGateway(dataSource);
-
-    useCase = new CreateStoreUseCase(storeGateway, categoryGateway);
+    useCase = new CreateStoreUseCase(storeGateway);
   });
 
   it('should create a store successfully', async () => {
@@ -133,29 +129,5 @@ describe('CreateStoreUseCase', () => {
 
     expect(result.error).toBeInstanceOf(ResourceConflictException);
     expect(result.error!.message).toBe('Store with this name already exists');
-  });
-
-  it('should create the base categories for the store', async () => {
-    const result = await useCase.execute({
-      cnpj: '11222333000181',
-      email: 'email@example.com',
-      fantasyName: 'Fantasy Name',
-      name: 'Store Name',
-      phone: '5511999999999',
-      plainPassword: 'password123',
-    });
-
-    expect(result.error).toBeUndefined();
-    expect(result.value).toBeInstanceOf(Store);
-
-    const categories = await Promise.all([
-      categoryGateway.findCategoryByName('Lanche', result.value!.id),
-      categoryGateway.findCategoryByName('Acompanhamento', result.value!.id),
-      categoryGateway.findCategoryByName('Bebida', result.value!.id),
-      categoryGateway.findCategoryByName('Sobremesa', result.value!.id),
-    ]);
-
-    expect(categories.every((category) => category.error)).toBe(false);
-    expect(categories.every((category) => category.value)).toBe(true);
   });
 });

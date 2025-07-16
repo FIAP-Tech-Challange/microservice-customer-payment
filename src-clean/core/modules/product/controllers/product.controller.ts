@@ -12,6 +12,7 @@ import { CreateProductUseCase } from '../useCases/createProduct.useCase';
 import { ProductPresenter } from '../presenters/product.presenter';
 import { ProductDTO } from '../DTOs/product.dto';
 import { FindCategoryByIdUseCase } from '../useCases/findCategoryById.useCase';
+import { FindStoreByIdUseCase } from '../../store/useCases/findStoreById.useCase';
 
 export class ProductCoreController {
   constructor(private dataSource: DataSource) {}
@@ -22,7 +23,11 @@ export class ProductCoreController {
     try {
       const categoryGateway = new CategoryGateway(this.dataSource);
       const storeGateway = new StoreGateway(this.dataSource);
-      const useCase = new CreateCategoryUseCase(categoryGateway, storeGateway);
+      const findStoreByIdUseCase = new FindStoreByIdUseCase(storeGateway);
+      const useCase = new CreateCategoryUseCase(
+        categoryGateway,
+        findStoreByIdUseCase,
+      );
 
       const { error: err, value: category } = await useCase.execute(dto);
 
@@ -45,7 +50,16 @@ export class ProductCoreController {
   ): Promise<CoreResponse<ProductDTO>> {
     try {
       const categoryGateway = new CategoryGateway(this.dataSource);
-      const useCase = new CreateProductUseCase(categoryGateway);
+      const storeGateway = new StoreGateway(this.dataSource);
+      const findStoreByIdUseCase = new FindStoreByIdUseCase(storeGateway);
+      const findCategoryByIdUseCase = new FindCategoryByIdUseCase(
+        categoryGateway,
+      );
+      const useCase = new CreateProductUseCase(
+        categoryGateway,
+        findStoreByIdUseCase,
+        findCategoryByIdUseCase,
+      );
 
       const { error: err, value: product } = await useCase.execute(dto);
 
@@ -63,12 +77,18 @@ export class ProductCoreController {
     }
   }
 
-  async findCategoryById(id: string): Promise<CoreResponse<CategoryDTO>> {
+  async findCategoryById(
+    id: string,
+    storeId: string,
+  ): Promise<CoreResponse<CategoryDTO>> {
     try {
       const gateway = new CategoryGateway(this.dataSource);
       const useCase = new FindCategoryByIdUseCase(gateway);
 
-      const { error: err, value: category } = await useCase.execute(id);
+      const { error: err, value: category } = await useCase.execute(
+        id,
+        storeId,
+      );
 
       if (err) return { error: err, value: undefined };
 
