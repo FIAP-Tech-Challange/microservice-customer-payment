@@ -4,7 +4,7 @@ import { PaymentGateway } from '../gateways/payment.gateway';
 import { FindStoreByIdUseCase } from '../../store/useCases/findStoreById.useCase';
 import { ResourceNotFoundException } from 'src-clean/common/exceptions/resourceNotFoundException';
 
-export class findPaymentByIdUseCase {
+export class FindPaymentByIdUseCase {
   constructor(
     private paymentGateway: PaymentGateway,
     private findStoreByIdUseCase: FindStoreByIdUseCase,

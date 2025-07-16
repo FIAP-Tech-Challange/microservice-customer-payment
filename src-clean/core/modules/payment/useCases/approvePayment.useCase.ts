@@ -1,12 +1,12 @@
 import { CoreResponse } from 'src-clean/common/DTOs/coreResponse';
 import { Payment } from '../entities/payment.entity';
 import { PaymentGateway } from '../gateways/payment.gateway';
-import { findPaymentByIdUseCase } from './findPaymentById.useCase';
+import { FindPaymentByIdUseCase } from './findPaymentById.useCase';
 
 export class ApprovePaymentUseCase {
   constructor(
     private paymentGateway: PaymentGateway,
-    private findPaymentByIdUseCase: findPaymentByIdUseCase,
+    private findPaymentByIdUseCase: FindPaymentByIdUseCase,
   ) {}
 
   async execute(
