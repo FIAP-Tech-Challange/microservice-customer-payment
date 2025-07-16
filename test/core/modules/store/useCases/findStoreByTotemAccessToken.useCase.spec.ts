@@ -5,15 +5,13 @@ import { Email } from 'src-clean/core/common/valueObjects/email.vo';
 import { Store } from 'src-clean/core/modules/store/entities/store.entity';
 import { Totem } from 'src-clean/core/modules/store/entities/totem.entity';
 import { StoreGateway } from 'src-clean/core/modules/store/gateways/store.gateway';
-import { TotemGateway } from 'src-clean/core/modules/store/gateways/totem.gateway';
-import { FindStoreTotemByAccessTokenUseCase } from 'src-clean/core/modules/store/useCases/findStoreTotemByAccessToken.useCase';
+import { FindStoreByTotemAccessTokenUseCase } from 'src-clean/core/modules/store/useCases/findStoreByTotemAccessToken.useCase';
 import { DataSourceProxy } from 'src-clean/external/dataSources/dataSource.proxy';
 import { InMemoryGeneralDataSource } from 'src-clean/external/dataSources/general/inMemory/inMemoryGeneralDataSource';
 import { FakePaymentDataSource } from 'src-clean/external/dataSources/payment/fake/fakePaymentDataSource';
 
-describe('FindStoreTotemByAccessTokenUseCase', () => {
-  let useCase: FindStoreTotemByAccessTokenUseCase;
-  let totemGateway: TotemGateway;
+describe('FindStoreByTotemAccessTokenUseCase', () => {
+  let useCase: FindStoreByTotemAccessTokenUseCase;
   let storeGateway: StoreGateway;
   let dataSource: DataSourceProxy;
 
@@ -22,13 +20,11 @@ describe('FindStoreTotemByAccessTokenUseCase', () => {
     const fakePaymentDataSource = new FakePaymentDataSource();
     dataSource = new DataSourceProxy(inMemoryDataSource, fakePaymentDataSource);
 
-    totemGateway = new TotemGateway(dataSource);
     storeGateway = new StoreGateway(dataSource);
-    useCase = new FindStoreTotemByAccessTokenUseCase(totemGateway);
+    useCase = new FindStoreByTotemAccessTokenUseCase(storeGateway);
   });
 
   it('should find totem successfully by access token', async () => {
-    // Create a store with a totem
     const store = Store.create({
       name: 'Test Store',
       fantasyName: 'Test Fantasy Store',
@@ -46,23 +42,26 @@ describe('FindStoreTotemByAccessTokenUseCase', () => {
     const result = await useCase.execute(totem.value!.tokenAccess);
 
     expect(result.error).toBeUndefined();
-    expect(result.value).toBeInstanceOf(Totem);
-    expect(result.value!.id).toBe(totem.value!.id);
-    expect(result.value!.name).toBe('Test Totem');
-    expect(result.value!.tokenAccess).toBe(totem.value!.tokenAccess);
+    expect(result.value).toBeInstanceOf(Store);
+    expect(result.value!.id).toBe(store.value!.id);
+    expect(result.value!.name).toBe('Test Store');
     expect(result.value!.createdAt).toBeInstanceOf(Date);
+    expect(result.value!.totems).toHaveLength(1);
+    expect(result.value!.totems[0].id).toBe(totem.value!.id);
+    expect(result.value!.totems[0].name).toBe(totem.value!.name);
+    expect(result.value!.totems[0].tokenAccess).toBe(totem.value!.tokenAccess);
+    expect(result.value!.totems[0].createdAt).toBeInstanceOf(Date);
   });
 
   it('should return ResourceNotFoundException for non-existing totem', async () => {
     const result = await useCase.execute('non-existent-totem-access-token');
 
     expect(result.error).toBeInstanceOf(ResourceNotFoundException);
-    expect(result.error!.message).toBe('Totem not found');
+    expect(result.error!.message).toBe('Store not found');
     expect(result.value).toBeUndefined();
   });
 
   it('should find totem from multiple stores', async () => {
-    // Create first store with totem
     const store1 = Store.create({
       name: 'Store 1',
       fantasyName: 'Fantasy Store 1',
@@ -75,7 +74,6 @@ describe('FindStoreTotemByAccessTokenUseCase', () => {
     const totem1 = Totem.create({ name: 'Totem 1' });
     store1.value!.addTotem(totem1.value!);
 
-    // Create second store with totem
     const store2 = Store.create({
       name: 'Store 2',
       fantasyName: 'Fantasy Store 2',
@@ -91,15 +89,25 @@ describe('FindStoreTotemByAccessTokenUseCase', () => {
     await storeGateway.saveStore(store1.value!);
     await storeGateway.saveStore(store2.value!);
 
-    // Find totem from first store
     const result1 = await useCase.execute(totem1.value!.tokenAccess);
     expect(result1.error).toBeUndefined();
-    expect(result1.value!.name).toBe('Totem 1');
+    expect(result1.value!.name).toBe('Store 1');
+    expect(result1.value!.totems).toHaveLength(1);
+    expect(result1.value!.totems[0].name).toBe('Totem 1');
+    expect(result1.value!.totems[0].tokenAccess).toBe(
+      totem1.value!.tokenAccess,
+    );
+    expect(result1.value!.totems[0].createdAt).toBeInstanceOf(Date);
 
-    // Find totem from second store
     const result2 = await useCase.execute(totem2.value!.tokenAccess);
     expect(result2.error).toBeUndefined();
-    expect(result2.value!.name).toBe('Totem 2');
+    expect(result2.value!.name).toBe('Store 2');
+    expect(result2.value!.totems).toHaveLength(1);
+    expect(result2.value!.totems[0].name).toBe('Totem 2');
+    expect(result2.value!.totems[0].tokenAccess).toBe(
+      totem2.value!.tokenAccess,
+    );
+    expect(result2.value!.totems[0].createdAt).toBeInstanceOf(Date);
   });
 
   it('should find totem when store has multiple totems', async () => {
@@ -126,22 +134,70 @@ describe('FindStoreTotemByAccessTokenUseCase', () => {
     // Find each totem individually
     const result1 = await useCase.execute(totem1.value!.tokenAccess);
     expect(result1.error).toBeUndefined();
-    expect(result1.value!.name).toBe('First Totem');
+    expect(result1.value!.name).toBe('Multi Totem Store');
+    expect(result1.value!.totems).toHaveLength(3);
+    expect(result1.value!.totems[0].name).toBe('First Totem');
+    expect(result1.value!.totems[0].tokenAccess).toBe(
+      totem1.value!.tokenAccess,
+    );
+    expect(result1.value!.totems[0].createdAt).toBeInstanceOf(Date);
+    expect(result1.value!.totems[1].name).toBe('Second Totem');
+    expect(result1.value!.totems[1].tokenAccess).toBe(
+      totem2.value!.tokenAccess,
+    );
+    expect(result1.value!.totems[1].createdAt).toBeInstanceOf(Date);
+    expect(result1.value!.totems[2].name).toBe('Third Totem');
+    expect(result1.value!.totems[2].tokenAccess).toBe(
+      totem3.value!.tokenAccess,
+    );
+    expect(result1.value!.totems[2].createdAt).toBeInstanceOf(Date);
 
     const result2 = await useCase.execute(totem2.value!.tokenAccess);
     expect(result2.error).toBeUndefined();
-    expect(result2.value!.name).toBe('Second Totem');
+    expect(result2.value!.name).toBe('Multi Totem Store');
+    expect(result2.value!.totems).toHaveLength(3);
+    expect(result2.value!.totems[0].name).toBe('First Totem');
+    expect(result2.value!.totems[0].tokenAccess).toBe(
+      totem1.value!.tokenAccess,
+    );
+    expect(result2.value!.totems[0].createdAt).toBeInstanceOf(Date);
+    expect(result2.value!.totems[1].name).toBe('Second Totem');
+    expect(result2.value!.totems[1].tokenAccess).toBe(
+      totem2.value!.tokenAccess,
+    );
+    expect(result2.value!.totems[1].createdAt).toBeInstanceOf(Date);
+    expect(result2.value!.totems[2].name).toBe('Third Totem');
+    expect(result2.value!.totems[2].tokenAccess).toBe(
+      totem3.value!.tokenAccess,
+    );
+    expect(result2.value!.totems[2].createdAt).toBeInstanceOf(Date);
 
     const result3 = await useCase.execute(totem3.value!.tokenAccess);
     expect(result3.error).toBeUndefined();
-    expect(result3.value!.name).toBe('Third Totem');
+    expect(result3.value!.name).toBe('Multi Totem Store');
+    expect(result3.value!.totems).toHaveLength(3);
+    expect(result3.value!.totems[0].name).toBe('First Totem');
+    expect(result3.value!.totems[0].tokenAccess).toBe(
+      totem1.value!.tokenAccess,
+    );
+    expect(result3.value!.totems[0].createdAt).toBeInstanceOf(Date);
+    expect(result3.value!.totems[1].name).toBe('Second Totem');
+    expect(result3.value!.totems[1].tokenAccess).toBe(
+      totem2.value!.tokenAccess,
+    );
+    expect(result3.value!.totems[1].createdAt).toBeInstanceOf(Date);
+    expect(result3.value!.totems[2].name).toBe('Third Totem');
+    expect(result3.value!.totems[2].tokenAccess).toBe(
+      totem3.value!.tokenAccess,
+    );
+    expect(result3.value!.totems[2].createdAt).toBeInstanceOf(Date);
   });
 
   it('should handle empty totem access token', async () => {
     const result = await useCase.execute('');
 
     expect(result.error).toBeInstanceOf(ResourceNotFoundException);
-    expect(result.error!.message).toBe('Totem not found');
+    expect(result.error!.message).toBe('Store not found');
     expect(result.value).toBeUndefined();
   });
 
@@ -164,14 +220,20 @@ describe('FindStoreTotemByAccessTokenUseCase', () => {
     const result = await useCase.execute(totem.value!.tokenAccess);
 
     expect(result.error).toBeUndefined();
-    expect(result.value).toBeInstanceOf(Totem);
+    expect(result.value).toBeInstanceOf(Store);
 
-    const foundTotem = result.value!;
-    expect(foundTotem.id).toBe(totem.value!.id);
-    expect(foundTotem.name).toBe(totemName);
-    expect(foundTotem.tokenAccess).toBe(totem.value!.tokenAccess);
-    expect(foundTotem.createdAt).toBeInstanceOf(Date);
-    expect(foundTotem.createdAt.getTime()).toBe(
+    const foundStore = result.value!;
+    expect(foundStore.id).toBe(store.value!.id);
+    expect(foundStore.name).toBe(store.value!.name);
+    expect(foundStore.createdAt).toBeInstanceOf(Date);
+    expect(foundStore.createdAt.getTime()).toBe(
+      store.value!.createdAt.getTime(),
+    );
+    expect(foundStore.totems).toHaveLength(1);
+    expect(foundStore.totems[0].name).toBe(totemName);
+    expect(foundStore.totems[0].tokenAccess).toBe(totem.value!.tokenAccess);
+    expect(foundStore.totems[0].createdAt).toBeInstanceOf(Date);
+    expect(foundStore.totems[0].createdAt.getTime()).toBe(
       totem.value!.createdAt.getTime(),
     );
   });
@@ -195,6 +257,8 @@ describe('FindStoreTotemByAccessTokenUseCase', () => {
     const result = await useCase.execute(totem.value!.tokenAccess);
 
     expect(result.error).toBeUndefined();
-    expect(result.value!.name).toBe(specialTotemName);
+    expect(result.value!.name).toBe(store.value!.name);
+    expect(result.value!.totems).toHaveLength(1);
+    expect(result.value!.totems[0].name).toBe(specialTotemName);
   });
 });

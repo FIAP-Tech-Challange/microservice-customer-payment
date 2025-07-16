@@ -1,12 +1,28 @@
-import { PaymentDataSourceDTO } from 'src-clean/common/dataSource/DTOs/paymentDataSource.dto';
+import { PaymentCreateExternalDataSourceResponseDTO } from 'src-clean/common/dataSource/DTOs/paymentCreateExternalDataSourceResponse.dto';
+import { PaymentExternalDataSourceDTO } from 'src-clean/common/dataSource/DTOs/paymentExternalDataSource.dto';
 import { PaymentDataSource } from '../payment.dataSource';
+import { PaymentPlatformDataSourceEnum } from 'src-clean/common/dataSource/enums/paymentPlatformDataSource.enum';
+import { PaymentTypeDataSourceEnum } from 'src-clean/common/dataSource/enums/paymentTypeDataSource.enum';
 
 export class FakePaymentDataSource implements PaymentDataSource {
-  private payments: Map<string, PaymentDataSourceDTO> = new Map();
+  private payments: Map<string, PaymentExternalDataSourceDTO> = new Map();
 
-  getPayment(paymentId: string): Promise<PaymentDataSourceDTO | null> {
-    const payment = this.payments.get(paymentId);
+  createPaymentExternal(
+    paymentDTO: PaymentExternalDataSourceDTO,
+  ): Promise<PaymentCreateExternalDataSourceResponseDTO> {
+    const newExternalId = new Date().toISOString();
 
-    return Promise.resolve(payment || null);
+    this.payments.set(newExternalId, paymentDTO);
+
+    const paymentType: PaymentTypeDataSourceEnum = PaymentTypeDataSourceEnum[
+      paymentDTO.payment_type
+    ] as PaymentTypeDataSourceEnum;
+
+    return Promise.resolve({
+      externalId: newExternalId,
+      paymentPlatform: PaymentPlatformDataSourceEnum.FK,
+      qrCode:
+        paymentType === PaymentTypeDataSourceEnum.QR ? newExternalId : null,
+    });
   }
 }

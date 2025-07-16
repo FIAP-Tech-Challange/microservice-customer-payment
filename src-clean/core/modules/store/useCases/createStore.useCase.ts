@@ -6,14 +6,9 @@ import { Email } from 'src-clean/core/common/valueObjects/email.vo';
 import { CNPJ } from 'src-clean/core/common/valueObjects/cnpj.vo';
 import { BrazilianPhone } from 'src-clean/core/common/valueObjects/brazilian-phone.vo';
 import { ResourceConflictException } from 'src-clean/common/exceptions/resourceConflictException';
-import { CreateCategoryUseCase } from '../../product/useCases/createCategory.useCase';
-import { CategoryGateway } from '../../product/gateways/category.gateway';
 
 export class CreateStoreUseCase {
-  constructor(
-    private storeGateway: StoreGateway,
-    private categoryGateway: CategoryGateway,
-  ) {}
+  constructor(private storeGateway: StoreGateway) {}
 
   async execute(dto: CreateStoreInputDTO): Promise<CoreResponse<Store>> {
     const email = Email.create(dto.email);
@@ -73,30 +68,6 @@ export class CreateStoreUseCase {
 
     const saveStore = await this.storeGateway.saveStore(store.value);
     if (saveStore.error) return { error: saveStore.error, value: undefined };
-
-    const createCategoryUseCase = new CreateCategoryUseCase(
-      this.categoryGateway,
-      this.storeGateway,
-    );
-
-    await Promise.all([
-      createCategoryUseCase.execute({
-        name: 'Lanche',
-        storeId: store.value.id,
-      }),
-      createCategoryUseCase.execute({
-        name: 'Acompanhamento',
-        storeId: store.value.id,
-      }),
-      createCategoryUseCase.execute({
-        name: 'Bebida',
-        storeId: store.value.id,
-      }),
-      createCategoryUseCase.execute({
-        name: 'Sobremesa',
-        storeId: store.value.id,
-      }),
-    ]);
 
     return { error: undefined, value: store.value };
   }

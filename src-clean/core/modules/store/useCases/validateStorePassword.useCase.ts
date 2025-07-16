@@ -1,21 +1,19 @@
 import { CoreResponse } from 'src-clean/common/DTOs/coreResponse';
 import { ValidateStorePasswordInputDTO } from '../DTOs/validateStorePasswordInput.dto';
-import { StoreGateway } from '../gateways/store.gateway';
 import { FindStoreByEmailUseCase } from './findStoreByEmail.useCase';
 
 export class ValidateStorePasswordUseCase {
-  constructor(private storeGateway: StoreGateway) {}
+  constructor(private findStoreByEmailUseCase: FindStoreByEmailUseCase) {}
 
   async execute(
     dto: ValidateStorePasswordInputDTO,
   ): Promise<CoreResponse<boolean>> {
-    const findStoreUseCase = new FindStoreByEmailUseCase(this.storeGateway);
+    const findStore = await this.findStoreByEmailUseCase.execute(dto.email);
+    if (findStore.error) return { error: findStore.error, value: undefined };
 
-    const { error: err, value: store } = await findStoreUseCase.execute(
-      dto.email,
-    );
-    if (err) return { error: err, value: undefined };
-
-    return { error: undefined, value: store.verifyPassword(dto.password) };
+    return {
+      error: undefined,
+      value: findStore.value.verifyPassword(dto.password),
+    };
   }
 }
