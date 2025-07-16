@@ -1,5 +1,13 @@
 export interface PaymentDataSourceDTO {
   id: string;
-  paid: boolean;
-  paidAt: string | null;
+  order_id: string;
+  store_id: string;
+  payment_type: string;
+  status: string;
+  total: number;
+  external_id: string;
+  qr_code: string | null;
+  platform: string;
+  created_at: string;
+  updated_at: string;
 }

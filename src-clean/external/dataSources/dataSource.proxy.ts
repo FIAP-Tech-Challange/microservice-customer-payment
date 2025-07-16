@@ -12,6 +12,9 @@ import { PaginatedDataSourceParamsDTO } from 'src-clean/common/dataSource/DTOs/p
 import { FindAllCustomersDataSourceFiltersDTO } from 'src-clean/common/dataSource/DTOs/findAllCustomersDataSourceFilters.dto';
 import { PaginatedDataSourceResponseDTO } from 'src-clean/common/dataSource/DTOs/paginatedDataSourceResponse.dto';
 import { CategoryDataSourceDTO } from 'src-clean/common/dataSource/DTOs/categoryDataSource.dto';
+import { PaymentCreateExternalDataSourceResponseDTO } from 'src-clean/common/dataSource/DTOs/paymentCreateExternalDataSourceResponse.dto';
+import { PaymentDataSourceDTO } from 'src-clean/common/dataSource/DTOs/paymentDataSource.dto';
+import { PaymentExternalDataSourceDTO } from 'src-clean/common/dataSource/DTOs/paymentExternalDataSource.dto';
 
 export class DataSourceProxy implements DataSource {
   constructor(
@@ -70,6 +73,11 @@ export class DataSourceProxy implements DataSource {
   saveStore(store: StoreDataSourceDTO): Promise<void> {
     return this.generalDataSource.saveStore(store);
   }
+  findStoreByTotemAccessToken(
+    accessToken: string,
+  ): Promise<StoreDataSourceDTO | null> {
+    return this.generalDataSource.findStoreByTotemAccessToken(accessToken);
+  }
 
   // Product/Category
   saveCategory(categoryDTO: CategoryDataSourceDTO): Promise<void> {
@@ -99,7 +107,15 @@ export class DataSourceProxy implements DataSource {
 
   // Payment
   getPayment(paymentId: string): Promise<PaymentDataSourceDTO | null> {
-    return this.paymentDataSource.getPayment(paymentId);
+    return this.generalDataSource.getPayment(paymentId);
+  }
+  savePayment(paymentDTO: PaymentDataSourceDTO): Promise<void> {
+    return this.generalDataSource.savePayment(paymentDTO);
+  }
+  createPaymentExternal(
+    paymentDTO: PaymentExternalDataSourceDTO,
+  ): Promise<PaymentCreateExternalDataSourceResponseDTO> {
+    return this.paymentDataSource.createPaymentExternal(paymentDTO);
   }
 
   // Customer

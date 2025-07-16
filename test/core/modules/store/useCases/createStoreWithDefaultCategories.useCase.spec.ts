@@ -1,14 +1,23 @@
 import { ResourceConflictException } from 'src-clean/common/exceptions/resourceConflictException';
+import { CategoryGateway } from 'src-clean/core/modules/product/gateways/category.gateway';
+import { CreateCategoryUseCase } from 'src-clean/core/modules/product/useCases/createCategory.useCase';
 import { Store } from 'src-clean/core/modules/store/entities/store.entity';
 import { StoreGateway } from 'src-clean/core/modules/store/gateways/store.gateway';
 import { CreateStoreUseCase } from 'src-clean/core/modules/store/useCases/createStore.useCase';
+import { CreateStoreWithDefaultCategoriesUseCase } from 'src-clean/core/modules/store/useCases/createStoreWithDeafaultCategories.useCase';
+import { FindStoreByIdUseCase } from 'src-clean/core/modules/store/useCases/findStoreById.useCase';
 import { DataSourceProxy } from 'src-clean/external/dataSources/dataSource.proxy';
 import { InMemoryGeneralDataSource } from 'src-clean/external/dataSources/general/inMemory/inMemoryGeneralDataSource';
 import { FakePaymentDataSource } from 'src-clean/external/dataSources/payment/fake/fakePaymentDataSource';
 
-describe('CreateStoreUseCase', () => {
-  let useCase: CreateStoreUseCase;
+describe('CreateStoreWithDefaultCategoriesUseCase', () => {
   let storeGateway: StoreGateway;
+  let categoryGateway: CategoryGateway;
+
+  let useCase: CreateStoreWithDefaultCategoriesUseCase;
+  let createStoreUseCase: CreateStoreUseCase;
+  let createCategoryUseCase: CreateCategoryUseCase;
+  let findStoreByIdUseCase: FindStoreByIdUseCase;
 
   beforeEach(() => {
     const inMemoryDataSource = new InMemoryGeneralDataSource();
@@ -19,7 +28,18 @@ describe('CreateStoreUseCase', () => {
     );
 
     storeGateway = new StoreGateway(dataSource);
-    useCase = new CreateStoreUseCase(storeGateway);
+    categoryGateway = new CategoryGateway(dataSource);
+
+    findStoreByIdUseCase = new FindStoreByIdUseCase(storeGateway);
+    createStoreUseCase = new CreateStoreUseCase(storeGateway);
+    createCategoryUseCase = new CreateCategoryUseCase(
+      categoryGateway,
+      findStoreByIdUseCase,
+    );
+    useCase = new CreateStoreWithDefaultCategoriesUseCase(
+      createStoreUseCase,
+      createCategoryUseCase,
+    );
   });
 
   it('should create a store successfully', async () => {
@@ -129,5 +149,29 @@ describe('CreateStoreUseCase', () => {
 
     expect(result.error).toBeInstanceOf(ResourceConflictException);
     expect(result.error!.message).toBe('Store with this name already exists');
+  });
+
+  it('should create the base categories for the store', async () => {
+    const result = await useCase.execute({
+      cnpj: '11222333000181',
+      email: 'email@example.com',
+      fantasyName: 'Fantasy Name',
+      name: 'Store Name',
+      phone: '5511999999999',
+      plainPassword: 'password123',
+    });
+
+    expect(result.error).toBeUndefined();
+    expect(result.value).toBeInstanceOf(Store);
+
+    const categories = await Promise.all([
+      categoryGateway.findCategoryByName('Lanche', result.value!.id),
+      categoryGateway.findCategoryByName('Acompanhamento', result.value!.id),
+      categoryGateway.findCategoryByName('Bebida', result.value!.id),
+      categoryGateway.findCategoryByName('Sobremesa', result.value!.id),
+    ]);
+
+    expect(categories.every((category) => category.error)).toBe(false);
+    expect(categories.every((category) => category.value)).toBe(true);
   });
 });

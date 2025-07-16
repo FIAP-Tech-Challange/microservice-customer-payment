@@ -3,19 +3,16 @@ import { CreateCategoryInputDTO } from '../DTOs/createCategoryInput.dto';
 import { Category } from '../entities/category.entity';
 import { ResourceConflictException } from 'src-clean/common/exceptions/resourceConflictException';
 import { CategoryGateway } from '../gateways/category.gateway';
-import { StoreGateway } from '../../store/gateways/store.gateway';
 import { FindStoreByIdUseCase } from '../../store/useCases/findStoreById.useCase';
 
 export class CreateCategoryUseCase {
   constructor(
     private categoryGateway: CategoryGateway,
-    private storeGateway: StoreGateway,
+    private findStoreByIdUseCase: FindStoreByIdUseCase,
   ) {}
 
   async execute(dto: CreateCategoryInputDTO): Promise<CoreResponse<Category>> {
-    const store = await new FindStoreByIdUseCase(this.storeGateway).execute(
-      dto.storeId,
-    );
+    const store = await this.findStoreByIdUseCase.execute(dto.storeId);
     if (store.error) return { error: store.error, value: undefined };
 
     const category = Category.create({
