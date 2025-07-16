@@ -3,11 +3,12 @@ import { InitiatePaymentInputDTO } from '../DTOs/initiatePaymentInput.dto';
 import { Payment } from '../entities/payment.entity';
 import { PaymentGateway } from '../gateways/payment.gateway';
 import { FindStoreByIdUseCase } from '../../store/useCases/findStoreById.useCase';
+import { FindOrderByIdUseCase } from '../../order/useCases/findOrderById.useCase';
 
 export class InitiatePaymentUseCase {
   constructor(
     private paymentGateway: PaymentGateway,
-    private findOrderByIdUseCase: any,
+    private findOrderByIdUseCase: FindOrderByIdUseCase,
     private findStoreByIdUseCase: FindStoreByIdUseCase,
   ) {}
 
@@ -15,14 +16,12 @@ export class InitiatePaymentUseCase {
     const store = await this.findStoreByIdUseCase.execute(dto.storeId);
     if (store.error) return { error: store.error, value: undefined };
 
-    const order = (await this.findOrderByIdUseCase.execute(
-      dto.orderId,
-    )) as CoreResponse<{ id: string; total: number }>;
+    const order = await this.findOrderByIdUseCase.execute(dto.orderId);
     if (order.error) return { error: order.error, value: undefined };
 
     const createPayment = Payment.create({
       orderId: order.value.id,
-      total: order.value.total,
+      total: order.value.totalPrice,
       storeId: store.value.id,
       paymentType: dto.paymentType,
     });

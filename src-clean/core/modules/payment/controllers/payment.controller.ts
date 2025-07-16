@@ -11,6 +11,8 @@ import { PaymentDTO } from '../DTOs/payment.dto';
 import { ApprovePaymentUseCase } from '../useCases/approvePayment.useCase';
 import { FindPaymentByIdUseCase } from '../useCases/findPaymentById.useCase';
 import { CancelPaymentUseCase } from '../useCases/cancelPayment.useCase';
+import { FindOrderByIdUseCase } from '../../order/useCases/findOrderById.useCase';
+import { OrderGateway } from '../../order/gateways/order.gateway';
 
 export class PaymentController {
   constructor(private dataSource: DataSource) {}
@@ -21,8 +23,9 @@ export class PaymentController {
     try {
       const paymentGateway = new PaymentGateway(this.dataSource);
       const storeGateway = new StoreGateway(this.dataSource);
+      const orderGateway = new OrderGateway(this.dataSource);
 
-      const findOrderByIdUseCase: any = {};
+      const findOrderByIdUseCase = new FindOrderByIdUseCase(orderGateway);
       const findStoreByIdUseCase = new FindStoreByIdUseCase(storeGateway);
       const initiatePaymentUseCase = new InitiatePaymentUseCase(
         paymentGateway,

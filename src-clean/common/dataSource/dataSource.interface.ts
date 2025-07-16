@@ -64,7 +64,7 @@ export interface DataSource {
   ): Promise<PaginatedDataSourceResponseDTO<CustomerDataSourceDTO>>;
   saveCustomer(customer: CustomerDataSourceDTO): Promise<void>;
   deleteCustomer(id: string): Promise<void>;
-  
+
   // Order
   saveOrder(order: OrderDataSourceDto): Promise<void>;
   findOrderById(id: string): Promise<OrderDataSourceDto | null>;
