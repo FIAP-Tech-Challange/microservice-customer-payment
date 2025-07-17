@@ -41,12 +41,8 @@ export interface DataSource {
   createPaymentExternal(
     paymentDTO: PaymentExternalDataSourceDTO,
   ): Promise<PaymentCreateExternalDataSourceResponseDTO>;
-  rejectPaymentExternal(
-    paymentDTO: PaymentExternalDataSourceDTO,
-  ): Promise<void>;
-  approvePaymentExternal(
-    paymentDTO: PaymentExternalDataSourceDTO,
-  ): Promise<void>;
+  rejectPaymentExternal(externalId: string): Promise<void>;
+  approvePaymentExternal(externalId: string): Promise<void>;
 
   // Customer
   findCustomerById(id: string): Promise<CustomerDataSourceDTO | null>;

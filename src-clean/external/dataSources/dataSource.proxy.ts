@@ -100,15 +100,11 @@ export class DataSourceProxy implements DataSource {
   findPaymentById(paymentId: string): Promise<PaymentDataSourceDTO | null> {
     return this.generalDataSource.findPaymentById(paymentId);
   }
-  rejectPaymentExternal(
-    paymentDTO: PaymentExternalDataSourceDTO,
-  ): Promise<void> {
-    return this.paymentDataSource.rejectPaymentExternal(paymentDTO);
+  rejectPaymentExternal(externalId: string): Promise<void> {
+    return this.paymentDataSource.rejectPaymentExternal(externalId);
   }
-  approvePaymentExternal(
-    paymentDTO: PaymentExternalDataSourceDTO,
-  ): Promise<void> {
-    return this.paymentDataSource.approvePaymentExternal(paymentDTO);
+  approvePaymentExternal(externalId: string): Promise<void> {
+    return this.paymentDataSource.approvePaymentExternal(externalId);
   }
   savePayment(paymentDTO: PaymentDataSourceDTO): Promise<void> {
     return this.generalDataSource.savePayment(paymentDTO);
