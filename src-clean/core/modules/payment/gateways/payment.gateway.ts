@@ -38,14 +38,12 @@ export class PaymentGateway {
   }
 
   async rejectPaymentOnExternal(payment: Payment): Promise<CoreResponse<void>> {
-    const dto = PaymentMapper.toExternalDTO(payment);
-    await this.dataSource.rejectPaymentExternal(dto);
+    await this.dataSource.rejectPaymentExternal(payment.externalId!);
     return { error: undefined, value: undefined };
   }
 
   async approvePaymentExternal(payment: Payment): Promise<CoreResponse<void>> {
-    const dto = PaymentMapper.toExternalDTO(payment);
-    await this.dataSource.approvePaymentExternal(dto);
+    await this.dataSource.approvePaymentExternal(payment.externalId!);
     return { error: undefined, value: undefined };
   }
 

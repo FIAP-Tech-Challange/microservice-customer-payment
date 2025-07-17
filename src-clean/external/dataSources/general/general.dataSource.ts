@@ -7,14 +7,8 @@ import { PaginatedDataSourceParamsDTO } from 'src-clean/common/dataSource/DTOs/p
 import { PaginatedDataSourceResponseDTO } from 'src-clean/common/dataSource/DTOs/paginatedDataSourceResponse.dto';
 import { PaymentDataSourceDTO } from 'src-clean/common/dataSource/DTOs/paymentDataSource.dto';
 import { StoreDataSourceDTO } from 'src-clean/common/dataSource/DTOs/storeDataSource.dto';
-import { TotemDataSourceDTO } from 'src-clean/common/dataSource/DTOs/totemDataSource.dto';
 
 export interface GeneralDataSource {
-  // Totem
-  findTotemByAccessToken(
-    accessToken: string,
-  ): Promise<TotemDataSourceDTO | null>;
-
   // Store
   findStoreByEmail(email: string): Promise<StoreDataSourceDTO | null>;
   findStoreByCnpj(cnpj: string): Promise<StoreDataSourceDTO | null>;
@@ -35,7 +29,7 @@ export interface GeneralDataSource {
 
   // Payment
   savePayment(paymentDTO: PaymentDataSourceDTO): Promise<void>;
-  getPayment(paymentId: string): Promise<PaymentDataSourceDTO | null>;
+  findPaymentById(paymentId: string): Promise<PaymentDataSourceDTO | null>;
 
   // Customer
   findCustomerById(id: string): Promise<CustomerDataSourceDTO | null>;
@@ -47,7 +41,7 @@ export interface GeneralDataSource {
   ): Promise<PaginatedDataSourceResponseDTO<CustomerDataSourceDTO>>;
   saveCustomer(customer: CustomerDataSourceDTO): Promise<void>;
   deleteCustomer(id: string): Promise<void>;
-  
+
   // Order
   saveOrder(order: OrderDataSourceDto): Promise<void>;
   deleteOrder(order: OrderDataSourceDto): Promise<void>;

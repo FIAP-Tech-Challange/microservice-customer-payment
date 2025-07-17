@@ -5,4 +5,6 @@ export interface PaymentDataSource {
   createPaymentExternal(
     paymentDTO: PaymentExternalDataSourceDTO,
   ): Promise<PaymentCreateExternalDataSourceResponseDTO>;
+  rejectPaymentExternal(externalId: string): Promise<void>;
+  approvePaymentExternal(externalId: string): Promise<void>;
 }
