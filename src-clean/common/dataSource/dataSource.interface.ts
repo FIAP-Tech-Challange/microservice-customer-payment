@@ -11,6 +11,10 @@ import { PaymentExternalDataSourceDTO } from './DTOs/paymentExternalDataSource.d
 import { OrderDataSourceDto } from './DTOs/orderDataSource.dto';
 import { OrderPaginationDto } from 'src-clean/core/modules/order/DTOs/order-pagination.dto';
 import { ProductDataSourceDTO } from './DTOs/productDataSource.dto';
+import {
+  NotificationDataSourceDTO,
+  FindNotificationsByStatusParamsDTO,
+} from './DTOs/notificationDataSource.dto';
 
 export interface DataSource {
   // Totem
@@ -77,4 +81,16 @@ export interface DataSource {
     status: string,
     storeId: string,
   ): Promise<OrderPaginationDto>;
+
+  // Notification
+  findNotificationById(id: string): Promise<NotificationDataSourceDTO | null>;
+  findNotificationsByStatus(
+    params: FindNotificationsByStatusParamsDTO,
+  ): Promise<NotificationDataSourceDTO[]>;
+  findAllNotifications(params: {
+    page?: number;
+    size?: number;
+  }): Promise<NotificationDataSourceDTO[]>;
+  saveNotification(notification: NotificationDataSourceDTO): Promise<void>;
+  updateNotification(notification: NotificationDataSourceDTO): Promise<void>;
 }

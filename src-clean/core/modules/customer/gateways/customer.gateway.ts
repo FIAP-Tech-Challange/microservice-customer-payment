@@ -45,8 +45,8 @@ export class CustomerGateway {
     params: FindAllCustomersInputDTO,
   ): Promise<CoreResponse<PaginatedResponse<Customer>>> {
     const paginatedParams: PaginatedDataSourceParamsDTO = {
-      page: params.page,
-      limit: params.size,
+      page: params.page ?? 1,
+      limit: params.size ?? 10,
     };
 
     const filters: FindAllCustomersDataSourceFiltersDTO = {

@@ -1,8 +1,9 @@
 import { CoreResponse } from 'src-clean/common/DTOs/coreResponse';
+import { ResourceNotFoundException } from 'src-clean/common/exceptions/resourceNotFoundException';
 import { CustomerGateway } from '../gateways/customer.gateway';
 import { FindAllCustomersInputDTO } from '../DTOs/findCustomerInput.dto';
-import { Customer } from '../entities/customer.entity';
 import { PaginatedResponse } from 'src-clean/core/common/DTOs/paginatedResponse.dto';
+import { Customer } from '../entities/customer.entity';
 
 export class FindAllCustomersUseCase {
   constructor(private customerGateway: CustomerGateway) {}
@@ -10,12 +11,20 @@ export class FindAllCustomersUseCase {
   async execute(
     dto: FindAllCustomersInputDTO,
   ): Promise<CoreResponse<PaginatedResponse<Customer>>> {
-    const customersFind = await this.customerGateway.findAllCustomers(dto);
+    const { error: findError, value: paginatedResponse } =
+      await this.customerGateway.findAllCustomers(dto);
 
-    if (customersFind.error) {
-      return { error: customersFind.error, value: undefined };
+    if (findError) {
+      return { error: findError, value: undefined };
     }
 
-    return { error: undefined, value: customersFind.value };
+    if (!paginatedResponse || paginatedResponse.data.length === 0) {
+      return {
+        error: new ResourceNotFoundException('No customers found'),
+        value: undefined,
+      };
+    }
+
+    return { error: undefined, value: paginatedResponse };
   }
 }
