@@ -18,7 +18,6 @@ import {
   ApiSecurity,
   ApiTags,
 } from '@nestjs/swagger';
-import { DataSource } from 'src-clean/common/dataSource/dataSource.interface';
 import { StoreIdDto } from './dtos/store-id.dto';
 import { BusinessException } from '../../shared/dto/business-exception.dto';
 import { CreateStoreInputDto } from './dtos/create-store.dto';
@@ -28,6 +27,7 @@ import { ResponseIdUuidDto } from '../../shared/dto/response-id-uuid.dto';
 import { StoreGuard } from '../auth/guards/store.guard';
 import { RequestFromStore } from '../auth/dtos/request.dto';
 import { ResponseStoreDto } from './dtos/response-store.dto';
+import { DataSourceProxy } from 'src-clean/external/dataSources/dataSource.proxy';
 
 @ApiTags('Store')
 @Controller({
@@ -35,7 +35,7 @@ import { ResponseStoreDto } from './dtos/response-store.dto';
   version: '1',
 })
 export class StoresController {
-  constructor(private dataSource: DataSource) {}
+  constructor(private dataSourceProxy: DataSourceProxy) {}
 
   @ApiResponse({
     status: 201,
@@ -62,7 +62,7 @@ export class StoresController {
   @Post()
   async create(@Body() dto: CreateStoreInputDto): Promise<StoreIdDto> {
     try {
-      const coreController = new StoreCoreController(this.dataSource);
+      const coreController = new StoreCoreController(this.dataSourceProxy);
       const createStore = await coreController.createStore({
         cnpj: dto.cnpj,
         name: dto.name,
@@ -120,7 +120,7 @@ export class StoresController {
   ) {
     const storeId = req.storeId;
 
-    const coreController = new StoreCoreController(this.dataSource);
+    const coreController = new StoreCoreController(this.dataSourceProxy);
     const createTotem = await coreController.addTotemToStore({
       storeId,
       totemName,
@@ -158,7 +158,7 @@ export class StoresController {
     @Param('totemId') totemId: string,
   ): Promise<void> {
     const storeId = req.storeId;
-    const coreController = new StoreCoreController(this.dataSource);
+    const coreController = new StoreCoreController(this.dataSourceProxy);
     const deleteTotem = await coreController.deleteTotemFromStore(
       storeId,
       totemId,
@@ -186,7 +186,7 @@ export class StoresController {
   @Get()
   async findById(@Req() req: RequestFromStore): Promise<ResponseStoreDto> {
     const storeId = req.storeId;
-    const coreController = new StoreCoreController(this.dataSource);
+    const coreController = new StoreCoreController(this.dataSourceProxy);
     const findStore = await coreController.findStoreById(storeId);
 
     if (findStore.error) {
