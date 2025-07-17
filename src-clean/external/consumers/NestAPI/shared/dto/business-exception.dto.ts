@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class BusinessException extends HttpException {
   @ApiProperty({
-    description: 'Description error',
+    description: 'Error description',
   })
   message: string;
 
