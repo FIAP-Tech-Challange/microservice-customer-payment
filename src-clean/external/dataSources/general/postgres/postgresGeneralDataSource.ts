@@ -14,25 +14,19 @@ import { FindAllCustomersDataSourceFiltersDTO } from 'src-clean/common/dataSourc
 import { PaginatedDataSourceParamsDTO } from 'src-clean/common/dataSource/DTOs/paginatedDataSourceParams.dto';
 import { PaginatedDataSourceResponseDTO } from 'src-clean/common/dataSource/DTOs/paginatedDataSourceResponse.dto';
 import { PaymentDataSourceDTO } from 'src-clean/common/dataSource/DTOs/paymentDataSource.dto';
+import { PaymentEntity } from './entities/payment.entity';
 
 export class PostgresGeneralDataSource implements GeneralDataSource {
   private storeRepository: Repository<StoreEntity>;
   private orderRepository: Repository<OrderEntity>;
   private orderItemRepository: Repository<OrderItemEntity>;
+  private paymentRepository: Repository<PaymentEntity>;
 
   constructor(private dataSource: DataSource) {
     this.storeRepository = this.dataSource.getRepository(StoreEntity);
     this.orderRepository = this.dataSource.getRepository(OrderEntity);
     this.orderItemRepository = this.dataSource.getRepository(OrderItemEntity);
   }
-  findPaymentById(paymentId: string): Promise<PaymentDataSourceDTO | null> {
-    throw new Error('Method not implemented.');
-  }
-
-  savePayment(paymentDTO: PaymentDataSourceDTO): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-// Removed the unused `getPayment` method.
   saveCategory(categoryDTO: CategoryDataSourceDTO): Promise<void> {
     throw new Error('Method not implemented.');
   }
@@ -394,5 +388,45 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
     });
 
     await this.storeRepository.save(storeEntity);
+  }
+
+  // --------------- PAYMENT --------------- \\
+  async savePayment(paymentDTO: PaymentDataSourceDTO): Promise<void> {
+    const paymentEntity = this.paymentRepository.create({
+      id: paymentDTO.id,
+      order_id: paymentDTO.order_id,
+      store_id: paymentDTO.store_id,
+      external_id: paymentDTO.external_id,
+      total: paymentDTO.total,
+      status: paymentDTO.status,
+      payment_type: paymentDTO.payment_type,
+      plataform: paymentDTO.platform,
+      qr_code: paymentDTO.qr_code ?? undefined,
+      created_at: new Date(paymentDTO.created_at),
+    });
+    await this.paymentRepository.save(paymentEntity);
+  }
+
+  async findPaymentById(
+    paymentId: string,
+  ): Promise<PaymentDataSourceDTO | null> {
+    const payment = await this.paymentRepository.findOne({
+      where: { id: paymentId },
+    });
+
+    if (!payment) return null;
+
+    return {
+      id: payment.id,
+      order_id: payment.order_id,
+      store_id: payment.store_id,
+      external_id: payment.external_id,
+      total: payment.total,
+      status: payment.status,
+      payment_type: payment.payment_type,
+      platform: payment.plataform,
+      qr_code: payment.qr_code ?? undefined,
+      created_at: payment.created_at.toISOString(),
+    };
   }
 }

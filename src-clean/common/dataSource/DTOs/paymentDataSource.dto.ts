@@ -9,5 +9,4 @@ export interface PaymentDataSourceDTO {
   qr_code: string | null;
   platform: string;
   created_at: string;
-  updated_at: string;
 }

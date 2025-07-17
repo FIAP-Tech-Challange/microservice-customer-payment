@@ -21,7 +21,6 @@ interface PaymentProps {
   externalId: string | null;
   qrCode: string | null;
   createdAt: Date;
-  updatedAt: Date;
 }
 
 export class Payment {
@@ -35,7 +34,6 @@ export class Payment {
   private _qrCode: string | null;
   private _platform: PaymentPlatformEnum | null;
   private _createdAt: Date;
-  private _updatedAt: Date;
 
   private constructor(props: PaymentProps) {
     this._id = props.id;
@@ -48,7 +46,6 @@ export class Payment {
     this._qrCode = props.qrCode;
     this._platform = props.platform;
     this._createdAt = props.createdAt;
-    this._updatedAt = props.updatedAt;
 
     this.validate();
   }
@@ -82,9 +79,6 @@ export class Payment {
   }
   get createdAt() {
     return this._createdAt;
-  }
-  get updatedAt() {
-    return this._updatedAt;
   }
 
   approve(): CoreResponse<undefined> {
@@ -143,7 +137,6 @@ export class Payment {
 
     this._externalId = externalId;
     this._platform = platform;
-    this._updatedAt = new Date();
 
     if (qrCode && this._paymentType === PaymentTypeEnum.QR) {
       this._qrCode = qrCode;
@@ -186,9 +179,6 @@ export class Payment {
     if (!this._createdAt) {
       throw new ResourceInvalidException('Created at is required');
     }
-    if (!this._updatedAt) {
-      throw new ResourceInvalidException('Updated at is required');
-    }
   }
 
   static create(props: {
@@ -197,8 +187,6 @@ export class Payment {
     total: number;
     paymentType: PaymentTypeEnum;
   }): CoreResponse<Payment> {
-    const now = new Date();
-
     try {
       const payment = new Payment({
         id: generateUUID(),
@@ -207,8 +195,7 @@ export class Payment {
         total: props.total,
         paymentType: props.paymentType,
         status: PaymentStatusEnum.PENDING,
-        createdAt: now,
-        updatedAt: now,
+        createdAt: new Date(),
         externalId: null,
         qrCode: null,
         platform: null,
