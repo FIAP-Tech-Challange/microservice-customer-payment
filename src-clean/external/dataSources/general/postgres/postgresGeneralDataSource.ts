@@ -13,7 +13,7 @@ import { CustomerDataSourceDTO } from 'src-clean/common/dataSource/DTOs/customer
 import { FindAllCustomersDataSourceFiltersDTO } from 'src-clean/common/dataSource/DTOs/findAllCustomersDataSourceFilters.dto';
 import { PaginatedDataSourceParamsDTO } from 'src-clean/common/dataSource/DTOs/paginatedDataSourceParams.dto';
 import { PaginatedDataSourceResponseDTO } from 'src-clean/common/dataSource/DTOs/paginatedDataSourceResponse.dto';
-import { TotemDataSourceDTO } from 'src-clean/common/dataSource/DTOs/totemDataSource.dto';
+import { PaymentDataSourceDTO } from 'src-clean/common/dataSource/DTOs/paymentDataSource.dto';
 
 export class PostgresGeneralDataSource implements GeneralDataSource {
   private storeRepository: Repository<StoreEntity>;
@@ -25,10 +25,14 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
     this.orderRepository = this.dataSource.getRepository(OrderEntity);
     this.orderItemRepository = this.dataSource.getRepository(OrderItemEntity);
   }
+  findPaymentById(paymentId: string): Promise<PaymentDataSourceDTO | null> {
+    throw new Error('Method not implemented.');
+  }
 
-  findTotemByAccessToken(
-    accessToken: string,
-  ): Promise<TotemDataSourceDTO | null> {
+  savePayment(paymentDTO: PaymentDataSourceDTO): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  getPayment(paymentId: string): Promise<PaymentDataSourceDTO | null> {
     throw new Error('Method not implemented.');
   }
   saveCategory(categoryDTO: CategoryDataSourceDTO): Promise<void> {
@@ -239,6 +243,35 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
     };
   }
 
+  // --------------- STORE --------------- \\
+  async findStoreByTotemAccessToken(
+    accessToken: string,
+  ): Promise<StoreDataSourceDTO | null> {
+    const store = await this.storeRepository.findOne({
+      where: { totems: { token_access: accessToken } },
+    });
+
+    if (!store) return null;
+
+    return {
+      id: store.id,
+      name: store.name,
+      fantasy_name: store.fantasy_name,
+      email: store.email,
+      cnpj: store.cnpj,
+      phone: store.phone,
+      salt: store.salt,
+      password_hash: store.password_hash,
+      created_at: store.created_at.toISOString(),
+      totems: store.totems.map((totem) => ({
+        id: totem.id,
+        name: totem.name,
+        token_access: totem.token_access,
+        created_at: totem.created_at.toISOString(),
+      })),
+    };
+  }
+
   async findStoreById(id: string): Promise<StoreDataSourceDTO | null> {
     const store = await this.storeRepository.findOne({
       where: { id: id },
@@ -354,6 +387,12 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
       salt: store.salt,
       password_hash: store.password_hash,
       created_at: new Date(store.created_at),
+      totems: store.totems.map((totem) => ({
+        id: totem.id,
+        name: totem.name,
+        token_access: totem.token_access,
+        created_at: new Date(totem.created_at),
+      })),
     });
 
     await this.storeRepository.save(storeEntity);

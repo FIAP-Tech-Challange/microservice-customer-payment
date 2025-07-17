@@ -33,6 +33,7 @@ export class StoreEntity {
   @OneToMany(() => TotemEntity, (totem) => totem.store, {
     cascade: true,
     eager: true,
+    orphanedRowAction: 'delete',
   })
   totems: TotemEntity[];
 }

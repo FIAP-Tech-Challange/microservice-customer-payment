@@ -131,6 +131,19 @@ export class Store {
     }
   }
 
+  removeTotem(totemId: string): CoreResponse<void> {
+    try {
+      const totemIndex = this.totems.findIndex((t) => t.id === totemId);
+      if (totemIndex === -1) {
+        throw new ResourceInvalidException('Totem not found');
+      }
+      this.totems.splice(totemIndex, 1);
+      return { error: undefined, value: undefined };
+    } catch (error) {
+      return { error: error as CoreException, value: undefined };
+    }
+  }
+
   addTotem(totem: Totem): CoreResponse<undefined> {
     try {
       this.totems.forEach((t) => {

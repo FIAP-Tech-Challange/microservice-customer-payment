@@ -7,6 +7,12 @@ import { PaymentTypeDataSourceEnum } from 'src-clean/common/dataSource/enums/pay
 export class FakePaymentDataSource implements PaymentDataSource {
   private payments: Map<string, PaymentExternalDataSourceDTO> = new Map();
 
+  rejectPaymentExternal(externalId: string): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  approvePaymentExternal(externalId: string): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
   createPaymentExternal(
     paymentDTO: PaymentExternalDataSourceDTO,
   ): Promise<PaymentCreateExternalDataSourceResponseDTO> {
