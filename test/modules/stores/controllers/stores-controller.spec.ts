@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/unbound-method */
 import { StoresController } from '../../../../src/modules/stores/adapters/primary/stores.controller';
 import { StoresService } from '../../../../src/modules/stores/services/stores.service';
