@@ -7,12 +7,6 @@ import { PaymentTypeDataSourceEnum } from 'src-clean/common/dataSource/enums/pay
 export class FakePaymentDataSource implements PaymentDataSource {
   private payments: Map<string, PaymentExternalDataSourceDTO> = new Map();
 
-  rejectPaymentExternal(externalId: string): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-  approvePaymentExternal(externalId: string): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
   createPaymentExternal(
     paymentDTO: PaymentExternalDataSourceDTO,
   ): Promise<PaymentCreateExternalDataSourceResponseDTO> {
@@ -30,5 +24,21 @@ export class FakePaymentDataSource implements PaymentDataSource {
       qrCode:
         paymentType === PaymentTypeDataSourceEnum.QR ? newExternalId : null,
     });
+  }
+  rejectPaymentExternal(externalId: string): Promise<void> {
+    if (!this.payments.has(externalId)) {
+      throw new Error(`Payment with external ID ${externalId} not found.`);
+    }
+
+    this.payments.delete(externalId);
+    return Promise.resolve();
+  }
+  approvePaymentExternal(externalId: string): Promise<void> {
+    if (!this.payments.has(externalId)) {
+      throw new Error(`Payment with external ID ${externalId} not found.`);
+    }
+
+    // Simulate approval logic
+    return Promise.resolve();
   }
 }
