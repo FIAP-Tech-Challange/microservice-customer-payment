@@ -29,7 +29,6 @@ export class PaymentMapper {
       external_id: entity.externalId,
       qr_code: entity.qrCode,
       created_at: entity.createdAt.toISOString(),
-      updated_at: entity.updatedAt.toISOString(),
       platform: entity.platform,
     };
 
@@ -69,7 +68,6 @@ export class PaymentMapper {
       qrCode: dto.qr_code,
       platform: platform,
       createdAt: new Date(dto.created_at),
-      updatedAt: new Date(dto.updated_at),
       paymentType: type,
       status: status,
     });

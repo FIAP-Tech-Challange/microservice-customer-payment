@@ -18,9 +18,33 @@ import { CategoryGateway } from '../../product/gateways/category.gateway';
 import { CreateCategoryUseCase } from '../../product/useCases/createCategory.useCase';
 import { CreateStoreWithDefaultCategoriesUseCase } from '../useCases/createStoreWithDeafaultCategories.useCase';
 import { FindStoreByIdUseCase } from '../useCases/findStoreById.useCase';
+import { DeleteTotemUseCase } from '../useCases/addTotem.useCase copy';
 
 export class StoreCoreController {
   constructor(private dataSource: DataSource) {}
+
+  async deleteTotemFromStore(
+    storeId: string,
+    totemId: string,
+  ): Promise<CoreResponse<void>> {
+    try {
+      const gateway = new StoreGateway(this.dataSource);
+      const findStoreByIdUseCase = new FindStoreByIdUseCase(gateway);
+      const deleteTotemFromStoreUseCase = new DeleteTotemUseCase(
+        gateway,
+        findStoreByIdUseCase,
+      );
+
+      await deleteTotemFromStoreUseCase.execute(storeId, totemId);
+      return { error: undefined, value: undefined };
+    } catch (error) {
+      console.error(error);
+      return {
+        error: new UnexpectedError('Something went wrong while deleting totem'),
+        value: undefined,
+      };
+    }
+  }
 
   async addTotemToStore(
     dto: AddTotemInputDTO,
@@ -143,6 +167,27 @@ export class StoreCoreController {
       return {
         error: new UnexpectedError(
           'Something went wrong while finding store by totem access token',
+        ),
+        value: undefined,
+      };
+    }
+  }
+
+  async findStoreById(storeId: string): Promise<CoreResponse<StoreDTO>> {
+    try {
+      const gateway = new StoreGateway(this.dataSource);
+      const useCase = new FindStoreByIdUseCase(gateway);
+
+      const store = await useCase.execute(storeId);
+
+      if (store.error) return { error: store.error, value: undefined };
+
+      return { error: undefined, value: StorePresenter.toDto(store.value) };
+    } catch (error) {
+      console.error(error);
+      return {
+        error: new UnexpectedError(
+          'Something went wrong while finding store by ID',
         ),
         value: undefined,
       };
