@@ -32,9 +32,7 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
   savePayment(paymentDTO: PaymentDataSourceDTO): Promise<void> {
     throw new Error('Method not implemented.');
   }
-  getPayment(paymentId: string): Promise<PaymentDataSourceDTO | null> {
-    throw new Error('Method not implemented.');
-  }
+// Removed the unused `getPayment` method.
   saveCategory(categoryDTO: CategoryDataSourceDTO): Promise<void> {
     throw new Error('Method not implemented.');
   }
