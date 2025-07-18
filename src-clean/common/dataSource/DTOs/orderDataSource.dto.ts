@@ -7,6 +7,6 @@ export interface OrderDataSourceDto {
   total_price: number;
   store_id: string;
   totem_id: string | null;
+  created_at: Date;
   order_items: OrderItemDataSourceDTO[];
-  created_at: string;
 }

@@ -10,24 +10,31 @@ import { FindOrderByIdUseCase } from '../useCases/findOrderById.useCase';
 import { DeleteOrderUseCase } from '../useCases/deleteOrder.useCase';
 import { DeleteOrderItemUseCase } from '../useCases/deleteOrderItem.useCase';
 import { OrderPaginationDto } from '../DTOs/order-pagination.dto';
+import { OrderFilteredDto } from '../DTOs/order-filtered.dto';
+import { getAllOrdersUseCase } from '../useCases/getAllOrders.useCase';
+import { getFilteredAndSortedOrdersUseCase } from '../useCases/getFilteredAndSortedOrders.useCase';
+import { setOrderToCanceledUseCase } from '../useCases/setOrderToCanceled.useCase';
+import { setOrderToFinishedUseCase } from '../useCases/setOrderToFinished.useCase';
+import { setOrderToReadyUseCase } from '../useCases/setOrderToReady.useCase';
+import { setOrderToReceivedUseCase } from '../useCases/setOrderToReceived.useCase';
+import { setOrderToInProgressUseCase } from '../useCases/setOrderToInProgress.useCase';
 
-export class OrderController {
+export class OrderCoreController {
   constructor(private dataSource: DataSource) {}
 
   async createOrder(
     dto: CreateOrderDto,
-  ): Promise<CoreResponse<OrderResponseDto>> {
+  ): Promise<CoreResponse<OrderResponseDto | undefined>> {
     try {
       const gateway = new OrderGateway(this.dataSource);
       const useCase = new SaveOrderUseCase(gateway);
-
       const { error, value: order } = await useCase.execute(dto);
 
-      if (error) {
+      if (error || !order) {
         return { error: error, value: undefined };
       }
-
-      return { error: undefined, value: OrderPresenter.toDto(order!) };
+      const orderPresenter = OrderPresenter.toDto(order);
+      return { error: undefined, value: orderPresenter };
     } catch (error) {
       return {
         error: new UnexpectedError(
@@ -138,7 +145,9 @@ export class OrderController {
   ): Promise<CoreResponse<OrderPaginationDto>> {
     try {
       const gateway = new OrderGateway(this.dataSource);
-      const { error: orderError, value: orders } = await gateway.getAllOrders(
+      const useCase = new getAllOrdersUseCase(gateway);
+
+      const { error: orderError, value: orders } = await useCase.execute(
         page,
         limit,
         status,
@@ -154,6 +163,164 @@ export class OrderController {
       return {
         error: new UnexpectedError(
           `Something went wrong while getting all orders.. ${error}`,
+        ),
+        value: undefined,
+      };
+    }
+  }
+
+  async getFilteredAndSortedOrders(
+    storeId: string,
+  ): Promise<CoreResponse<OrderFilteredDto>> {
+    try {
+      const gateway = new OrderGateway(this.dataSource);
+      const useCase = new getFilteredAndSortedOrdersUseCase(gateway);
+
+      const { error: orderError, value: orders } =
+        await useCase.execute(storeId);
+
+      if (orderError) {
+        return { error: orderError, value: undefined };
+      }
+
+      return { error: undefined, value: orders };
+    } catch (error) {
+      return {
+        error: new UnexpectedError(
+          `Something went wrong while getting all orders.. ${error}`,
+        ),
+        value: undefined,
+      };
+    }
+  }
+
+  async setOrderToCanceled(
+    orderId: string,
+    storeId: string,
+  ): Promise<CoreResponse<void>> {
+    try {
+      const gateway = new OrderGateway(this.dataSource);
+      const findOrderUseCase = new FindOrderByIdUseCase(gateway);
+      const useCase = new setOrderToCanceledUseCase(gateway, findOrderUseCase);
+
+      const { error } = await useCase.execute(orderId, storeId);
+
+      if (error) {
+        return { error: error, value: undefined };
+      }
+
+      return { error: undefined, value: undefined };
+    } catch (error) {
+      return {
+        error: new UnexpectedError(
+          `Something went wrong while setting order to canceled.. ${error}`,
+        ),
+        value: undefined,
+      };
+    }
+  }
+
+  async setOrderToFinished(
+    orderId: string,
+    storeId: string,
+  ): Promise<CoreResponse<void>> {
+    try {
+      const gateway = new OrderGateway(this.dataSource);
+      const findOrderUseCase = new FindOrderByIdUseCase(gateway);
+      const useCase = new setOrderToFinishedUseCase(gateway, findOrderUseCase);
+
+      const { error } = await useCase.execute(orderId, storeId);
+
+      if (error) {
+        return { error: error, value: undefined };
+      }
+
+      return { error: undefined, value: undefined };
+    } catch (error) {
+      return {
+        error: new UnexpectedError(
+          `Something went wrong while setting order to finished.. ${error}`,
+        ),
+        value: undefined,
+      };
+    }
+  }
+
+  async setOrderToReady(
+    orderId: string,
+    storeId: string,
+  ): Promise<CoreResponse<void>> {
+    try {
+      const gateway = new OrderGateway(this.dataSource);
+      const findOrderUseCase = new FindOrderByIdUseCase(gateway);
+      const useCase = new setOrderToReadyUseCase(gateway, findOrderUseCase);
+
+      const { error } = await useCase.execute(orderId, storeId);
+
+      if (error) {
+        return { error: error, value: undefined };
+      }
+
+      return { error: undefined, value: undefined };
+    } catch (error) {
+      return {
+        error: new UnexpectedError(
+          `Something went wrong while setting order to ready.. ${error}`,
+        ),
+        value: undefined,
+      };
+    }
+  }
+
+  async setOrderToReceived(
+    orderId: string,
+    storeId: string,
+  ): Promise<CoreResponse<void>> {
+    try {
+      const gateway = new OrderGateway(this.dataSource);
+      const findOrderUseCase = new FindOrderByIdUseCase(gateway);
+      const useCase = new setOrderToReceivedUseCase(gateway, findOrderUseCase);
+
+      const { error } = await useCase.execute(orderId, storeId);
+
+      if (error) {
+        return { error: error, value: undefined };
+      }
+
+      return { error: undefined, value: undefined };
+    } catch (error) {
+      return {
+        error: new UnexpectedError(
+          `Something went wrong while setting order to received.. ${error}`,
+        ),
+        value: undefined,
+      };
+    }
+  }
+
+  async setOrderToInProgress(
+    orderId: string,
+    storeId: string,
+  ): Promise<CoreResponse<void>> {
+    try {
+      const gateway = new OrderGateway(this.dataSource);
+      const findOrderUseCase = new FindOrderByIdUseCase(gateway);
+      const useCase = new setOrderToInProgressUseCase(
+        gateway,
+        findOrderUseCase,
+      );
+
+      const { error } = await useCase.execute(orderId, storeId);
+
+      if (error) {
+        return { error: error, value: undefined };
+      }
+
+      return { error: undefined, value: undefined };
+    } catch (error) {
+      return {
+        error: new UnexpectedError(
+          `Something went wrong while setting order to in progress.. ${error}`,
         ),
         value: undefined,
       };

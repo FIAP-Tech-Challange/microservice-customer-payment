@@ -8,6 +8,7 @@ import { PaginatedDataSourceResponseDTO } from 'src-clean/common/dataSource/DTOs
 import { PaymentDataSourceDTO } from 'src-clean/common/dataSource/DTOs/paymentDataSource.dto';
 import { StoreDataSourceDTO } from 'src-clean/common/dataSource/DTOs/storeDataSource.dto';
 import { TotemDataSourceDTO } from 'src-clean/common/dataSource/DTOs/totemDataSource.dto';
+import { OrderFilteredDto } from 'src-clean/core/modules/order/DTOs/order-filtered.dto';
 
 export interface GeneralDataSource {
   // Totem
@@ -47,9 +48,9 @@ export interface GeneralDataSource {
   ): Promise<PaginatedDataSourceResponseDTO<CustomerDataSourceDTO>>;
   saveCustomer(customer: CustomerDataSourceDTO): Promise<void>;
   deleteCustomer(id: string): Promise<void>;
-  
+
   // Order
-  saveOrder(order: OrderDataSourceDto): Promise<void>;
+  saveOrder(order: OrderDataSourceDto): Promise<OrderDataSourceDto>;
   deleteOrder(order: OrderDataSourceDto): Promise<void>;
   deleteOrderItem(orderItem: string): Promise<void>;
   getAllOrders(
@@ -60,4 +61,5 @@ export interface GeneralDataSource {
   ): Promise<OrderDataSourcePaginationDto>;
   findOrderById(id: string): Promise<OrderDataSourceDto | null>;
   findByOrderItemId(id: string): Promise<OrderDataSourceDto | null>;
+  getFilteredAndSortedOrders(storeId: string): Promise<OrderFilteredDto>;
 }

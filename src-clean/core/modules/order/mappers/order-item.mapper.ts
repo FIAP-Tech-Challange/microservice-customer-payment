@@ -13,14 +13,18 @@ export class OrderItemMapper {
     });
   }
 
-  static toPersistenceDTO(entity: OrderItem): OrderItemDataSourceDTO {
+  static toPersistenceDTO(
+    entity: OrderItem,
+    orderId: string,
+  ): OrderItemDataSourceDTO {
     return {
       id: entity.id,
+      order_id: orderId,
       subtotal: entity.subtotal,
       product_id: entity.productId,
       unit_price: entity.unitPrice,
       quantity: entity.quantity,
-      created_at: entity.createdAt.toString(),
+      created_at: entity.createdAt,
     };
   }
 }

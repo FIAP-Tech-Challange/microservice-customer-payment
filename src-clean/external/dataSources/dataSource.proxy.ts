@@ -13,16 +13,17 @@ import { FindAllCustomersDataSourceFiltersDTO } from 'src-clean/common/dataSourc
 import { PaginatedDataSourceResponseDTO } from 'src-clean/common/dataSource/DTOs/paginatedDataSourceResponse.dto';
 import { CategoryDataSourceDTO } from 'src-clean/common/dataSource/DTOs/categoryDataSource.dto';
 import { PaymentCreateExternalDataSourceResponseDTO } from 'src-clean/common/dataSource/DTOs/paymentCreateExternalDataSourceResponse.dto';
-import { PaymentDataSourceDTO } from 'src-clean/common/dataSource/DTOs/paymentDataSource.dto';
 import { PaymentExternalDataSourceDTO } from 'src-clean/common/dataSource/DTOs/paymentExternalDataSource.dto';
+import { OrderFilteredDto } from 'src-clean/core/modules/order/DTOs/order-filtered.dto';
 
 export class DataSourceProxy implements DataSource {
   constructor(
     private generalDataSource: GeneralDataSource,
     private paymentDataSource: PaymentDataSource,
   ) {}
+
   // Order
-  saveOrder(order: OrderDataSourceDto): Promise<void> {
+  saveOrder(order: OrderDataSourceDto): Promise<OrderDataSourceDto> {
     return this.generalDataSource.saveOrder(order);
   }
 
@@ -48,6 +49,10 @@ export class DataSourceProxy implements DataSource {
     storeId: string,
   ): Promise<OrderDataSourcePaginationDto> {
     return this.generalDataSource.getAllOrders(page, limit, status, storeId);
+  }
+
+  getFilteredAndSortedOrders(storeId: string): Promise<OrderFilteredDto> {
+    return this.generalDataSource.getFilteredAndSortedOrders(storeId);
   }
 
   // Totem
@@ -116,6 +121,20 @@ export class DataSourceProxy implements DataSource {
     paymentDTO: PaymentExternalDataSourceDTO,
   ): Promise<PaymentCreateExternalDataSourceResponseDTO> {
     return this.paymentDataSource.createPaymentExternal(paymentDTO);
+  }
+
+  findPaymentById(paymentId: string): Promise<PaymentDataSourceDTO | null> {
+    throw new Error('Method not implemented.');
+  }
+  rejectPaymentExternal(
+    paymentDTO: PaymentExternalDataSourceDTO,
+  ): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  approvePaymentExternal(
+    paymentDTO: PaymentExternalDataSourceDTO,
+  ): Promise<void> {
+    throw new Error('Method not implemented.');
   }
 
   // Customer

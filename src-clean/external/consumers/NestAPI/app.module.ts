@@ -6,6 +6,7 @@ import databaseConfig from './infra/config/database.config';
 import paidMarketConfig from './infra/config/paid-market.config';
 import { AuthModule } from './modules/auth/auth.module';
 import { StoreModule } from './modules/store/store.module';
+import { OrderModule } from './modules/order/order.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { StoreModule } from './modules/store/store.module';
     HealthModule,
     AuthModule,
     StoreModule,
+    OrderModule,
   ],
   controllers: [],
   providers: [],

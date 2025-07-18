@@ -3,14 +3,20 @@ import { OrderMapper } from '../mappers/order.mapper';
 import { CoreResponse } from 'src-clean/common/DTOs/coreResponse';
 import { Order } from '../entities/order.entity';
 import { OrderPaginationDto } from '../DTOs/order-pagination.dto';
+import { OrderFilteredDto } from '../DTOs/order-filtered.dto';
 
 export class OrderGateway {
   constructor(private dataSource: DataSource) {}
 
-  async saveOrder(order: Order): Promise<CoreResponse<void>> {
+  async saveOrder(order: Order): Promise<CoreResponse<Order | undefined>> {
     const orderDTO = OrderMapper.toPersistenceDTO(order);
-    await this.dataSource.saveOrder(orderDTO);
-    return { error: undefined, value: undefined };
+
+    const orderSaved = await this.dataSource.saveOrder(orderDTO);
+    const orderMapper = OrderMapper.toEntity(orderSaved);
+    if (orderMapper?.error) {
+      return { error: orderMapper.error, value: undefined };
+    }
+    return { error: undefined, value: orderMapper.value };
   }
 
   async findOrderById(id: string): Promise<CoreResponse<Order | null>> {
@@ -56,6 +62,13 @@ export class OrderGateway {
       status,
       storeId,
     );
+    return { error: undefined, value: result };
+  }
+
+  async getFilteredAndSortedOrders(
+    storeId: string,
+  ): Promise<CoreResponse<OrderFilteredDto>> {
+    const result = await this.dataSource.getFilteredAndSortedOrders(storeId);
     return { error: undefined, value: result };
   }
 }
