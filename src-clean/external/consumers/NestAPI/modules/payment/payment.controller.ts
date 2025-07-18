@@ -1,0 +1,230 @@
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  InternalServerErrorException,
+  NotFoundException,
+  Param,
+  Patch,
+  Post,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import {
+  RequestFromStore,
+  RequestFromStoreOrTotem,
+} from 'src/modules/auth/models/dtos/request.dto';
+import { StoreOrTotemGuard } from 'src/modules/auth/guards/store-or-totem.guard';
+import { BusinessException } from 'src/shared/dto/business-exception.dto';
+import { DataSourceProxy } from 'src-clean/external/dataSources/dataSource.proxy';
+import { PaymentResponseDto } from './dto/payment-response.dto';
+import { CreatePaymentDto } from './dto/create-payment.dto';
+import { PaymentCoreController } from 'src-clean/core/modules/payment/controllers/payment.controller';
+import { PaymentTypeEnum } from 'src-clean/core/modules/payment/enums/paymentType.enum';
+import { ResourceNotFoundException } from 'src-clean/common/exceptions/resourceNotFoundException';
+import { ResourceInvalidException } from 'src-clean/common/exceptions/resourceInvalidException';
+import { CreatePaymentResponseDto } from './dto/create-payment-response.dto';
+import { getPaymentPlatform } from './util/payment-platform.util';
+import { PaymentIdDto } from './dto/payment-id.dto';
+import { ExternalPaymentConsumersGuard } from '../auth/guards/external-payment-consumers.guard';
+
+@ApiTags('Payment')
+@Controller({
+  path: 'payment',
+  version: '1',
+})
+export class PaymentController {
+  constructor(private dataSource: DataSourceProxy) {}
+
+  @ApiResponse({
+    status: 201,
+    description: 'Payment created successfully',
+    type: PaymentResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Payment has not been created',
+    type: BusinessException,
+  })
+  @ApiBody({
+    description: 'Payment data',
+    type: CreatePaymentDto,
+  })
+  @ApiOperation({ summary: 'Register payment' })
+  @ApiBearerAuth('access-token')
+  @ApiBearerAuth('totem-token')
+  @UseGuards(StoreOrTotemGuard)
+  @Post()
+  async create(
+    @Body() createPaymentDto: CreatePaymentDto,
+    @Request() req: RequestFromStoreOrTotem,
+  ): Promise<CreatePaymentResponseDto> {
+    const coreController = new PaymentCoreController(this.dataSource);
+    const response = await coreController.initiatePayment({
+      orderId: createPaymentDto.orderId,
+      storeId: req.storeId,
+      // TODO: verify if we can import PaymentTypeEnum directly
+      paymentType: PaymentTypeEnum.QR,
+    });
+
+    if (response.error) {
+      if (response.error.code === ResourceNotFoundException.CODE) {
+        throw new NotFoundException(response.error.message);
+      }
+
+      if (response.error.code === ResourceInvalidException.CODE) {
+        throw new BadRequestException(response.error.message);
+      }
+
+      throw new InternalServerErrorException(
+        'Something went wrong while creating the payment',
+      );
+    }
+
+    return {
+      id: response.value.id,
+      orderId: response.value.orderId,
+      externalId: response.value.externalId,
+      qrCode: response.value.qrCode,
+      platform: getPaymentPlatform(response.value.platform),
+    };
+  }
+
+  @ApiResponse({
+    status: 200,
+    description: 'Payment found successfully',
+    type: PaymentResponseDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Payment not found',
+    type: BusinessException,
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Payment ID',
+    type: String,
+    required: true,
+  })
+  @ApiOperation({ summary: 'Find Payment' })
+  @ApiBearerAuth('access-token')
+  @ApiBearerAuth('totem-token')
+  @UseGuards(StoreOrTotemGuard)
+  @Get(':id')
+  async findById(
+    @Param() params: PaymentIdDto,
+    @Request() req: RequestFromStoreOrTotem,
+  ): Promise<PaymentResponseDto> {
+    const coreController = new PaymentCoreController(this.dataSource);
+    const response = await coreController.findPaymentById(
+      params.id,
+      req.storeId,
+    );
+
+    if (response.error) {
+      if (response.error.code === ResourceNotFoundException.CODE) {
+        throw new NotFoundException(response.error.message);
+      }
+
+      throw new InternalServerErrorException(
+        'Something went wrong while finding the payment',
+      );
+    }
+
+    return {
+      id: response.value.id,
+      orderId: response.value.orderId,
+      externalId: response.value.externalId,
+      qrCode: response.value.qrCode,
+      platform: response.value.platform,
+      status: response.value.status,
+      total: response.value.total,
+      paymentType: response.value.paymentType,
+    };
+  }
+
+  @ApiResponse({
+    status: 200,
+    description: 'Payment status updated successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Payment status has not been updated',
+    type: BusinessException,
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Payment ID',
+    type: String,
+    required: true,
+  })
+  @ApiOperation({ summary: 'Approve Payment' })
+  @ApiBearerAuth('external-payment-consumer-key')
+  @UseGuards(ExternalPaymentConsumersGuard)
+  @Patch(':id/approve')
+  async approvePayment(
+    @Param('id') id: string,
+    @Request() req: RequestFromStore,
+  ): Promise<void> {
+    const coreController = new PaymentCoreController(this.dataSource);
+    const approvePayment = await coreController.approvePayment(id, req.storeId);
+    if (approvePayment.error) {
+      if (approvePayment.error.code === ResourceNotFoundException.CODE) {
+        throw new NotFoundException(approvePayment.error.message);
+      }
+
+      throw new InternalServerErrorException(
+        'Something went wrong while approving the payment',
+      );
+    }
+
+    return;
+  }
+
+  @ApiResponse({
+    status: 200,
+    description: 'Payment status updated successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Payment status has not been updated',
+    type: BusinessException,
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Payment ID',
+    type: String,
+    required: true,
+  })
+  @ApiOperation({ summary: 'Cancel Payment' })
+  @ApiBearerAuth('external-payment-consumer-key')
+  @UseGuards(ExternalPaymentConsumersGuard)
+  @Patch(':id/cancel')
+  async cancelPayment(
+    @Param('id') id: string,
+    @Request() req: RequestFromStore,
+  ): Promise<void> {
+    const coreController = new PaymentCoreController(this.dataSource);
+    const cancelPayment = await coreController.cancelPayment(id, req.storeId);
+    if (cancelPayment.error) {
+      if (cancelPayment.error.code === ResourceNotFoundException.CODE) {
+        throw new NotFoundException(cancelPayment.error.message);
+      }
+
+      throw new InternalServerErrorException(
+        'Something went wrong while canceling the payment',
+      );
+    }
+
+    return;
+  }
+}

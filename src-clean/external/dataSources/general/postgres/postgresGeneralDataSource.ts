@@ -13,25 +13,21 @@ import { CustomerDataSourceDTO } from 'src-clean/common/dataSource/DTOs/customer
 import { FindAllCustomersDataSourceFiltersDTO } from 'src-clean/common/dataSource/DTOs/findAllCustomersDataSourceFilters.dto';
 import { PaginatedDataSourceParamsDTO } from 'src-clean/common/dataSource/DTOs/paginatedDataSourceParams.dto';
 import { PaginatedDataSourceResponseDTO } from 'src-clean/common/dataSource/DTOs/paginatedDataSourceResponse.dto';
-import { TotemDataSourceDTO } from 'src-clean/common/dataSource/DTOs/totemDataSource.dto';
 import { PaymentDataSourceDTO } from 'src-clean/common/dataSource/DTOs/paymentDataSource.dto';
+import { PaymentEntity } from './entities/payment.entity';
 import { OrderFilteredDto } from 'src-clean/core/modules/order/DTOs/order-filtered.dto';
+
 
 export class PostgresGeneralDataSource implements GeneralDataSource {
   private storeRepository: Repository<StoreEntity>;
   private orderRepository: Repository<OrderEntity>;
   private orderItemRepository: Repository<OrderItemEntity>;
+  private paymentRepository: Repository<PaymentEntity>;
 
   constructor(private dataSource: DataSource) {
     this.storeRepository = this.dataSource.getRepository(StoreEntity);
     this.orderRepository = this.dataSource.getRepository(OrderEntity);
     this.orderItemRepository = this.dataSource.getRepository(OrderItemEntity);
-  }
-
-  findTotemByAccessToken(
-    accessToken: string,
-  ): Promise<TotemDataSourceDTO | null> {
-    throw new Error('Method not implemented.');
   }
   saveCategory(categoryDTO: CategoryDataSourceDTO): Promise<void> {
     throw new Error('Method not implemented.');
@@ -298,16 +294,38 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
     };
   }
 
-  findStoreByTotemAccessToken(
-    accessToken: string,
-  ): Promise<StoreDataSourceDTO | null> {
-    throw new Error('Method not implemented.');
-  }
-  savePayment(paymentDTO: PaymentDataSourceDTO): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
+
   getPayment(paymentId: string): Promise<PaymentDataSourceDTO | null> {
     throw new Error('Method not implemented.');
+  }
+
+  // --------------- STORE --------------- \\
+  async findStoreByTotemAccessToken(
+    accessToken: string,
+  ): Promise<StoreDataSourceDTO | null> {
+    const store = await this.storeRepository.findOne({
+      where: { totems: { token_access: accessToken } },
+    });
+
+    if (!store) return null;
+
+    return {
+      id: store.id,
+      name: store.name,
+      fantasy_name: store.fantasy_name,
+      email: store.email,
+      cnpj: store.cnpj,
+      phone: store.phone,
+      salt: store.salt,
+      password_hash: store.password_hash,
+      created_at: store.created_at.toISOString(),
+      totems: store.totems.map((totem) => ({
+        id: totem.id,
+        name: totem.name,
+        token_access: totem.token_access,
+        created_at: totem.created_at.toISOString(),
+      })),
+    };
   }
 
   async findStoreById(id: string): Promise<StoreDataSourceDTO | null> {
@@ -425,8 +443,54 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
       salt: store.salt,
       password_hash: store.password_hash,
       created_at: new Date(store.created_at),
+      totems: store.totems.map((totem) => ({
+        id: totem.id,
+        name: totem.name,
+        token_access: totem.token_access,
+        created_at: new Date(totem.created_at),
+      })),
     });
 
     await this.storeRepository.save(storeEntity);
+  }
+
+  // --------------- PAYMENT --------------- \\
+  async savePayment(paymentDTO: PaymentDataSourceDTO): Promise<void> {
+    const paymentEntity = this.paymentRepository.create({
+      id: paymentDTO.id,
+      order_id: paymentDTO.order_id,
+      store_id: paymentDTO.store_id,
+      external_id: paymentDTO.external_id,
+      total: paymentDTO.total,
+      status: paymentDTO.status,
+      payment_type: paymentDTO.payment_type,
+      plataform: paymentDTO.platform,
+      qr_code: paymentDTO.qr_code ?? undefined,
+      created_at: new Date(paymentDTO.created_at),
+    });
+    await this.paymentRepository.save(paymentEntity);
+  }
+
+  async findPaymentById(
+    paymentId: string,
+  ): Promise<PaymentDataSourceDTO | null> {
+    const payment = await this.paymentRepository.findOne({
+      where: { id: paymentId },
+    });
+
+    if (!payment) return null;
+
+    return {
+      id: payment.id,
+      order_id: payment.order_id,
+      store_id: payment.store_id,
+      external_id: payment.external_id,
+      total: payment.total,
+      status: payment.status,
+      payment_type: payment.payment_type,
+      platform: payment.plataform,
+      qr_code: payment.qr_code ?? undefined,
+      created_at: payment.created_at.toISOString(),
+    };
   }
 }

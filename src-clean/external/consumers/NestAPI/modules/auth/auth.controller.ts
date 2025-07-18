@@ -1,5 +1,6 @@
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
-import { SignInInputDto, SignInOutputDto } from '../dtos/sign-in.dto';
+import { SignInInputDto, SignInOutputDto } from './dtos/sign-in.dto';
+import { AuthService } from './auth.service';
 import {
   ApiBody,
   ApiOperation,
@@ -7,12 +8,8 @@ import {
   ApiSecurity,
   ApiTags,
 } from '@nestjs/swagger';
-import { ApiKeyGuard } from '../guards/api-key.guard';
-import { BusinessException } from 'src/shared/dto/business-exception.dto';
-import { AuthService } from '../services/auth.service';
-import { DataSourceProxy } from 'src-clean/external/dataSources/dataSource.proxy';
-import { FakePaymentDataSource } from 'src-clean/external/dataSources/payment/fake/fakePaymentDataSource';
-import { createPostgresGeneralDataSource } from 'src-clean/external/dataSources/general/postgres/createPostgresDataSource';
+import { ApiKeyGuard } from './guards/api-key.guard';
+import { BusinessException } from 'src-clean/external/consumers/NestAPI/shared/dto/business-exception.dto';
 
 @ApiTags('Auth')
 @Controller({
@@ -44,17 +41,7 @@ export class AuthController {
   @UseGuards(ApiKeyGuard)
   @Post('login')
   async login(@Body() dto: SignInInputDto): Promise<SignInOutputDto> {
-    const dataSource = new DataSourceProxy(
-      await createPostgresGeneralDataSource(),
-      new FakePaymentDataSource(),
-    );
-
-    const token = await this.authService.login(
-      dto.email,
-      dto.password,
-      dataSource,
-    );
-
+    const token = await this.authService.login(dto.email, dto.password);
     return { access_token: token };
   }
 }

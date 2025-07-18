@@ -6,7 +6,6 @@ import { PaymentDataSourceDTO } from 'src-clean/common/dataSource/DTOs/paymentDa
 import { OrderDataSourceDto } from 'src-clean/common/dataSource/DTOs/orderDataSource.dto';
 import { ProductDataSourceDTO } from 'src-clean/common/dataSource/DTOs/productDataSource.dto';
 import { OrderDataSourcePaginationDto } from 'src-clean/common/dataSource/DTOs/orderDataSourcePagination.dto';
-import { TotemDataSourceDTO } from 'src-clean/common/dataSource/DTOs/totemDataSource.dto';
 import { CustomerDataSourceDTO } from 'src-clean/common/dataSource/DTOs/customerDataSource.dto';
 import { PaginatedDataSourceParamsDTO } from 'src-clean/common/dataSource/DTOs/paginatedDataSourceParams.dto';
 import { FindAllCustomersDataSourceFiltersDTO } from 'src-clean/common/dataSource/DTOs/findAllCustomersDataSourceFilters.dto';
@@ -53,13 +52,6 @@ export class DataSourceProxy implements DataSource {
 
   getFilteredAndSortedOrders(storeId: string): Promise<OrderFilteredDto> {
     return this.generalDataSource.getFilteredAndSortedOrders(storeId);
-  }
-
-  // Totem
-  findTotemByAccessToken(
-    accessToken: string,
-  ): Promise<TotemDataSourceDTO | null> {
-    return this.generalDataSource.findTotemByAccessToken(accessToken);
   }
 
   // Store
@@ -111,8 +103,14 @@ export class DataSourceProxy implements DataSource {
   }
 
   // Payment
-  getPayment(paymentId: string): Promise<PaymentDataSourceDTO | null> {
-    return this.generalDataSource.getPayment(paymentId);
+  findPaymentById(paymentId: string): Promise<PaymentDataSourceDTO | null> {
+    return this.generalDataSource.findPaymentById(paymentId);
+  }
+  rejectPaymentExternal(externalId: string): Promise<void> {
+    return this.paymentDataSource.rejectPaymentExternal(externalId);
+  }
+  approvePaymentExternal(externalId: string): Promise<void> {
+    return this.paymentDataSource.approvePaymentExternal(externalId);
   }
   savePayment(paymentDTO: PaymentDataSourceDTO): Promise<void> {
     return this.generalDataSource.savePayment(paymentDTO);
@@ -121,20 +119,6 @@ export class DataSourceProxy implements DataSource {
     paymentDTO: PaymentExternalDataSourceDTO,
   ): Promise<PaymentCreateExternalDataSourceResponseDTO> {
     return this.paymentDataSource.createPaymentExternal(paymentDTO);
-  }
-
-  findPaymentById(paymentId: string): Promise<PaymentDataSourceDTO | null> {
-    throw new Error('Method not implemented.');
-  }
-  rejectPaymentExternal(
-    paymentDTO: PaymentExternalDataSourceDTO,
-  ): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-  approvePaymentExternal(
-    paymentDTO: PaymentExternalDataSourceDTO,
-  ): Promise<void> {
-    throw new Error('Method not implemented.');
   }
 
   // Customer
