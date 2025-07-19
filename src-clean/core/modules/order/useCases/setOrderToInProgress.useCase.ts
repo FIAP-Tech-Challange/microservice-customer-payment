@@ -30,7 +30,7 @@ export class setOrderToInProgressUseCase {
     }
 
     try {
-      order.setToReceived();
+      order.setToInProgress();
       const { error: saveError } = await this.orderGateway.saveOrder(order);
       if (saveError) return { error: saveError, value: undefined };
       return { error: undefined, value: undefined };

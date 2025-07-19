@@ -16,17 +16,20 @@ import { PaginatedDataSourceResponseDTO } from 'src-clean/common/dataSource/DTOs
 import { PaymentDataSourceDTO } from 'src-clean/common/dataSource/DTOs/paymentDataSource.dto';
 import { PaymentEntity } from './entities/payment.entity';
 import { OrderFilteredDto } from 'src-clean/core/modules/order/DTOs/order-filtered.dto';
+import { TotemEntity } from './entities/totem.entity';
 
 export class PostgresGeneralDataSource implements GeneralDataSource {
   private storeRepository: Repository<StoreEntity>;
   private orderRepository: Repository<OrderEntity>;
   private orderItemRepository: Repository<OrderItemEntity>;
   private paymentRepository: Repository<PaymentEntity>;
+  private totemRepository: Repository<TotemEntity>;
 
   constructor(private dataSource: DataSource) {
     this.storeRepository = this.dataSource.getRepository(StoreEntity);
     this.orderRepository = this.dataSource.getRepository(OrderEntity);
     this.orderItemRepository = this.dataSource.getRepository(OrderItemEntity);
+    this.totemRepository = this.dataSource.getRepository(TotemEntity);
   }
   saveCategory(categoryDTO: CategoryDataSourceDTO): Promise<void> {
     throw new Error('Method not implemented.');
@@ -448,6 +451,35 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
     });
 
     await this.storeRepository.save(storeEntity);
+  }
+
+  async findByTotemAccessToken(
+    token: string,
+  ): Promise<StoreDataSourceDTO | null> {
+    const totem = await this.totemRepository.findOne({
+      where: { token_access: token },
+      relations: ['store'],
+    });
+
+    if (!totem) return null;
+
+    return {
+      id: totem?.store.id,
+      name: totem?.store.name,
+      fantasy_name: totem?.store.fantasy_name,
+      email: totem?.store.email,
+      cnpj: totem?.store.cnpj,
+      phone: totem?.store.phone,
+      salt: totem?.store.salt,
+      password_hash: totem?.store.password_hash,
+      created_at: totem?.store.created_at.toISOString(),
+      totems: totem?.store.totems.map((totem) => ({
+        id: totem.id,
+        name: totem.name,
+        token_access: totem.token_access,
+        created_at: totem.created_at.toISOString(),
+      })),
+    };
   }
 
   // --------------- PAYMENT --------------- \\
