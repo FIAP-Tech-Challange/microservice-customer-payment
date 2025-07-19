@@ -11,6 +11,7 @@ import { OrderDataSourceDto } from './DTOs/orderDataSource.dto';
 import { OrderPaginationDto } from 'src-clean/core/modules/order/DTOs/order-pagination.dto';
 import { ProductDataSourceDTO } from './DTOs/productDataSource.dto';
 import { OrderFilteredDto } from 'src-clean/core/modules/order/DTOs/order-filtered.dto';
+import { TotemDataSourceDTO } from './DTOs/totemDataSource.dto';
 
 export interface DataSource {
   // Store
@@ -22,6 +23,7 @@ export interface DataSource {
   findStoreByTotemAccessToken(
     accessToken: string,
   ): Promise<StoreDataSourceDTO | null>;
+  findByTotemAccessToken(token: string): Promise<StoreDataSourceDTO | null>;
 
   // Product/Category
   saveCategory(categoryDTO: CategoryDataSourceDTO): Promise<void>;

@@ -15,7 +15,8 @@ export class CreateStoreWithDefaultCategoriesUseCase {
 
     if (store.error) return { error: store.error, value: undefined };
 
-    await Promise.all([
+    // Uncomment the following lines to create default categories after store creation
+    /*await Promise.all([
       this.createCategoryUseCase.execute({
         name: 'Lanche',
         storeId: store.value.id,
@@ -32,7 +33,7 @@ export class CreateStoreWithDefaultCategoriesUseCase {
         name: 'Sobremesa',
         storeId: store.value.id,
       }),
-    ]);
+    ]);*/
 
     return { error: undefined, value: store.value };
   }

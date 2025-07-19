@@ -9,6 +9,8 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
+  Request,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -28,6 +30,12 @@ import { OrderStatusEnum } from 'src-clean/core/modules/order/entities/order.ent
 import { OrderResponseDto } from '../dtos/order-response.dto';
 import { OrderPaginationDto } from '../dtos/order-pagination.dto';
 import { OrderSortedListDto } from '../dtos/order-sorted-list.dto';
+import { StoreOrTotemGuard } from '../../auth/guards/store-or-totem.guard';
+import {
+  RequestFromStore,
+  RequestFromTotem,
+} from '../../auth/dtos/request.dto';
+import { StoreGuard } from '../../auth/guards/store.guard';
 
 @ApiTags('Order')
 @Controller({
@@ -56,15 +64,17 @@ export class OrderController {
   @ApiOperation({ summary: 'Register your order' })
   @ApiBearerAuth('access-token')
   @ApiBearerAuth('totem-token')
-  //@UseGuards(StoreOrTotemGuard)
+  @UseGuards(StoreOrTotemGuard)
   @Post()
-  async create(@Body() body: CreateOrderDto): Promise<OrderResponseDto> {
+  async create(
+    @Body() body: CreateOrderDto,
+    @Request() req: RequestFromTotem,
+  ): Promise<OrderResponseDto> {
     const { error: err, value: order } = await new OrderCoreController(
       this.dataSource,
     ).createOrder({
-      storeId: body.storeId,
-      totemId: body.totemId,
-      customerId: body.customerId,
+      storeId: req.storeId,
+      totemId: req.totemId,
       orderItems: body.orderItems,
     });
 
@@ -106,11 +116,11 @@ export class OrderController {
   })
   @ApiOperation({ summary: 'List all orders' })
   @ApiBearerAuth('access-token')
-  //@UseGuards(StoreGuard)
+  @UseGuards(StoreGuard)
   @Get('all')
   async getAll(
     @Query() params: OrderRequestParamsDto,
-    //@Request() req: RequestFromStore,
+    @Request() req: RequestFromStore,
   ): Promise<OrderPaginationDto> {
     const { error: err, value: order } = await new OrderCoreController(
       this.dataSource,
@@ -118,7 +128,7 @@ export class OrderController {
       params.page ?? 1,
       params.limit ?? 10,
       params.status ?? OrderStatusEnum.PENDING,
-      params.storeId! /*pegar do guard*/,
+      req.storeId,
     );
 
     if (err) {
@@ -141,14 +151,14 @@ export class OrderController {
   })
   @ApiOperation({ summary: 'List sorted by status and creation date' })
   @ApiBearerAuth('access-token')
+  @UseGuards(StoreGuard)
   @Get('/sorted-list')
   async getSortedList(
-    @Query('storeId') storeId: string,
-    //@Request() req: RequestFromStore,
+    @Request() req: RequestFromStore,
   ): Promise<OrderSortedListDto> {
     const { error: err, value: order } = await new OrderCoreController(
       this.dataSource,
-    ).getFilteredAndSortedOrders(storeId);
+    ).getFilteredAndSortedOrders(req.storeId);
 
     if (err) {
       this.logger.error(`Failed to fetch sorted orders: ${err.message}`);
@@ -175,18 +185,15 @@ export class OrderController {
   })
   @ApiOperation({ summary: 'Update status order by orderId for received' })
   @ApiBearerAuth('access-token')
-  //@UseGuards(StoreGuard)
+  @UseGuards(StoreGuard)
   @Patch(':id/received')
   async updateStatusForReceived(
     @Param('id') id: string,
-    @Body() body: any,
-    /*@Request() req: RequestFromStore,*/
+    @Request() req: RequestFromStore,
   ): Promise<void> {
-    const { storeId } = body;
-
     const { error: err } = await new OrderCoreController(
       this.dataSource,
-    ).setOrderToReceived(id, storeId);
+    ).setOrderToReceived(id, req.storeId);
 
     if (err) {
       this.logger.error(`Failed to update order status: ${err.message}`);
@@ -212,18 +219,15 @@ export class OrderController {
   })
   @ApiOperation({ summary: 'Update status order by orderId for in progress' })
   @ApiBearerAuth('access-token')
-  //@UseGuards(StoreGuard)
+  @UseGuards(StoreGuard)
   @Patch(':id/prepare')
   async updateStatusForInProgress(
     @Param('id') id: string,
-    @Body() body: any,
-    /*@Request() req: RequestFromStore,*/
+    @Request() req: RequestFromStore,
   ): Promise<void> {
-    const { storeId } = body;
-
     const { error: err } = await new OrderCoreController(
       this.dataSource,
-    ).setOrderToInProgress(id, storeId);
+    ).setOrderToInProgress(id, req.storeId);
 
     if (err) {
       this.logger.error(`Failed to update order status: ${err.message}`);
@@ -249,18 +253,15 @@ export class OrderController {
   })
   @ApiOperation({ summary: 'Update status order by orderId for ready' })
   @ApiBearerAuth('access-token')
-  //@UseGuards(StoreGuard)
+  @UseGuards(StoreGuard)
   @Patch(':id/ready')
   async updateStatusForReady(
     @Param('id') id: string,
-    @Body() body: any,
-    /*@Request() req: RequestFromStore,*/
+    @Request() req: RequestFromStore,
   ): Promise<void> {
-    const { storeId } = body;
-
     const { error: err } = await new OrderCoreController(
       this.dataSource,
-    ).setOrderToReady(id, storeId);
+    ).setOrderToReady(id, req.storeId);
 
     if (err) {
       this.logger.error(`Failed to update order status: ${err.message}`);
@@ -286,18 +287,15 @@ export class OrderController {
   })
   @ApiOperation({ summary: 'Update status order by orderId for finished' })
   @ApiBearerAuth('access-token')
-  //@UseGuards(StoreGuard)
+  @UseGuards(StoreGuard)
   @Patch(':id/finished')
   async updateStatusForFinished(
     @Param('id') id: string,
-    @Body() body: any,
-    /*@Request() req: RequestFromStore,*/
+    @Request() req: RequestFromStore,
   ): Promise<void> {
-    const { storeId } = body;
-
     const { error: err } = await new OrderCoreController(
       this.dataSource,
-    ).setOrderToFinished(id, storeId);
+    ).setOrderToFinished(id, req.storeId);
 
     if (err) {
       this.logger.error(`Failed to update order status: ${err.message}`);
@@ -323,18 +321,15 @@ export class OrderController {
   })
   @ApiOperation({ summary: 'Update status order by orderId for canceled' })
   @ApiBearerAuth('access-token')
-  //@UseGuards(StoreGuard)
+  @UseGuards(StoreGuard)
   @Patch(':id/canceled')
   async updateStatusForCanceled(
     @Param('id') id: string,
-    @Body() body: any,
-    /*@Request() req: RequestFromStore,*/
+    @Request() req: RequestFromStore,
   ): Promise<void> {
-    const { storeId } = body;
-
     const { error: err } = await new OrderCoreController(
       this.dataSource,
-    ).setOrderToCanceled(id, storeId);
+    ).setOrderToCanceled(id, req.storeId);
 
     if (err) {
       this.logger.error(`Failed to update order status: ${err.message}`);
@@ -362,12 +357,9 @@ export class OrderController {
   @ApiOperation({ summary: 'Find Order by orderId' })
   @ApiBearerAuth('access-token')
   @ApiBearerAuth('totem-token')
-  //@UseGuards(StoreOrTotemGuard)
+  @UseGuards(StoreOrTotemGuard)
   @Get(':id')
-  async findById(
-    @Param('id') id: string,
-    /*@Request() req: RequestFromStore,*/
-  ): Promise<OrderResponseDto> {
+  async findById(@Param('id') id: string): Promise<OrderResponseDto> {
     if (!id || id.trim() === '') {
       throw new BusinessException('Order ID is required', 400);
     }
@@ -405,12 +397,9 @@ export class OrderController {
   @ApiOperation({ summary: 'Delete order by orderId' })
   @ApiBearerAuth('access-token')
   @ApiBearerAuth('totem-token')
-  //@UseGuards(StoreOrTotemGuard)
+  @UseGuards(StoreOrTotemGuard)
   @Delete(':id')
-  async delete(
-    @Param('id') id: string,
-    /*@Request() req: RequestFromStore,*/
-  ): Promise<void> {
+  async delete(@Param('id') id: string): Promise<void> {
     const { error: err } = await new OrderCoreController(
       this.dataSource,
     ).deleteOrder(id);
@@ -439,11 +428,10 @@ export class OrderController {
   @ApiOperation({ summary: 'Delete order item by orderItemId' })
   @ApiBearerAuth('access-token')
   @ApiBearerAuth('totem-token')
-  //@UseGuards(StoreOrTotemGuard)
+  @UseGuards(StoreOrTotemGuard)
   @Delete('order-item/:id')
   async deleteOrderItem(
     @Param('id', new ParseUUIDPipe()) orderItemId: string,
-    /*@Request() req: RequestFromStore,*/
   ): Promise<OrderResponseDto> {
     const { error: err, value: order } = await new OrderCoreController(
       this.dataSource,
