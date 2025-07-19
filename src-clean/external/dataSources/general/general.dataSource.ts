@@ -19,6 +19,7 @@ export interface GeneralDataSource {
   findStoreByTotemAccessToken(
     accessToken: string,
   ): Promise<StoreDataSourceDTO | null>;
+  findByTotemAccessToken(token: string): Promise<StoreDataSourceDTO | null>;
 
   // Product/Category
   saveCategory(categoryDTO: CategoryDataSourceDTO): Promise<void>;

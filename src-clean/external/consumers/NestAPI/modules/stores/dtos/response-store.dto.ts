@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { StoreIdDto } from './store-id.dto';
 import { ResponseTotemDto } from 'src/modules/payment/models/dto/response-totem.dto';
 
@@ -21,11 +21,11 @@ export class ResponseStoreDto extends StoreIdDto {
   })
   email: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Contact telephone number',
     example: '5521999999999',
   })
-  phone: string;
+  phone?: string;
 
   @ApiProperty({
     description: 'CNPJ field company',

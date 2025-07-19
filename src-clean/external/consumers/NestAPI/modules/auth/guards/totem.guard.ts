@@ -5,11 +5,12 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Request } from 'express';
-import { StoresService } from 'src/modules/stores/services/stores.service';
+import { StoreCoreController } from 'src-clean/core/modules/store/controllers/store.controller';
+import { DataSourceProxy } from 'src-clean/external/dataSources/dataSource.proxy';
 
 @Injectable()
 export class TotemGuard implements CanActivate {
-  constructor(private storeService: StoresService) {}
+  constructor(private readonly dataSource: DataSourceProxy) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request: Request = context.switchToHttp().getRequest<Request>();
@@ -20,7 +21,13 @@ export class TotemGuard implements CanActivate {
     }
 
     try {
-      const store = await this.storeService.findByTotemAccessToken(token);
+      const { error, value: store } = await new StoreCoreController(
+        this.dataSource,
+      ).findByTotemAccessToken(token);
+
+      if (error || !store) {
+        throw new UnauthorizedException('Invalid totem token');
+      }
 
       request['storeId'] = store.id;
       request['totemAccessToken'] = token;
