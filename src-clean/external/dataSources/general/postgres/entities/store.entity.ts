@@ -1,5 +1,7 @@
 import { Entity, Column, PrimaryColumn, OneToMany } from 'typeorm';
 import { TotemEntity } from './totem.entity';
+import { ProductEntity } from './product.entity';
+import { CategoryEntity } from './category.entity';
 
 @Entity('stores')
 export class StoreEntity {
@@ -36,4 +38,16 @@ export class StoreEntity {
     orphanedRowAction: 'delete',
   })
   totems: TotemEntity[];
+
+  @OneToMany(() => ProductEntity, (product) => product.store, {
+    cascade: true,
+    eager: false,
+  })
+  products: ProductEntity[];
+
+  @OneToMany(() => CategoryEntity, (category) => category.store, {
+    cascade: true,
+    eager: false,
+  })
+  categories: CategoryEntity[];
 }

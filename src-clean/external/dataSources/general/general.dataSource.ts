@@ -20,6 +20,7 @@ export interface GeneralDataSource {
   ): Promise<StoreDataSourceDTO | null>;
 
   // Product/Category
+  findAllCategoriesByStoreId(storeId: string): Promise<CategoryDataSourceDTO[]>;
   saveCategory(categoryDTO: CategoryDataSourceDTO): Promise<void>;
   findCategoryById(id: string): Promise<CategoryDataSourceDTO | null>;
   findCategoryByNameAndStoreId(

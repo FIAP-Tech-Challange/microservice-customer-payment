@@ -15,30 +15,124 @@ import { PaginatedDataSourceParamsDTO } from 'src-clean/common/dataSource/DTOs/p
 import { PaginatedDataSourceResponseDTO } from 'src-clean/common/dataSource/DTOs/paginatedDataSourceResponse.dto';
 import { PaymentDataSourceDTO } from 'src-clean/common/dataSource/DTOs/paymentDataSource.dto';
 import { PaymentEntity } from './entities/payment.entity';
+import { CategoryEntity } from './entities/category.entity';
 
 export class PostgresGeneralDataSource implements GeneralDataSource {
   private storeRepository: Repository<StoreEntity>;
   private orderRepository: Repository<OrderEntity>;
   private orderItemRepository: Repository<OrderItemEntity>;
   private paymentRepository: Repository<PaymentEntity>;
+  private categoryRepository: Repository<CategoryEntity>;
 
   constructor(private dataSource: DataSource) {
     this.storeRepository = this.dataSource.getRepository(StoreEntity);
     this.orderRepository = this.dataSource.getRepository(OrderEntity);
     this.orderItemRepository = this.dataSource.getRepository(OrderItemEntity);
   }
-  saveCategory(categoryDTO: CategoryDataSourceDTO): Promise<void> {
-    throw new Error('Method not implemented.');
+  // --------------- PRODUCT CATEGORY --------------- \\
+  async findAllCategoriesByStoreId(
+    storeId: string,
+  ): Promise<CategoryDataSourceDTO[]> {
+    const categories = await this.categoryRepository.find({
+      where: { store_id: storeId },
+    });
+
+    return categories.map((category) => ({
+      id: category.id,
+      name: category.name,
+      created_at: category.created_at.toISOString(),
+      updated_at: category.updated_at.toISOString(),
+      store_id: category.store_id,
+      products: category.products.map((product) => ({
+        id: product.id,
+        name: product.name,
+        price: Number(product.price),
+        description: product.description ?? '',
+        prep_time: Number(product.prep_time),
+        image_url: product.image_url,
+        created_at: product.created_at.toISOString(),
+        updated_at: product.updated_at.toISOString(),
+        store_id: product.store_id,
+      })),
+    }));
   }
-  findCategoryById(id: string): Promise<CategoryDataSourceDTO | null> {
-    throw new Error('Method not implemented.');
+  async saveCategory(categoryDTO: CategoryDataSourceDTO): Promise<void> {
+    await this.categoryRepository.save({
+      id: categoryDTO.id,
+      name: categoryDTO.name,
+      created_at: new Date(categoryDTO.created_at),
+      updated_at: new Date(categoryDTO.updated_at),
+      store_id: categoryDTO.store_id,
+      products: categoryDTO.products.map((product) => ({
+        id: product.id,
+        name: product.name,
+        price: product.price.toString(),
+        description: product.description,
+        prep_time: product.prep_time,
+        image_url: product.image_url,
+        created_at: new Date(product.created_at),
+        updated_at: new Date(product.updated_at),
+        store_id: product.store_id,
+      })),
+    });
   }
-  findCategoryByNameAndStoreId(
+  async findCategoryById(id: string): Promise<CategoryDataSourceDTO | null> {
+    const category = await this.categoryRepository.findOne({
+      where: { id: id },
+    });
+
+    if (!category) return null;
+
+    return {
+      id: category.id,
+      name: category.name,
+      created_at: category.created_at.toISOString(),
+      updated_at: category.updated_at.toISOString(),
+      store_id: category.store_id,
+      products: category.products.map((product) => ({
+        id: product.id,
+        name: product.name,
+        price: Number(product.price),
+        description: product.description ?? '',
+        prep_time: Number(product.prep_time),
+        image_url: product.image_url,
+        created_at: product.created_at.toISOString(),
+        updated_at: product.updated_at.toISOString(),
+        store_id: product.store_id,
+      })),
+    };
+  }
+  async findCategoryByNameAndStoreId(
     name: string,
     storeId: string,
   ): Promise<CategoryDataSourceDTO | null> {
-    throw new Error('Method not implemented.');
+    const category = await this.categoryRepository.findOne({
+      where: { name: name, store_id: storeId },
+    });
+
+    if (!category) return null;
+
+    return {
+      id: category.id,
+      name: category.name,
+      created_at: category.created_at.toISOString(),
+      updated_at: category.updated_at.toISOString(),
+      store_id: category.store_id,
+      products: category.products.map((product) => ({
+        id: product.id,
+        name: product.name,
+        price: Number(product.price),
+        description: product.description ?? '',
+        prep_time: Number(product.prep_time),
+        image_url: product.image_url,
+        created_at: product.created_at.toISOString(),
+        updated_at: product.updated_at.toISOString(),
+        store_id: product.store_id,
+      })),
+    };
   }
+
+  // --------------- CUSTOMER --------------- \\
   findCustomerById(id: string): Promise<CustomerDataSourceDTO | null> {
     throw new Error('Method not implemented.');
   }

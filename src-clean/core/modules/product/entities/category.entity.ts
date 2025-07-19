@@ -101,6 +101,24 @@ export class Category {
     }
   }
 
+  removeProduct(productId: string): CoreResponse<undefined> {
+    try {
+      const productIndex = this._products.findIndex((p) => p.id === productId);
+      if (productIndex === -1) {
+        throw new ResourceConflictException(
+          'Product with this id does not exist in the category',
+        );
+      }
+
+      this._products.splice(productIndex, 1);
+      this._updatedAt = new Date();
+      this.validate();
+      return { error: undefined, value: undefined };
+    } catch (error) {
+      return { error: error as CoreException, value: undefined };
+    }
+  }
+
   static create(props: {
     name: string;
     storeId: string;

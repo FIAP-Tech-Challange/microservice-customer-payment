@@ -4,7 +4,6 @@ import { GeneralDataSource } from './general/general.dataSource';
 import { PaymentDataSource } from './payment/payment.dataSource';
 import { PaymentDataSourceDTO } from 'src-clean/common/dataSource/DTOs/paymentDataSource.dto';
 import { OrderDataSourceDto } from 'src-clean/common/dataSource/DTOs/orderDataSource.dto';
-import { ProductDataSourceDTO } from 'src-clean/common/dataSource/DTOs/productDataSource.dto';
 import { OrderDataSourcePaginationDto } from 'src-clean/common/dataSource/DTOs/orderDataSourcePagination.dto';
 import { CustomerDataSourceDTO } from 'src-clean/common/dataSource/DTOs/customerDataSource.dto';
 import { PaginatedDataSourceParamsDTO } from 'src-clean/common/dataSource/DTOs/paginatedDataSourceParams.dto';
@@ -71,6 +70,11 @@ export class DataSourceProxy implements DataSource {
   }
 
   // Product/Category
+  findAllCategoriesByStoreId(
+    storeId: string,
+  ): Promise<CategoryDataSourceDTO[]> {
+    return this.generalDataSource.findAllCategoriesByStoreId(storeId);
+  }
   saveCategory(categoryDTO: CategoryDataSourceDTO): Promise<void> {
     return this.generalDataSource.saveCategory(categoryDTO);
   }
@@ -82,18 +86,6 @@ export class DataSourceProxy implements DataSource {
     storeId: string,
   ): Promise<CategoryDataSourceDTO | null> {
     return this.generalDataSource.findCategoryByNameAndStoreId(name, storeId);
-  }
-
-  findProductById(id: string): Promise<ProductDataSourceDTO | null> {
-    throw new Error('Method not implemented.');
-  }
-  saveProduct(product: ProductDataSourceDTO): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-  findProductByName(
-    name: string,
-  ): ProductDataSourceDTO | PromiseLike<ProductDataSourceDTO | null> | null {
-    throw new Error('Method not implemented.');
   }
 
   // Payment

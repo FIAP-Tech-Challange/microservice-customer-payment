@@ -10,6 +10,8 @@ export class StorePresenter {
       fantasyName: store.fantasyName,
       email: store.email.toString(),
       totems: store.totems.map((totem) => TotemPresenter.toDto(totem)),
+      cnpj: store.cnpj.toString(),
+      phone: store.phone.toString(),
     };
   }
 }

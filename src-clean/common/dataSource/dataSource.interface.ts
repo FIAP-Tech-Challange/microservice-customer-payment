@@ -9,7 +9,6 @@ import { PaymentCreateExternalDataSourceResponseDTO } from './DTOs/paymentCreate
 import { PaymentExternalDataSourceDTO } from './DTOs/paymentExternalDataSource.dto';
 import { OrderDataSourceDto } from './DTOs/orderDataSource.dto';
 import { OrderPaginationDto } from 'src-clean/core/modules/order/DTOs/order-pagination.dto';
-import { ProductDataSourceDTO } from './DTOs/productDataSource.dto';
 
 export interface DataSource {
   // Store
@@ -23,17 +22,13 @@ export interface DataSource {
   ): Promise<StoreDataSourceDTO | null>;
 
   // Product/Category
+  findAllCategoriesByStoreId(storeId: string): Promise<CategoryDataSourceDTO[]>;
   saveCategory(categoryDTO: CategoryDataSourceDTO): Promise<void>;
   findCategoryById(id: string): Promise<CategoryDataSourceDTO | null>;
   findCategoryByNameAndStoreId(
     name: string,
     storeId: string,
   ): Promise<CategoryDataSourceDTO | null>;
-  findProductById(id: string): Promise<ProductDataSourceDTO | null>;
-  saveProduct(product: ProductDataSourceDTO): Promise<void>;
-  findProductByName(
-    name: string,
-  ): ProductDataSourceDTO | PromiseLike<ProductDataSourceDTO | null> | null;
 
   // Payment
   savePayment(paymentDTO: PaymentDataSourceDTO): Promise<void>;
