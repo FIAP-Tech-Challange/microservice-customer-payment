@@ -9,7 +9,6 @@ import { OrderResponseDto } from '../DTOs/order-response.dto';
 import { FindOrderByIdUseCase } from '../useCases/findOrderById.useCase';
 import { DeleteOrderUseCase } from '../useCases/deleteOrder.useCase';
 import { DeleteOrderItemUseCase } from '../useCases/deleteOrderItem.useCase';
-import { OrderFilteredDto } from '../DTOs/order-filtered.dto';
 import { getAllOrdersUseCase } from '../useCases/getAllOrders.useCase';
 import { getFilteredAndSortedOrdersUseCase } from '../useCases/getFilteredAndSortedOrders.useCase';
 import { setOrderToCanceledUseCase } from '../useCases/setOrderToCanceled.useCase';
