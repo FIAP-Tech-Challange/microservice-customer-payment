@@ -10,6 +10,7 @@ import { PaymentExternalDataSourceDTO } from './DTOs/paymentExternalDataSource.d
 import { OrderDataSourceDto } from './DTOs/orderDataSource.dto';
 import { OrderPaginationDto } from 'src-clean/core/modules/order/DTOs/order-pagination.dto';
 import { ProductDataSourceDTO } from './DTOs/productDataSource.dto';
+import { OrderFilteredDto } from 'src-clean/core/modules/order/DTOs/order-filtered.dto';
 
 export interface DataSource {
   // Store
@@ -56,7 +57,7 @@ export interface DataSource {
   deleteCustomer(id: string): Promise<void>;
 
   // Order
-  saveOrder(order: OrderDataSourceDto): Promise<void>;
+  saveOrder(order: OrderDataSourceDto): Promise<OrderDataSourceDto>;
   findOrderById(id: string): Promise<OrderDataSourceDto | null>;
   findByOrderItemId(id: string): Promise<OrderDataSourceDto | null>;
   deleteOrder(order: OrderDataSourceDto): Promise<void>;
@@ -67,4 +68,5 @@ export interface DataSource {
     status: string,
     storeId: string,
   ): Promise<OrderPaginationDto>;
+  getFilteredAndSortedOrders(storeId: string): Promise<OrderFilteredDto>;
 }
