@@ -197,7 +197,7 @@ export class StoresController {
       id: findStore.value.id,
       name: findStore.value.name,
       cnpj: findStore.value.cnpj,
-      phone: findStore.value.phone,
+      phone: findStore.value.phone ?? undefined,
       fantasyName: findStore.value.fantasyName,
       email: findStore.value.email,
       totems: findStore.value.totems.map((totem) => ({

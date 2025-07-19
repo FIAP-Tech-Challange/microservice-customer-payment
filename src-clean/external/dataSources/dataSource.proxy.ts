@@ -13,14 +13,16 @@ import { PaginatedDataSourceResponseDTO } from 'src-clean/common/dataSource/DTOs
 import { CategoryDataSourceDTO } from 'src-clean/common/dataSource/DTOs/categoryDataSource.dto';
 import { PaymentCreateExternalDataSourceResponseDTO } from 'src-clean/common/dataSource/DTOs/paymentCreateExternalDataSourceResponse.dto';
 import { PaymentExternalDataSourceDTO } from 'src-clean/common/dataSource/DTOs/paymentExternalDataSource.dto';
+import { OrderFilteredDto } from 'src-clean/core/modules/order/DTOs/order-filtered.dto';
 
 export class DataSourceProxy implements DataSource {
   constructor(
     private generalDataSource: GeneralDataSource,
     private paymentDataSource: PaymentDataSource,
   ) {}
+
   // Order
-  saveOrder(order: OrderDataSourceDto): Promise<void> {
+  saveOrder(order: OrderDataSourceDto): Promise<OrderDataSourceDto> {
     return this.generalDataSource.saveOrder(order);
   }
 
@@ -48,6 +50,10 @@ export class DataSourceProxy implements DataSource {
     return this.generalDataSource.getAllOrders(page, limit, status, storeId);
   }
 
+  getFilteredAndSortedOrders(storeId: string): Promise<OrderFilteredDto> {
+    return this.generalDataSource.getFilteredAndSortedOrders(storeId);
+  }
+
   // Store
   findStoreByEmail(email: string): Promise<StoreDataSourceDTO | null> {
     return this.generalDataSource.findStoreByEmail(email);
@@ -68,6 +74,9 @@ export class DataSourceProxy implements DataSource {
     accessToken: string,
   ): Promise<StoreDataSourceDTO | null> {
     return this.generalDataSource.findStoreByTotemAccessToken(accessToken);
+  }
+  findByTotemAccessToken(token: string): Promise<StoreDataSourceDTO | null> {
+    return this.generalDataSource.findByTotemAccessToken(token);
   }
 
   // Product/Category

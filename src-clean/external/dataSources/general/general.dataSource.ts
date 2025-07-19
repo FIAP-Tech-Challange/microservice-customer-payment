@@ -7,6 +7,7 @@ import { PaginatedDataSourceParamsDTO } from 'src-clean/common/dataSource/DTOs/p
 import { PaginatedDataSourceResponseDTO } from 'src-clean/common/dataSource/DTOs/paginatedDataSourceResponse.dto';
 import { PaymentDataSourceDTO } from 'src-clean/common/dataSource/DTOs/paymentDataSource.dto';
 import { StoreDataSourceDTO } from 'src-clean/common/dataSource/DTOs/storeDataSource.dto';
+import { OrderFilteredDto } from 'src-clean/core/modules/order/DTOs/order-filtered.dto';
 
 export interface GeneralDataSource {
   // Store
@@ -18,6 +19,7 @@ export interface GeneralDataSource {
   findStoreByTotemAccessToken(
     accessToken: string,
   ): Promise<StoreDataSourceDTO | null>;
+  findByTotemAccessToken(token: string): Promise<StoreDataSourceDTO | null>;
 
   // Product/Category
   saveCategory(categoryDTO: CategoryDataSourceDTO): Promise<void>;
@@ -43,7 +45,7 @@ export interface GeneralDataSource {
   deleteCustomer(id: string): Promise<void>;
 
   // Order
-  saveOrder(order: OrderDataSourceDto): Promise<void>;
+  saveOrder(order: OrderDataSourceDto): Promise<OrderDataSourceDto>;
   deleteOrder(order: OrderDataSourceDto): Promise<void>;
   deleteOrderItem(orderItem: string): Promise<void>;
   getAllOrders(
@@ -54,4 +56,5 @@ export interface GeneralDataSource {
   ): Promise<OrderDataSourcePaginationDto>;
   findOrderById(id: string): Promise<OrderDataSourceDto | null>;
   findByOrderItemId(id: string): Promise<OrderDataSourceDto | null>;
+  getFilteredAndSortedOrders(storeId: string): Promise<OrderFilteredDto>;
 }

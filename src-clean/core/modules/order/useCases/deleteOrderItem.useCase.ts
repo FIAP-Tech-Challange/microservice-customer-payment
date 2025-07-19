@@ -1,11 +1,12 @@
 import { CoreResponse } from 'src-clean/common/DTOs/coreResponse';
 import { ResourceNotFoundException } from 'src-clean/common/exceptions/resourceNotFoundException';
 import { OrderGateway } from '../gateways/order.gateway';
+import { Order } from '../entities/order.entity';
 
 export class DeleteOrderItemUseCase {
   constructor(private orderGateway: OrderGateway) {}
 
-  async execute(orderItem: string): Promise<CoreResponse<void>> {
+  async execute(orderItem: string): Promise<CoreResponse<Order | undefined>> {
     const { error: findError, value: order } =
       await this.orderGateway.findByOrderItemId(orderItem);
 
@@ -18,9 +19,10 @@ export class DeleteOrderItemUseCase {
       };
     }
 
-    const { error: errorItem } = order.removeItem(orderItem);
+    const { error: errorItem, value: orderItemRemoved } =
+      order.removeItem(orderItem);
 
-    if (errorItem) {
+    if (errorItem || !orderItemRemoved) {
       return { error: errorItem, value: undefined };
     }
 
@@ -28,11 +30,12 @@ export class DeleteOrderItemUseCase {
       await this.orderGateway.deleteOrderItem(orderItem);
     if (deleteError) return { error: deleteError, value: undefined };
 
-    const { error: saveError } = await this.orderGateway.saveOrder(order);
+    const { error: saveError, value: orderSaved } =
+      await this.orderGateway.saveOrder(order);
     if (saveError) {
       return { error: saveError, value: undefined };
     }
 
-    return { error: undefined, value: undefined };
+    return { error: undefined, value: orderSaved };
   }
 }

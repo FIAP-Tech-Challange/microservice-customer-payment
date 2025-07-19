@@ -30,16 +30,16 @@ import { ApiKeyGuard } from './guards/api-key.guard';
   providers: [
     AuthService,
     StoreOrTotemGuard,
-    StoreGuard,
     TotemGuard,
+    StoreGuard,
     ApiKeyGuard,
   ],
   exports: [
     JwtModule,
     StoresModule,
     StoreOrTotemGuard,
-    StoreGuard,
     TotemGuard,
+    StoreGuard,
     ApiKeyGuard,
   ],
 })
