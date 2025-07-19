@@ -19,7 +19,7 @@ import { OrderModule } from './modules/order/order.module';
     HealthModule,
     AuthModule,
     StoresModule,
-    OrderModule
+    OrderModule,
   ],
   controllers: [],
   providers: [],

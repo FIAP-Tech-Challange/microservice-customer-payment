@@ -17,7 +17,6 @@ import { PaymentDataSourceDTO } from 'src-clean/common/dataSource/DTOs/paymentDa
 import { PaymentEntity } from './entities/payment.entity';
 import { OrderFilteredDto } from 'src-clean/core/modules/order/DTOs/order-filtered.dto';
 
-
 export class PostgresGeneralDataSource implements GeneralDataSource {
   private storeRepository: Repository<StoreEntity>;
   private orderRepository: Repository<OrderEntity>;
@@ -91,7 +90,7 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
   async findOrderById(id: string): Promise<OrderDataSourceDto | null> {
     const order = await this.orderRepository.findOne({
       where: { id: id },
-      relations: ['order_items', 'customer'],
+      relations: ['order_items'], //add customer relation if needed
     });
 
     if (!order) return null;
@@ -119,7 +118,7 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
   async findByOrderItemId(id: string): Promise<OrderDataSourceDto | null> {
     const orderItem = await this.orderItemRepository.findOne({
       where: { id },
-      relations: ['order', 'order.customer'],
+      relations: ['order'] /*add order.customer relation if needed*/,
     });
 
     if (!orderItem || !orderItem.order) return null;
@@ -178,7 +177,7 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
     } = {
       skip: (page - 1) * limit,
       take: limit,
-      relations: ['order_items', 'customer'],
+      relations: ['order_items'] /*add customer */,
       order: { created_at: 'DESC' },
     };
 
@@ -237,26 +236,24 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
   async getFilteredAndSortedOrders(storeId: string): Promise<OrderFilteredDto> {
     const orders = await this.orderRepository
       .createQueryBuilder('order')
-      .where(
-        'order.store_id = :storeId and order.status not in (:...excluidos)',
-        {
-          storeId,
-          excluidos: [
-            OrderStatusEnum.CANCELED,
-            OrderStatusEnum.FINISHED,
-            OrderStatusEnum.PENDING,
-          ],
-        },
-      )
+      .innerJoinAndSelect('order.order_items', 'order_items')
+      .where('store_id = :storeId and order.status not in (:...excluidos)', {
+        storeId,
+        excluidos: [
+          OrderStatusEnum.CANCELED,
+          OrderStatusEnum.FINISHED,
+          OrderStatusEnum.PENDING,
+        ],
+      })
       .orderBy(
-        `CASE pedido.status
+        `CASE status
             WHEN :ready THEN 1
             WHEN :inProgress THEN 2
             WHEN :received THEN 3
             ELSE 4
           END`,
       )
-      .addOrderBy('pedido.createdAt', 'ASC')
+      .addOrderBy('order.created_at', 'ASC')
       .setParameters({
         ready: OrderStatusEnum.READY,
         inProgress: OrderStatusEnum.IN_PROGRESS,
@@ -272,6 +269,7 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
     }
 
     return {
+      total: orders.length,
       data: orders.map((order) => ({
         id: order.id,
         store_id: order.store_id,
@@ -290,10 +288,8 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
           created_at: item.created_at,
         })),
       })),
-      total: orders.length,
     };
   }
-
 
   getPayment(paymentId: string): Promise<PaymentDataSourceDTO | null> {
     throw new Error('Method not implemented.');

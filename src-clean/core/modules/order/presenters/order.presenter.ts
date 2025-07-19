@@ -11,10 +11,10 @@ export class OrderPresenter {
       totalPrice: order.totalPrice,
       storeId: order.storeId,
       totemId: order.totemId,
+      createdAt: order.createdAt,
       orderItems: order.orderItems.map((item) =>
         OrderItemPresenter.toDto(item),
       ),
-      createdAt: order.createdAt,
     };
   }
 }

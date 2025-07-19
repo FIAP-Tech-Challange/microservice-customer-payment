@@ -2,8 +2,8 @@ import { DataSource } from 'src-clean/common/dataSource/dataSource.interface';
 import { OrderMapper } from '../mappers/order.mapper';
 import { CoreResponse } from 'src-clean/common/DTOs/coreResponse';
 import { Order } from '../entities/order.entity';
-import { OrderPaginationDto } from '../DTOs/order-pagination.dto';
-import { OrderFilteredDto } from '../DTOs/order-filtered.dto';
+import { OrderPageDto } from '../DTOs/order-page.dto';
+import { OrderSortedListDto } from '../DTOs/order-sorted-list.dto';
 
 export class OrderGateway {
   constructor(private dataSource: DataSource) {}
@@ -55,20 +55,57 @@ export class OrderGateway {
     limit: number,
     status: string,
     storeId: string,
-  ): Promise<CoreResponse<OrderPaginationDto>> {
+  ): Promise<CoreResponse<OrderPageDto>> {
     const result = await this.dataSource.getAllOrders(
       page,
       limit,
       status,
       storeId,
     );
-    return { error: undefined, value: result };
+    if (!result || result.data.length === 0) {
+      return {
+        error: undefined,
+        value: {
+          data: [],
+          hasNextPage: false,
+          hasPreviousPage: false,
+          limit: 0,
+          page: 0,
+          total: 0,
+          totalPages: 0,
+        },
+      };
+    }
+    const orderPageDto = result.data
+      .map((order) => OrderMapper.toEntity(order).value)
+      .filter((order): order is Order => order !== undefined);
+
+    const orderPaginationDto: OrderPageDto = {
+      data: orderPageDto,
+      hasNextPage: result.hasNextPage,
+      hasPreviousPage: result.hasPreviousPage,
+      limit: result.limit,
+      page: result.page,
+      total: result.total,
+      totalPages: result.totalPages,
+    };
+    return { error: undefined, value: orderPaginationDto };
   }
 
   async getFilteredAndSortedOrders(
     storeId: string,
-  ): Promise<CoreResponse<OrderFilteredDto>> {
+  ): Promise<CoreResponse<OrderSortedListDto>> {
     const result = await this.dataSource.getFilteredAndSortedOrders(storeId);
-    return { error: undefined, value: result };
+
+    const orders = result.data
+      .map((order) => OrderMapper.toEntity(order).value)
+      .filter((order): order is Order => order !== undefined);
+
+    const orderSortedListDto: OrderSortedListDto = {
+      total: orders.length,
+      data: orders,
+    };
+
+    return { error: undefined, value: orderSortedListDto };
   }
 }

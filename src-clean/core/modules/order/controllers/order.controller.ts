@@ -9,7 +9,6 @@ import { OrderResponseDto } from '../DTOs/order-response.dto';
 import { FindOrderByIdUseCase } from '../useCases/findOrderById.useCase';
 import { DeleteOrderUseCase } from '../useCases/deleteOrder.useCase';
 import { DeleteOrderItemUseCase } from '../useCases/deleteOrderItem.useCase';
-import { OrderPaginationDto } from '../DTOs/order-pagination.dto';
 import { OrderFilteredDto } from '../DTOs/order-filtered.dto';
 import { getAllOrdersUseCase } from '../useCases/getAllOrders.useCase';
 import { getFilteredAndSortedOrdersUseCase } from '../useCases/getFilteredAndSortedOrders.useCase';
@@ -18,6 +17,8 @@ import { setOrderToFinishedUseCase } from '../useCases/setOrderToFinished.useCas
 import { setOrderToReadyUseCase } from '../useCases/setOrderToReady.useCase';
 import { setOrderToReceivedUseCase } from '../useCases/setOrderToReceived.useCase';
 import { setOrderToInProgressUseCase } from '../useCases/setOrderToInProgress.useCase';
+import { OrderPaginationDto } from 'src-clean/external/consumers/NestAPI/modules/order/dtos/order-pagination.dto';
+import { OrderSortedListDto } from 'src-clean/external/consumers/NestAPI/modules/order/dtos/order-sorted-list.dto';
 
 export class OrderCoreController {
   constructor(private dataSource: DataSource) {}
@@ -57,7 +58,6 @@ export class OrderCoreController {
       if (error) {
         return { error: error, value: undefined };
       }
-
       return { error: undefined, value: OrderPresenter.toDto(order) };
     } catch (error) {
       return {
@@ -91,18 +91,20 @@ export class OrderCoreController {
     }
   }
 
-  async deleteOrderItem(orderItemId: string): Promise<CoreResponse<void>> {
+  async deleteOrderItem(
+    orderItemId: string,
+  ): Promise<CoreResponse<OrderResponseDto | undefined>> {
     try {
       const gateway = new OrderGateway(this.dataSource);
       const useCase = new DeleteOrderItemUseCase(gateway);
 
-      const { error } = await useCase.execute(orderItemId);
+      const { error, value: order } = await useCase.execute(orderItemId);
 
-      if (error) {
+      if (error || !order) {
         return { error: error, value: undefined };
       }
 
-      return { error: undefined, value: undefined };
+      return { error: undefined, value: OrderPresenter.toDto(order) };
     } catch (error) {
       return {
         error: new UnexpectedError(
@@ -154,11 +156,22 @@ export class OrderCoreController {
         storeId,
       );
 
-      if (orderError) {
+      if (orderError || !orders) {
         return { error: orderError, value: undefined };
       }
+      const data = orders.data.map((order) => OrderPresenter.toDto(order));
 
-      return { error: undefined, value: orders };
+      const orderPaginationDto: OrderPaginationDto = {
+        data,
+        total: orders.total,
+        page: orders.page,
+        limit: orders.limit,
+        totalPages: orders.totalPages,
+        hasNextPage: orders.hasNextPage,
+        hasPreviousPage: orders.hasPreviousPage,
+      };
+
+      return { error: undefined, value: orderPaginationDto };
     } catch (error) {
       return {
         error: new UnexpectedError(
@@ -171,7 +184,7 @@ export class OrderCoreController {
 
   async getFilteredAndSortedOrders(
     storeId: string,
-  ): Promise<CoreResponse<OrderFilteredDto>> {
+  ): Promise<CoreResponse<OrderSortedListDto>> {
     try {
       const gateway = new OrderGateway(this.dataSource);
       const useCase = new getFilteredAndSortedOrdersUseCase(gateway);
@@ -183,7 +196,11 @@ export class OrderCoreController {
         return { error: orderError, value: undefined };
       }
 
-      return { error: undefined, value: orders };
+      const orderSortedListDto: OrderSortedListDto = {
+        total: orders.total,
+        data: orders.data.map((order) => OrderPresenter.toDto(order)),
+      };
+      return { error: undefined, value: orderSortedListDto };
     } catch (error) {
       return {
         error: new UnexpectedError(

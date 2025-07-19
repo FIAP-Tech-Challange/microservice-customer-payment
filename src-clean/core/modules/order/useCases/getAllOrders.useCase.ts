@@ -1,6 +1,6 @@
 import { CoreResponse } from 'src-clean/common/DTOs/coreResponse';
 import { OrderGateway } from '../gateways/order.gateway';
-import { OrderPaginationDto } from '../DTOs/order-pagination.dto';
+import { OrderPageDto } from '../DTOs/order-page.dto';
 
 export class getAllOrdersUseCase {
   constructor(private orderGateway: OrderGateway) {}
@@ -10,7 +10,7 @@ export class getAllOrdersUseCase {
     limit: number,
     status: string,
     storeId: string,
-  ): Promise<CoreResponse<OrderPaginationDto>> {
+  ): Promise<CoreResponse<OrderPageDto>> {
     const { error, value: orders } = await this.orderGateway.getAllOrders(
       page,
       limit,
