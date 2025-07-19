@@ -41,9 +41,9 @@ export class OrderMapper {
       store_id: entity.storeId,
       total_price: entity.totalPrice,
       totem_id: entity.totemId ?? null,
-      created_at: entity.createdAt.toISOString(),
+      created_at: entity.createdAt,
       order_items: entity.orderItems.map((item) =>
-        OrderItemMapper.toPersistenceDTO(item),
+        OrderItemMapper.toPersistenceDTO(item, entity.id),
       ),
     };
   }

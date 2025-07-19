@@ -15,6 +15,7 @@ import { PaginatedDataSourceParamsDTO } from 'src-clean/common/dataSource/DTOs/p
 import { PaginatedDataSourceResponseDTO } from 'src-clean/common/dataSource/DTOs/paginatedDataSourceResponse.dto';
 import { PaymentDataSourceDTO } from 'src-clean/common/dataSource/DTOs/paymentDataSource.dto';
 import { PaymentEntity } from './entities/payment.entity';
+import { OrderFilteredDto } from 'src-clean/core/modules/order/DTOs/order-filtered.dto';
 
 export class PostgresGeneralDataSource implements GeneralDataSource {
   private storeRepository: Repository<StoreEntity>;
@@ -61,7 +62,7 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
     throw new Error('Method not implemented.');
   }
 
-  async saveOrder(order: OrderDataSourceDto): Promise<void> {
+  async saveOrder(order: OrderDataSourceDto): Promise<OrderDataSourceDto> {
     const orderCreate = this.orderRepository.create({
       id: order.id,
       store_id: order.store_id,
@@ -69,24 +70,27 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
       customer_id: order.customer_id,
       total_price: order.total_price,
       status: order.status as OrderStatusEnum,
-      created_at: new Date(order.created_at),
+      created_at: order.created_at,
       order_items: order.order_items.map((item) => ({
         id: item.id,
+        order_id: order.id,
         product_id: item.product_id,
         unit_price: item.unit_price,
         subtotal: item.subtotal,
         quantity: item.quantity,
-        created_at: new Date(item.created_at),
+        created_at: item.created_at,
       })),
     });
 
     await this.orderRepository.save(orderCreate);
+
+    return order;
   }
 
   async findOrderById(id: string): Promise<OrderDataSourceDto | null> {
     const order = await this.orderRepository.findOne({
       where: { id: id },
-      relations: ['order_items', 'customer'],
+      relations: ['order_items'], //add customer relation if needed
     });
 
     if (!order) return null;
@@ -98,7 +102,7 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
       customer_id: order.customer_id,
       total_price: order.total_price,
       status: order.status,
-      created_at: order.created_at.toISOString(),
+      created_at: order.created_at,
       order_items: order.order_items.map((item) => ({
         id: item.id,
         order_id: item.order_id,
@@ -106,7 +110,7 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
         unit_price: item.unit_price,
         subtotal: item.subtotal,
         quantity: item.quantity,
-        created_at: item.created_at.toISOString(),
+        created_at: item.created_at,
       })),
     };
   }
@@ -114,7 +118,7 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
   async findByOrderItemId(id: string): Promise<OrderDataSourceDto | null> {
     const orderItem = await this.orderItemRepository.findOne({
       where: { id },
-      relations: ['order', 'order.customer'],
+      relations: ['order'] /*add order.customer relation if needed*/,
     });
 
     if (!orderItem || !orderItem.order) return null;
@@ -129,21 +133,15 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
       customer_id: order.customer_id,
       total_price: order.total_price,
       status: order.status,
-      created_at:
-        order.created_at instanceof Date
-          ? order.created_at.toISOString()
-          : order.created_at,
+      created_at: order.created_at,
       order_items: orderItems.map((item: OrderItemEntity) => ({
         id: item.id,
-        order_id: item.order,
+        order_id: item.order_id,
         product_id: item.product_id,
         unit_price: item.unit_price,
         subtotal: item.subtotal,
         quantity: item.quantity,
-        created_at:
-          item.created_at instanceof Date
-            ? item.created_at.toISOString()
-            : item.created_at,
+        created_at: item.created_at,
       })),
     };
   }
@@ -179,7 +177,7 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
     } = {
       skip: (page - 1) * limit,
       take: limit,
-      relations: ['order_items', 'customer'],
+      relations: ['order_items'] /*add customer */,
       order: { created_at: 'DESC' },
     };
 
@@ -212,7 +210,7 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
       customer_id: order.customer_id,
       total_price: order.total_price,
       status: order.status,
-      created_at: order.created_at.toISOString(),
+      created_at: order.created_at,
       order_items: order.order_items.map((item) => ({
         id: item.id,
         order_id: item.order_id,
@@ -220,7 +218,7 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
         unit_price: item.unit_price,
         subtotal: item.subtotal,
         quantity: item.quantity,
-        created_at: item.created_at.toISOString(),
+        created_at: item.created_at,
       })),
     }));
 
@@ -233,6 +231,68 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
       hasNextPage: page * limit < orders[1],
       hasPreviousPage: page > 1,
     };
+  }
+
+  async getFilteredAndSortedOrders(storeId: string): Promise<OrderFilteredDto> {
+    const orders = await this.orderRepository
+      .createQueryBuilder('order')
+      .innerJoinAndSelect('order.order_items', 'order_items')
+      .where('store_id = :storeId and order.status not in (:...excluidos)', {
+        storeId,
+        excluidos: [
+          OrderStatusEnum.CANCELED,
+          OrderStatusEnum.FINISHED,
+          OrderStatusEnum.PENDING,
+        ],
+      })
+      .orderBy(
+        `CASE status
+            WHEN :ready THEN 1
+            WHEN :inProgress THEN 2
+            WHEN :received THEN 3
+            ELSE 4
+          END`,
+      )
+      .addOrderBy('order.created_at', 'ASC')
+      .setParameters({
+        ready: OrderStatusEnum.READY,
+        inProgress: OrderStatusEnum.IN_PROGRESS,
+        received: OrderStatusEnum.RECEIVED,
+      })
+      .getMany();
+
+    if (!orders || orders?.length === 0) {
+      return {
+        data: [],
+        total: 0,
+      };
+    }
+
+    return {
+      total: orders.length,
+      data: orders.map((order) => ({
+        id: order.id,
+        store_id: order.store_id,
+        totem_id: order.totem_id,
+        customer_id: order.customer_id,
+        total_price: order.total_price,
+        status: order.status,
+        created_at: order.created_at,
+        order_items: order.order_items.map((item) => ({
+          id: item.id,
+          order_id: item.order_id,
+          product_id: item.product_id,
+          unit_price: item.unit_price,
+          subtotal: item.subtotal,
+          quantity: item.quantity,
+          created_at: item.created_at,
+        })),
+      })),
+    };
+  }
+
+  getPayment(paymentId: string): Promise<PaymentDataSourceDTO | null> {
+    throw new Error('Method not implemented.');
   }
 
   // --------------- STORE --------------- \\

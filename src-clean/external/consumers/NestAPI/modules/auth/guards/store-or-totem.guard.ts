@@ -8,15 +8,15 @@ import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { StoreTokenInterface } from '../dtos/token.dto';
 import { ConfigService } from '@nestjs/config';
-import { DataSource } from 'src-clean/common/dataSource/dataSource.interface';
 import { StoreCoreController } from 'src-clean/core/modules/store/controllers/store.controller';
+import { DataSourceProxy } from 'src-clean/external/dataSources/dataSource.proxy';
 
 @Injectable()
 export class StoreOrTotemGuard implements CanActivate {
   constructor(
     private jwtService: JwtService,
     private configService: ConfigService,
-    private dataSource: DataSource,
+    private dataSource: DataSourceProxy,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {

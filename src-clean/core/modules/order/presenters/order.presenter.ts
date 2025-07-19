@@ -6,15 +6,15 @@ export class OrderPresenter {
   static toDto(order: Order): OrderResponseDto {
     return {
       id: order.id,
-      customer: order.customer,
+      customerId: order.customer,
       status: order.status,
       totalPrice: order.totalPrice,
       storeId: order.storeId,
       totemId: order.totemId,
+      createdAt: order.createdAt,
       orderItems: order.orderItems.map((item) =>
         OrderItemPresenter.toDto(item),
       ),
-      createdAt: order.createdAt,
     };
   }
 }
