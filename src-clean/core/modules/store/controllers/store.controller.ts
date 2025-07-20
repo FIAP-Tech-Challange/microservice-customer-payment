@@ -19,7 +19,6 @@ import { CreateCategoryUseCase } from '../../product/useCases/createCategory.use
 import { CreateStoreWithDefaultCategoriesUseCase } from '../useCases/createStoreWithDeafaultCategories.useCase';
 import { FindStoreByIdUseCase } from '../useCases/findStoreById.useCase';
 import { DeleteTotemUseCase } from '../useCases/addTotem.useCase copy';
-import { FindByTotemAccessTokenUseCase } from '../useCases/findByTotemAccessToken.useCase';
 
 export class StoreCoreController {
   constructor(private dataSource: DataSource) {}
@@ -189,31 +188,6 @@ export class StoreCoreController {
       return {
         error: new UnexpectedError(
           'Something went wrong while finding store by ID',
-        ),
-        value: undefined,
-      };
-    }
-  }
-
-  async findByTotemAccessToken(
-    token: string,
-  ): Promise<CoreResponse<StoreDTO | null>> {
-    try {
-      const gateway = new StoreGateway(this.dataSource);
-      const useCase = new FindByTotemAccessTokenUseCase(gateway);
-
-      const store = await useCase.execute(token);
-
-      if (store.error) return { error: store.error, value: undefined };
-
-      return {
-        error: undefined,
-        value: store.value ? StorePresenter.toDto(store.value) : null,
-      };
-    } catch (error) {
-      return {
-        error: new UnexpectedError(
-          `Something went wrong while finding store by totem access token ${error.message}`,
         ),
         value: undefined,
       };

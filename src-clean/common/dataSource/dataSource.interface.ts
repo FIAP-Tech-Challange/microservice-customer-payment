@@ -21,7 +21,6 @@ export interface DataSource {
   findStoreByTotemAccessToken(
     accessToken: string,
   ): Promise<StoreDataSourceDTO | null>;
-  findByTotemAccessToken(token: string): Promise<StoreDataSourceDTO | null>;
 
   // Product/Category
   findAllCategoriesByStoreId(storeId: string): Promise<CategoryDataSourceDTO[]>;
