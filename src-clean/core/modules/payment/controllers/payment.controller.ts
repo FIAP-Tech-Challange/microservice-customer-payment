@@ -7,19 +7,20 @@ import { FindStoreByIdUseCase } from '../../store/useCases/findStoreById.useCase
 import { StoreGateway } from '../../store/gateways/store.gateway';
 import { PaymentPresenter } from '../presenters/payment.presenter';
 import { UnexpectedError } from 'src-clean/common/exceptions/unexpectedError';
-import { PaymentDTO } from '../DTOs/payment.dto';
 import { ApprovePaymentUseCase } from '../useCases/approvePayment.useCase';
 import { FindPaymentByIdUseCase } from '../useCases/findPaymentById.useCase';
 import { CancelPaymentUseCase } from '../useCases/cancelPayment.useCase';
 import { FindOrderByIdUseCase } from '../../order/useCases/findOrderById.useCase';
 import { OrderGateway } from '../../order/gateways/order.gateway';
+import { InitiatePaymentResponseDTO } from '../DTOs/initiatePaymentResponse.dto';
+import { PaymentDTO } from '../DTOs/payment.dto';
 
-export class PaymentController {
+export class PaymentCoreController {
   constructor(private dataSource: DataSource) {}
 
   async initiatePayment(
     dto: InitiatePaymentInputDTO,
-  ): Promise<CoreResponse<PaymentDTO>> {
+  ): Promise<CoreResponse<InitiatePaymentResponseDTO>> {
     try {
       const paymentGateway = new PaymentGateway(this.dataSource);
       const storeGateway = new StoreGateway(this.dataSource);
@@ -42,7 +43,9 @@ export class PaymentController {
 
       return {
         error: undefined,
-        value: PaymentPresenter.toDto(initiatePayment.value),
+        value: PaymentPresenter.toInitiatePaymentResponseDTO(
+          initiatePayment.value,
+        ),
       };
     } catch (error) {
       console.error(error);
@@ -135,6 +138,41 @@ export class PaymentController {
       return {
         error: new UnexpectedError(
           'Something went wrong while canceling payment',
+        ),
+        value: undefined,
+      };
+    }
+  }
+
+  async findPaymentById(
+    paymentId: string,
+    storeId: string,
+  ): Promise<CoreResponse<PaymentDTO>> {
+    try {
+      const paymentGateway = new PaymentGateway(this.dataSource);
+      const storeGateway = new StoreGateway(this.dataSource);
+      const findStoreByIdUseCase = new FindStoreByIdUseCase(storeGateway);
+      const findPaymentByIdUseCase = new FindPaymentByIdUseCase(
+        paymentGateway,
+        findStoreByIdUseCase,
+      );
+
+      const payment = await findPaymentByIdUseCase.execute(paymentId, storeId);
+      if (payment.error)
+        return {
+          error: payment.error,
+          value: undefined,
+        };
+
+      return {
+        error: undefined,
+        value: PaymentPresenter.toDto(payment.value),
+      };
+    } catch (error) {
+      console.error(error);
+      return {
+        error: new UnexpectedError(
+          'Something went wrong while finding payment by id',
         ),
         value: undefined,
       };

@@ -1,6 +1,9 @@
 import { DataSource } from 'typeorm';
 import { StoreEntity } from './entities/store.entity';
 import { TotemEntity } from './entities/totem.entity';
+import { OrderEntity } from './entities/order.entity';
+import { OrderItemEntity } from './entities/order-item.entity';
+import { CustomerEntity } from './entities/customer.entity';  
 
 export interface PostgresConfig {
   host: string;
@@ -19,7 +22,7 @@ export class PostgresDataSourceConfig {
       username: config.username,
       password: config.password,
       database: config.database,
-      entities: [StoreEntity, TotemEntity],
+      entities: [StoreEntity, TotemEntity, OrderEntity, OrderItemEntity, CustomerEntity],
       synchronize: false,
       logging: false,
     });

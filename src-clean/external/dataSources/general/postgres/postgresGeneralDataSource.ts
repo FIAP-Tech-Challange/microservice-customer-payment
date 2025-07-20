@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { DataSource, Repository } from 'typeorm';
 import { GeneralDataSource } from '../general.dataSource';
 import { StoreDataSourceDTO } from 'src-clean/common/dataSource/DTOs/storeDataSource.dto';
@@ -13,36 +14,129 @@ import { CustomerDataSourceDTO } from 'src-clean/common/dataSource/DTOs/customer
 import { FindAllCustomersDataSourceFiltersDTO } from 'src-clean/common/dataSource/DTOs/findAllCustomersDataSourceFilters.dto';
 import { PaginatedDataSourceParamsDTO } from 'src-clean/common/dataSource/DTOs/paginatedDataSourceParams.dto';
 import { PaginatedDataSourceResponseDTO } from 'src-clean/common/dataSource/DTOs/paginatedDataSourceResponse.dto';
-import { TotemDataSourceDTO } from 'src-clean/common/dataSource/DTOs/totemDataSource.dto';
+import { PaymentDataSourceDTO } from 'src-clean/common/dataSource/DTOs/paymentDataSource.dto';
+import { PaymentEntity } from './entities/payment.entity';
+import { CategoryEntity } from './entities/category.entity';
+import { OrderFilteredDto } from 'src-clean/core/modules/order/DTOs/order-filtered.dto';
 
 export class PostgresGeneralDataSource implements GeneralDataSource {
   private storeRepository: Repository<StoreEntity>;
   private orderRepository: Repository<OrderEntity>;
   private orderItemRepository: Repository<OrderItemEntity>;
+  private paymentRepository: Repository<PaymentEntity>;
+  private categoryRepository: Repository<CategoryEntity>;
 
   constructor(private dataSource: DataSource) {
     this.storeRepository = this.dataSource.getRepository(StoreEntity);
     this.orderRepository = this.dataSource.getRepository(OrderEntity);
     this.orderItemRepository = this.dataSource.getRepository(OrderItemEntity);
+    this.paymentRepository = this.dataSource.getRepository(PaymentEntity);
+    this.categoryRepository = this.dataSource.getRepository(CategoryEntity);
   }
+  // --------------- PRODUCT CATEGORY --------------- \\
+  async findAllCategoriesByStoreId(
+    storeId: string,
+  ): Promise<CategoryDataSourceDTO[]> {
+    const categories = await this.categoryRepository.find({
+      where: { store_id: storeId },
+    });
 
-  findTotemByAccessToken(
-    accessToken: string,
-  ): Promise<TotemDataSourceDTO | null> {
-    throw new Error('Method not implemented.');
+    return categories.map((category) => ({
+      id: category.id,
+      name: category.name,
+      created_at: category.created_at.toISOString(),
+      updated_at: category.updated_at.toISOString(),
+      store_id: category.store_id,
+      products: category.products.map((product) => ({
+        id: product.id,
+        name: product.name,
+        price: Number(product.price),
+        description: product.description ?? '',
+        prep_time: Number(product.prep_time),
+        image_url: product.image_url,
+        created_at: product.created_at.toISOString(),
+        updated_at: product.updated_at.toISOString(),
+        store_id: product.store_id,
+      })),
+    }));
   }
-  saveCategory(categoryDTO: CategoryDataSourceDTO): Promise<void> {
-    throw new Error('Method not implemented.');
+  async saveCategory(categoryDTO: CategoryDataSourceDTO): Promise<void> {
+    await this.categoryRepository.save({
+      id: categoryDTO.id,
+      name: categoryDTO.name,
+      created_at: new Date(categoryDTO.created_at),
+      updated_at: new Date(categoryDTO.updated_at),
+      store_id: categoryDTO.store_id,
+      products: categoryDTO.products.map((product) => ({
+        id: product.id,
+        name: product.name,
+        price: product.price.toString(),
+        description: product.description,
+        prep_time: product.prep_time,
+        image_url: product.image_url,
+        created_at: new Date(product.created_at),
+        updated_at: new Date(product.updated_at),
+        store_id: product.store_id,
+      })),
+    });
   }
-  findCategoryById(id: string): Promise<CategoryDataSourceDTO | null> {
-    throw new Error('Method not implemented.');
+  async findCategoryById(id: string): Promise<CategoryDataSourceDTO | null> {
+    const category = await this.categoryRepository.findOne({
+      where: { id: id },
+    });
+
+    if (!category) return null;
+
+    return {
+      id: category.id,
+      name: category.name,
+      created_at: category.created_at.toISOString(),
+      updated_at: category.updated_at.toISOString(),
+      store_id: category.store_id,
+      products: category.products.map((product) => ({
+        id: product.id,
+        name: product.name,
+        price: Number(product.price),
+        description: product.description ?? '',
+        prep_time: Number(product.prep_time),
+        image_url: product.image_url,
+        created_at: product.created_at.toISOString(),
+        updated_at: product.updated_at.toISOString(),
+        store_id: product.store_id,
+      })),
+    };
   }
-  findCategoryByNameAndStoreId(
+  async findCategoryByNameAndStoreId(
     name: string,
     storeId: string,
   ): Promise<CategoryDataSourceDTO | null> {
-    throw new Error('Method not implemented.');
+    const category = await this.categoryRepository.findOne({
+      where: { name: name, store_id: storeId },
+    });
+
+    if (!category) return null;
+
+    return {
+      id: category.id,
+      name: category.name,
+      created_at: category.created_at.toISOString(),
+      updated_at: category.updated_at.toISOString(),
+      store_id: category.store_id,
+      products: category.products.map((product) => ({
+        id: product.id,
+        name: product.name,
+        price: Number(product.price),
+        description: product.description ?? '',
+        prep_time: Number(product.prep_time),
+        image_url: product.image_url,
+        created_at: product.created_at.toISOString(),
+        updated_at: product.updated_at.toISOString(),
+        store_id: product.store_id,
+      })),
+    };
   }
+
+  // --------------- CUSTOMER --------------- \\
   findCustomerById(id: string): Promise<CustomerDataSourceDTO | null> {
     throw new Error('Method not implemented.');
   }
@@ -65,7 +159,8 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
     throw new Error('Method not implemented.');
   }
 
-  async saveOrder(order: OrderDataSourceDto): Promise<void> {
+  // --------------- ORDER --------------- \\
+  async saveOrder(order: OrderDataSourceDto): Promise<OrderDataSourceDto> {
     const orderCreate = this.orderRepository.create({
       id: order.id,
       store_id: order.store_id,
@@ -73,24 +168,27 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
       customer_id: order.customer_id,
       total_price: order.total_price,
       status: order.status as OrderStatusEnum,
-      created_at: new Date(order.created_at),
+      created_at: order.created_at,
       order_items: order.order_items.map((item) => ({
         id: item.id,
+        order_id: order.id,
         product_id: item.product_id,
         unit_price: item.unit_price,
         subtotal: item.subtotal,
         quantity: item.quantity,
-        created_at: new Date(item.created_at),
+        created_at: item.created_at,
       })),
     });
 
     await this.orderRepository.save(orderCreate);
+
+    return order;
   }
 
   async findOrderById(id: string): Promise<OrderDataSourceDto | null> {
     const order = await this.orderRepository.findOne({
       where: { id: id },
-      relations: ['order_items', 'customer'],
+      relations: ['order_items'], //add customer relation if needed
     });
 
     if (!order) return null;
@@ -102,7 +200,7 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
       customer_id: order.customer_id,
       total_price: order.total_price,
       status: order.status,
-      created_at: order.created_at.toISOString(),
+      created_at: order.created_at,
       order_items: order.order_items.map((item) => ({
         id: item.id,
         order_id: item.order_id,
@@ -110,7 +208,7 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
         unit_price: item.unit_price,
         subtotal: item.subtotal,
         quantity: item.quantity,
-        created_at: item.created_at.toISOString(),
+        created_at: item.created_at,
       })),
     };
   }
@@ -118,7 +216,7 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
   async findByOrderItemId(id: string): Promise<OrderDataSourceDto | null> {
     const orderItem = await this.orderItemRepository.findOne({
       where: { id },
-      relations: ['order', 'order.customer'],
+      relations: ['order'] /*add order.customer relation if needed*/,
     });
 
     if (!orderItem || !orderItem.order) return null;
@@ -133,21 +231,15 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
       customer_id: order.customer_id,
       total_price: order.total_price,
       status: order.status,
-      created_at:
-        order.created_at instanceof Date
-          ? order.created_at.toISOString()
-          : order.created_at,
+      created_at: order.created_at,
       order_items: orderItems.map((item: OrderItemEntity) => ({
         id: item.id,
-        order_id: item.order,
+        order_id: item.order_id,
         product_id: item.product_id,
         unit_price: item.unit_price,
         subtotal: item.subtotal,
         quantity: item.quantity,
-        created_at:
-          item.created_at instanceof Date
-            ? item.created_at.toISOString()
-            : item.created_at,
+        created_at: item.created_at,
       })),
     };
   }
@@ -183,7 +275,7 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
     } = {
       skip: (page - 1) * limit,
       take: limit,
-      relations: ['order_items', 'customer'],
+      relations: ['order_items'] /*add customer */,
       order: { created_at: 'DESC' },
     };
 
@@ -216,7 +308,7 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
       customer_id: order.customer_id,
       total_price: order.total_price,
       status: order.status,
-      created_at: order.created_at.toISOString(),
+      created_at: order.created_at,
       order_items: order.order_items.map((item) => ({
         id: item.id,
         order_id: item.order_id,
@@ -224,7 +316,7 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
         unit_price: item.unit_price,
         subtotal: item.subtotal,
         quantity: item.quantity,
-        created_at: item.created_at.toISOString(),
+        created_at: item.created_at,
       })),
     }));
 
@@ -236,6 +328,93 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
       totalPages: Math.ceil(orders[1] / limit),
       hasNextPage: page * limit < orders[1],
       hasPreviousPage: page > 1,
+    };
+  }
+
+  async getFilteredAndSortedOrders(storeId: string): Promise<OrderFilteredDto> {
+    const orders = await this.orderRepository
+      .createQueryBuilder('order')
+      .innerJoinAndSelect('order.order_items', 'order_items')
+      .where('store_id = :storeId and order.status not in (:...excluidos)', {
+        storeId,
+        excluidos: [
+          OrderStatusEnum.CANCELED,
+          OrderStatusEnum.FINISHED,
+          OrderStatusEnum.PENDING,
+        ],
+      })
+      .orderBy(
+        `CASE status
+            WHEN :ready THEN 1
+            WHEN :inProgress THEN 2
+            WHEN :received THEN 3
+            ELSE 4
+          END`,
+      )
+      .addOrderBy('order.created_at', 'ASC')
+      .setParameters({
+        ready: OrderStatusEnum.READY,
+        inProgress: OrderStatusEnum.IN_PROGRESS,
+        received: OrderStatusEnum.RECEIVED,
+      })
+      .getMany();
+
+    if (!orders || orders?.length === 0) {
+      return {
+        data: [],
+        total: 0,
+      };
+    }
+
+    return {
+      total: orders.length,
+      data: orders.map((order) => ({
+        id: order.id,
+        store_id: order.store_id,
+        totem_id: order.totem_id,
+        customer_id: order.customer_id,
+        total_price: order.total_price,
+        status: order.status,
+        created_at: order.created_at,
+        order_items: order.order_items.map((item) => ({
+          id: item.id,
+          order_id: item.order_id,
+          product_id: item.product_id,
+          unit_price: item.unit_price,
+          subtotal: item.subtotal,
+          quantity: item.quantity,
+          created_at: item.created_at,
+        })),
+      })),
+    };
+  }
+
+  // --------------- STORE --------------- \\
+  async findStoreByTotemAccessToken(
+    accessToken: string,
+  ): Promise<StoreDataSourceDTO | null> {
+    const store = await this.storeRepository.findOne({
+      where: { totems: { token_access: accessToken } },
+    });
+
+    if (!store) return null;
+
+    return {
+      id: store.id,
+      name: store.name,
+      fantasy_name: store.fantasy_name,
+      email: store.email,
+      cnpj: store.cnpj,
+      phone: store.phone,
+      salt: store.salt,
+      password_hash: store.password_hash,
+      created_at: store.created_at.toISOString(),
+      totems: store.totems.map((totem) => ({
+        id: totem.id,
+        name: totem.name,
+        token_access: totem.token_access,
+        created_at: totem.created_at.toISOString(),
+      })),
     };
   }
 
@@ -354,8 +533,54 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
       salt: store.salt,
       password_hash: store.password_hash,
       created_at: new Date(store.created_at),
+      totems: store.totems.map((totem) => ({
+        id: totem.id,
+        name: totem.name,
+        token_access: totem.token_access,
+        created_at: new Date(totem.created_at),
+      })),
     });
 
     await this.storeRepository.save(storeEntity);
+  }
+
+  // --------------- PAYMENT --------------- \\
+  async savePayment(paymentDTO: PaymentDataSourceDTO): Promise<void> {
+    const paymentEntity = this.paymentRepository.create({
+      id: paymentDTO.id,
+      order_id: paymentDTO.order_id,
+      store_id: paymentDTO.store_id,
+      external_id: paymentDTO.external_id,
+      total: paymentDTO.total,
+      status: paymentDTO.status,
+      payment_type: paymentDTO.payment_type,
+      plataform: paymentDTO.platform,
+      qr_code: paymentDTO.qr_code ?? undefined,
+      created_at: new Date(paymentDTO.created_at),
+    });
+    await this.paymentRepository.save(paymentEntity);
+  }
+
+  async findPaymentById(
+    paymentId: string,
+  ): Promise<PaymentDataSourceDTO | null> {
+    const payment = await this.paymentRepository.findOne({
+      where: { id: paymentId },
+    });
+
+    if (!payment) return null;
+
+    return {
+      id: payment.id,
+      order_id: payment.order_id,
+      store_id: payment.store_id,
+      external_id: payment.external_id,
+      total: payment.total,
+      status: payment.status,
+      payment_type: payment.payment_type,
+      platform: payment.plataform,
+      qr_code: payment.qr_code ?? undefined,
+      created_at: payment.created_at.toISOString(),
+    };
   }
 }

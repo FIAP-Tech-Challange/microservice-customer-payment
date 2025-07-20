@@ -1,6 +1,5 @@
 import { StoreDataSourceDTO } from './DTOs/storeDataSource.dto';
 import { CategoryDataSourceDTO } from './DTOs/categoryDataSource.dto';
-import { TotemDataSourceDTO } from './DTOs/totemDataSource.dto';
 import { CustomerDataSourceDTO } from './DTOs/customerDataSource.dto';
 import { FindAllCustomersDataSourceFiltersDTO } from './DTOs/findAllCustomersDataSourceFilters.dto';
 import { PaginatedDataSourceParamsDTO } from './DTOs/paginatedDataSourceParams.dto';
@@ -10,18 +9,13 @@ import { PaymentCreateExternalDataSourceResponseDTO } from './DTOs/paymentCreate
 import { PaymentExternalDataSourceDTO } from './DTOs/paymentExternalDataSource.dto';
 import { OrderDataSourceDto } from './DTOs/orderDataSource.dto';
 import { OrderPaginationDto } from 'src-clean/core/modules/order/DTOs/order-pagination.dto';
-import { ProductDataSourceDTO } from './DTOs/productDataSource.dto';
 import {
   NotificationDataSourceDTO,
   FindNotificationsByStatusParamsDTO,
 } from './DTOs/notificationDataSource.dto';
+import { OrderFilteredDto } from 'src-clean/core/modules/order/DTOs/order-filtered.dto';
 
 export interface DataSource {
-  // Totem
-  findTotemByAccessToken(
-    accessToken: string,
-  ): Promise<TotemDataSourceDTO | null>;
-
   // Store
   findStoreByEmail(email: string): Promise<StoreDataSourceDTO | null>;
   findStoreByCnpj(cnpj: string): Promise<StoreDataSourceDTO | null>;
@@ -33,17 +27,13 @@ export interface DataSource {
   ): Promise<StoreDataSourceDTO | null>;
 
   // Product/Category
+  findAllCategoriesByStoreId(storeId: string): Promise<CategoryDataSourceDTO[]>;
   saveCategory(categoryDTO: CategoryDataSourceDTO): Promise<void>;
   findCategoryById(id: string): Promise<CategoryDataSourceDTO | null>;
   findCategoryByNameAndStoreId(
     name: string,
     storeId: string,
   ): Promise<CategoryDataSourceDTO | null>;
-  findProductById(id: string): Promise<ProductDataSourceDTO | null>;
-  saveProduct(product: ProductDataSourceDTO): Promise<void>;
-  findProductByName(
-    name: string,
-  ): ProductDataSourceDTO | PromiseLike<ProductDataSourceDTO | null> | null;
 
   // Payment
   savePayment(paymentDTO: PaymentDataSourceDTO): Promise<void>;
@@ -51,12 +41,8 @@ export interface DataSource {
   createPaymentExternal(
     paymentDTO: PaymentExternalDataSourceDTO,
   ): Promise<PaymentCreateExternalDataSourceResponseDTO>;
-  rejectPaymentExternal(
-    paymentDTO: PaymentExternalDataSourceDTO,
-  ): Promise<void>;
-  approvePaymentExternal(
-    paymentDTO: PaymentExternalDataSourceDTO,
-  ): Promise<void>;
+  rejectPaymentExternal(externalId: string): Promise<void>;
+  approvePaymentExternal(externalId: string): Promise<void>;
 
   // Customer
   findCustomerById(id: string): Promise<CustomerDataSourceDTO | null>;
@@ -70,7 +56,7 @@ export interface DataSource {
   deleteCustomer(id: string): Promise<void>;
 
   // Order
-  saveOrder(order: OrderDataSourceDto): Promise<void>;
+  saveOrder(order: OrderDataSourceDto): Promise<OrderDataSourceDto>;
   findOrderById(id: string): Promise<OrderDataSourceDto | null>;
   findByOrderItemId(id: string): Promise<OrderDataSourceDto | null>;
   deleteOrder(order: OrderDataSourceDto): Promise<void>;
@@ -81,6 +67,7 @@ export interface DataSource {
     status: string,
     storeId: string,
   ): Promise<OrderPaginationDto>;
+  getFilteredAndSortedOrders(storeId: string): Promise<OrderFilteredDto>;
 
   // Notification
   findNotificationById(id: string): Promise<NotificationDataSourceDTO | null>;

@@ -4,25 +4,24 @@ import { GeneralDataSource } from './general/general.dataSource';
 import { PaymentDataSource } from './payment/payment.dataSource';
 import { PaymentDataSourceDTO } from 'src-clean/common/dataSource/DTOs/paymentDataSource.dto';
 import { OrderDataSourceDto } from 'src-clean/common/dataSource/DTOs/orderDataSource.dto';
-import { ProductDataSourceDTO } from 'src-clean/common/dataSource/DTOs/productDataSource.dto';
 import { OrderDataSourcePaginationDto } from 'src-clean/common/dataSource/DTOs/orderDataSourcePagination.dto';
-import { TotemDataSourceDTO } from 'src-clean/common/dataSource/DTOs/totemDataSource.dto';
 import { CustomerDataSourceDTO } from 'src-clean/common/dataSource/DTOs/customerDataSource.dto';
 import { PaginatedDataSourceParamsDTO } from 'src-clean/common/dataSource/DTOs/paginatedDataSourceParams.dto';
 import { FindAllCustomersDataSourceFiltersDTO } from 'src-clean/common/dataSource/DTOs/findAllCustomersDataSourceFilters.dto';
 import { PaginatedDataSourceResponseDTO } from 'src-clean/common/dataSource/DTOs/paginatedDataSourceResponse.dto';
 import { CategoryDataSourceDTO } from 'src-clean/common/dataSource/DTOs/categoryDataSource.dto';
 import { PaymentCreateExternalDataSourceResponseDTO } from 'src-clean/common/dataSource/DTOs/paymentCreateExternalDataSourceResponse.dto';
-import { PaymentDataSourceDTO } from 'src-clean/common/dataSource/DTOs/paymentDataSource.dto';
 import { PaymentExternalDataSourceDTO } from 'src-clean/common/dataSource/DTOs/paymentExternalDataSource.dto';
+import { OrderFilteredDto } from 'src-clean/core/modules/order/DTOs/order-filtered.dto';
 
 export class DataSourceProxy implements DataSource {
   constructor(
     private generalDataSource: GeneralDataSource,
     private paymentDataSource: PaymentDataSource,
   ) {}
+
   // Order
-  saveOrder(order: OrderDataSourceDto): Promise<void> {
+  saveOrder(order: OrderDataSourceDto): Promise<OrderDataSourceDto> {
     return this.generalDataSource.saveOrder(order);
   }
 
@@ -50,11 +49,8 @@ export class DataSourceProxy implements DataSource {
     return this.generalDataSource.getAllOrders(page, limit, status, storeId);
   }
 
-  // Totem
-  findTotemByAccessToken(
-    accessToken: string,
-  ): Promise<TotemDataSourceDTO | null> {
-    return this.generalDataSource.findTotemByAccessToken(accessToken);
+  getFilteredAndSortedOrders(storeId: string): Promise<OrderFilteredDto> {
+    return this.generalDataSource.getFilteredAndSortedOrders(storeId);
   }
 
   // Store
@@ -80,6 +76,11 @@ export class DataSourceProxy implements DataSource {
   }
 
   // Product/Category
+  findAllCategoriesByStoreId(
+    storeId: string,
+  ): Promise<CategoryDataSourceDTO[]> {
+    return this.generalDataSource.findAllCategoriesByStoreId(storeId);
+  }
   saveCategory(categoryDTO: CategoryDataSourceDTO): Promise<void> {
     return this.generalDataSource.saveCategory(categoryDTO);
   }
@@ -93,21 +94,15 @@ export class DataSourceProxy implements DataSource {
     return this.generalDataSource.findCategoryByNameAndStoreId(name, storeId);
   }
 
-  findProductById(id: string): Promise<ProductDataSourceDTO | null> {
-    throw new Error('Method not implemented.');
-  }
-  saveProduct(product: ProductDataSourceDTO): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-  findProductByName(
-    name: string,
-  ): ProductDataSourceDTO | PromiseLike<ProductDataSourceDTO | null> | null {
-    throw new Error('Method not implemented.');
-  }
-
   // Payment
-  getPayment(paymentId: string): Promise<PaymentDataSourceDTO | null> {
-    return this.generalDataSource.getPayment(paymentId);
+  findPaymentById(paymentId: string): Promise<PaymentDataSourceDTO | null> {
+    return this.generalDataSource.findPaymentById(paymentId);
+  }
+  rejectPaymentExternal(externalId: string): Promise<void> {
+    return this.paymentDataSource.rejectPaymentExternal(externalId);
+  }
+  approvePaymentExternal(externalId: string): Promise<void> {
+    return this.paymentDataSource.approvePaymentExternal(externalId);
   }
   savePayment(paymentDTO: PaymentDataSourceDTO): Promise<void> {
     return this.generalDataSource.savePayment(paymentDTO);

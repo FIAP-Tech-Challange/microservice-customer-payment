@@ -13,6 +13,8 @@ import { ProductPresenter } from '../presenters/product.presenter';
 import { ProductDTO } from '../DTOs/product.dto';
 import { FindCategoryByIdUseCase } from '../useCases/findCategoryById.useCase';
 import { FindStoreByIdUseCase } from '../../store/useCases/findStoreById.useCase';
+import { FindAllCategoriesByStoreIdUseCase } from '../useCases/findAllCategoriesByStoreId.useCase';
+import { DeleteProductUseCase } from '../useCases/deleteProduct.useCase';
 
 export class ProductCoreController {
   constructor(private dataSource: DataSource) {}
@@ -50,14 +52,11 @@ export class ProductCoreController {
   ): Promise<CoreResponse<ProductDTO>> {
     try {
       const categoryGateway = new CategoryGateway(this.dataSource);
-      const storeGateway = new StoreGateway(this.dataSource);
-      const findStoreByIdUseCase = new FindStoreByIdUseCase(storeGateway);
       const findCategoryByIdUseCase = new FindCategoryByIdUseCase(
         categoryGateway,
       );
       const useCase = new CreateProductUseCase(
         categoryGateway,
-        findStoreByIdUseCase,
         findCategoryByIdUseCase,
       );
 
@@ -98,6 +97,69 @@ export class ProductCoreController {
       return {
         error: new UnexpectedError(
           'Something went wrong while finding category by id',
+        ),
+        value: undefined,
+      };
+    }
+  }
+
+  async findAllCategoriesByStoreId(
+    storeId: string,
+  ): Promise<CoreResponse<CategoryDTO[]>> {
+    try {
+      const gateway = new CategoryGateway(this.dataSource);
+      const useCase = new FindAllCategoriesByStoreIdUseCase(gateway);
+      const findCategories = await useCase.execute(storeId);
+      if (findCategories.error) {
+        return { error: findCategories.error, value: undefined };
+      }
+
+      return {
+        error: undefined,
+        value: findCategories.value.map((category) =>
+          CategoryPresenter.toDto(category),
+        ),
+      };
+    } catch (error) {
+      console.error(error);
+      return {
+        error: new UnexpectedError(
+          'Something went wrong while finding all categories by store id',
+        ),
+        value: undefined,
+      };
+    }
+  }
+
+  async deleteProduct(
+    productId: string,
+    categoryId: string,
+    storeId: string,
+  ): Promise<CoreResponse<void>> {
+    try {
+      const categoryGateway = new CategoryGateway(this.dataSource);
+      const findCategoryByIdUseCase = new FindCategoryByIdUseCase(
+        categoryGateway,
+      );
+      const useCase = new DeleteProductUseCase(
+        categoryGateway,
+        findCategoryByIdUseCase,
+      );
+
+      const { error: err } = await useCase.execute(
+        productId,
+        categoryId,
+        storeId,
+      );
+
+      if (err) return { error: err, value: undefined };
+
+      return { error: undefined, value: undefined };
+    } catch (error) {
+      console.error(error);
+      return {
+        error: new UnexpectedError(
+          'Something went wrong while deleting product',
         ),
         value: undefined,
       };

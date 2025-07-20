@@ -2,6 +2,7 @@ import { DataSource } from 'src-clean/common/dataSource/dataSource.interface';
 import { CategoryMapper } from '../mappers/category.mapper';
 import { CoreResponse } from 'src-clean/common/DTOs/coreResponse';
 import { Category } from '../entities/category.entity';
+import { CoreException } from 'src-clean/common/exceptions/coreException';
 
 export class CategoryGateway {
   constructor(private dataSource: DataSource) {}
@@ -38,5 +39,24 @@ export class CategoryGateway {
     if (mapErr) return { error: mapErr, value: undefined };
 
     return { error: undefined, value: dto };
+  }
+
+  async findAllCategoriesByStoreId(
+    storeId: string,
+  ): Promise<CoreResponse<Category[]>> {
+    const categoriesDTO =
+      await this.dataSource.findAllCategoriesByStoreId(storeId);
+    if (!categoriesDTO) return { error: undefined, value: [] };
+
+    try {
+      const categories = categoriesDTO.map((dto) => {
+        const { error, value } = CategoryMapper.toEntity(dto);
+        if (error) throw error;
+        return value;
+      });
+      return { error: undefined, value: categories };
+    } catch (error) {
+      return { error: error as CoreException, value: undefined };
+    }
   }
 }
