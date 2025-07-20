@@ -8,7 +8,7 @@ import { CoreException } from 'src-clean/common/exceptions/coreException';
 export class SaveOrderUseCase {
   constructor(private orderGateway: OrderGateway) {}
 
-  async execute(dto: CreateOrderDto): Promise<CoreResponse<undefined>> {
+  async execute(dto: CreateOrderDto): Promise<CoreResponse<Order | undefined>> {
     const orderItemResults = dto.orderItems.map((item) =>
       OrderItem.create({
         productId: item.productId,
@@ -39,10 +39,11 @@ export class SaveOrderUseCase {
     if (createErr) {
       return { error: createErr, value: undefined };
     }
+    const { error: saveError, value: orderSaved } =
+      await this.orderGateway.saveOrder(order);
 
-    const { error: saveError } = await this.orderGateway.saveOrder(order);
     if (saveError) return { error: saveError, value: undefined };
 
-    return { error: undefined, value: undefined };
+    return { error: undefined, value: orderSaved };
   }
 }

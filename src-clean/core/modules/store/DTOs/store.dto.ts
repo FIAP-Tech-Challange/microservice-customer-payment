@@ -4,7 +4,7 @@ export interface StoreDTO {
   id: string;
   name: string;
   cnpj: string;
-  phone: string;
+  phone?: string | undefined;
   fantasyName: string;
   email: string;
   totems: TotemDTO[];
