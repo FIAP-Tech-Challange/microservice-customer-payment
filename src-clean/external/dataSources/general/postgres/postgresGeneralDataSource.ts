@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 import { GeneralDataSource } from '../general.dataSource';
 import { StoreDataSourceDTO } from 'src-clean/common/dataSource/DTOs/storeDataSource.dto';
 import { StoreEntity } from './entities/store.entity';
@@ -18,6 +18,8 @@ import { PaymentDataSourceDTO } from 'src-clean/common/dataSource/DTOs/paymentDa
 import { PaymentEntity } from './entities/payment.entity';
 import { CategoryEntity } from './entities/category.entity';
 import { OrderFilteredDto } from 'src-clean/core/modules/order/DTOs/order-filtered.dto';
+import { ProductDataSourceDTO } from 'src-clean/common/dataSource/DTOs/productDataSource.dto';
+import { ProductEntity } from './entities/product.entity';
 
 export class PostgresGeneralDataSource implements GeneralDataSource {
   private storeRepository: Repository<StoreEntity>;
@@ -25,6 +27,7 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
   private orderItemRepository: Repository<OrderItemEntity>;
   private paymentRepository: Repository<PaymentEntity>;
   private categoryRepository: Repository<CategoryEntity>;
+  private productRepository: Repository<ProductEntity>;
 
   constructor(private dataSource: DataSource) {
     this.storeRepository = this.dataSource.getRepository(StoreEntity);
@@ -32,6 +35,7 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
     this.orderItemRepository = this.dataSource.getRepository(OrderItemEntity);
     this.paymentRepository = this.dataSource.getRepository(PaymentEntity);
     this.categoryRepository = this.dataSource.getRepository(CategoryEntity);
+    this.productRepository = this.dataSource.getRepository(ProductEntity);
   }
   // --------------- PRODUCT CATEGORY --------------- \\
   async findAllCategoriesByStoreId(
@@ -134,6 +138,25 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
         store_id: product.store_id,
       })),
     };
+  }
+  async findProductsById(
+    productIds: string[],
+  ): Promise<ProductDataSourceDTO[]> {
+    const products = await this.productRepository.find({
+      where: { id: In(productIds) },
+    });
+
+    return products.map((product) => ({
+      id: product.id,
+      name: product.name,
+      price: Number(product.price),
+      description: product.description ?? '',
+      prep_time: Number(product.prep_time),
+      image_url: product.image_url,
+      created_at: product.created_at.toISOString(),
+      updated_at: product.updated_at.toISOString(),
+      store_id: product.store_id,
+    }));
   }
 
   // --------------- CUSTOMER --------------- \\

@@ -18,6 +18,8 @@ import { setOrderToReceivedUseCase } from '../useCases/setOrderToReceived.useCas
 import { setOrderToInProgressUseCase } from '../useCases/setOrderToInProgress.useCase';
 import { OrderPaginationDto } from 'src-clean/external/consumers/NestAPI/modules/order/dtos/order-pagination.dto';
 import { OrderSortedListDto } from 'src-clean/external/consumers/NestAPI/modules/order/dtos/order-sorted-list.dto';
+import { ProductGateway } from '../../product/gateways/product.gateway';
+import { FindProductsByIdUseCase } from '../../product/useCases/findProductsById.useCase';
 
 export class OrderCoreController {
   constructor(private dataSource: DataSource) {}
@@ -26,8 +28,15 @@ export class OrderCoreController {
     dto: CreateOrderDto,
   ): Promise<CoreResponse<OrderResponseDto | undefined>> {
     try {
-      const gateway = new OrderGateway(this.dataSource);
-      const useCase = new SaveOrderUseCase(gateway);
+      const orderGateway = new OrderGateway(this.dataSource);
+      const productGateway = new ProductGateway(this.dataSource);
+      const findProductsByIdUseCase = new FindProductsByIdUseCase(
+        productGateway,
+      );
+      const useCase = new SaveOrderUseCase(
+        orderGateway,
+        findProductsByIdUseCase,
+      );
       const { error, value: order } = await useCase.execute(dto);
 
       if (error || !order) {

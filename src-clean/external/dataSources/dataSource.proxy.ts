@@ -13,6 +13,7 @@ import { CategoryDataSourceDTO } from 'src-clean/common/dataSource/DTOs/category
 import { PaymentCreateExternalDataSourceResponseDTO } from 'src-clean/common/dataSource/DTOs/paymentCreateExternalDataSourceResponse.dto';
 import { PaymentExternalDataSourceDTO } from 'src-clean/common/dataSource/DTOs/paymentExternalDataSource.dto';
 import { OrderFilteredDto } from 'src-clean/core/modules/order/DTOs/order-filtered.dto';
+import { ProductDataSourceDTO } from 'src-clean/common/dataSource/DTOs/productDataSource.dto';
 
 export class DataSourceProxy implements DataSource {
   constructor(
@@ -92,6 +93,11 @@ export class DataSourceProxy implements DataSource {
     storeId: string,
   ): Promise<CategoryDataSourceDTO | null> {
     return this.generalDataSource.findCategoryByNameAndStoreId(name, storeId);
+  }
+  async findProductsById(
+    productIds: string[],
+  ): Promise<ProductDataSourceDTO[]> {
+    return this.generalDataSource.findProductsById(productIds);
   }
 
   // Payment
