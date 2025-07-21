@@ -1,0 +1,208 @@
+import { CreateCustomerUseCase } from 'src-clean/core/modules/customer/useCases/createCustomer.useCase';
+import { CustomerGateway } from 'src-clean/core/modules/customer/gateways/customer.gateway';
+import { Customer } from 'src-clean/core/modules/customer/entities/customer.entity';
+import { CPF } from 'src-clean/core/common/valueObjects/cpf.vo';
+import { Email } from 'src-clean/core/common/valueObjects/email.vo';
+import { ResourceConflictException } from 'src-clean/common/exceptions/resourceConflictException';
+import { CreateCustomerInputDTO } from 'src-clean/core/modules/customer/DTOs/createCustomerInput.dto';
+
+describe('CreateCustomerUseCase', () => {
+  let mockCustomerGateway: Partial<CustomerGateway>;
+  let createCustomerUseCase: CreateCustomerUseCase;
+
+  beforeEach(() => {
+    mockCustomerGateway = {
+      findCustomerByCpf: jest.fn(),
+      findCustomerByEmail: jest.fn(),
+      saveCustomer: jest.fn(),
+    };
+
+    createCustomerUseCase = new CreateCustomerUseCase(
+      mockCustomerGateway as CustomerGateway,
+    );
+  });
+
+  it('should create a customer successfully', async () => {
+    const inputDto: CreateCustomerInputDTO = {
+      name: 'João Silva',
+      cpf: '11144477735',
+      email: 'test@example.com',
+    };
+
+    // Mock que não encontra cliente existente
+    (mockCustomerGateway.findCustomerByCpf as jest.Mock).mockResolvedValue({
+      error: undefined,
+      value: undefined,
+    });
+    (mockCustomerGateway.findCustomerByEmail as jest.Mock).mockResolvedValue({
+      error: undefined,
+      value: undefined,
+    });
+
+    // Mock que salva o cliente com sucesso
+    (mockCustomerGateway.saveCustomer as jest.Mock).mockImplementation(
+      (customer: Customer) => ({
+        error: undefined,
+        value: customer,
+      }),
+    );
+
+    const result = await createCustomerUseCase.execute(inputDto);
+
+    expect(result.error).toBeUndefined();
+    expect(result.value).toBeDefined();
+    expect(mockCustomerGateway.findCustomerByCpf).toHaveBeenCalled();
+    expect(mockCustomerGateway.findCustomerByEmail).toHaveBeenCalled();
+    expect(mockCustomerGateway.saveCustomer).toHaveBeenCalled();
+  });
+
+  it('should fail when CPF is invalid', async () => {
+    const inputDto: CreateCustomerInputDTO = {
+      name: 'João Silva',
+      cpf: 'invalid-cpf',
+      email: 'test@example.com',
+    };
+
+    const result = await createCustomerUseCase.execute(inputDto);
+
+    expect(result.error).toBeDefined();
+    expect(result.value).toBeUndefined();
+    expect(mockCustomerGateway.findCustomerByCpf).not.toHaveBeenCalled();
+  });
+
+  it('should fail when email is invalid', async () => {
+    const inputDto: CreateCustomerInputDTO = {
+      name: 'João Silva',
+      cpf: '11144477735',
+      email: 'invalid-email',
+    };
+
+    const result = await createCustomerUseCase.execute(inputDto);
+
+    expect(result.error).toBeDefined();
+    expect(result.value).toBeUndefined();
+    expect(mockCustomerGateway.findCustomerByCpf).not.toHaveBeenCalled();
+  });
+
+  it('should fail when customer with same CPF already exists', async () => {
+    const inputDto: CreateCustomerInputDTO = {
+      name: 'João Silva',
+      cpf: '11144477735',
+      email: 'test@example.com',
+    };
+
+    const { value: cpf } = CPF.create('11144477735');
+    const { value: email } = Email.create('existing@example.com');
+    const { value: existingCustomer } = Customer.create({
+      cpf: cpf!,
+      name: 'Existing Customer',
+      email: email!,
+    });
+
+    // Mock que encontra cliente existente com mesmo CPF
+    (mockCustomerGateway.findCustomerByCpf as jest.Mock).mockResolvedValue({
+      error: undefined,
+      value: existingCustomer,
+    });
+
+    const result = await createCustomerUseCase.execute(inputDto);
+
+    expect(result.error).toBeDefined();
+    expect(result.error).toBeInstanceOf(ResourceConflictException);
+    expect(result.error?.message).toContain('CPF already exists');
+    expect(result.value).toBeUndefined();
+    expect(mockCustomerGateway.findCustomerByCpf).toHaveBeenCalled();
+    expect(mockCustomerGateway.findCustomerByEmail).not.toHaveBeenCalled();
+  });
+
+  it('should fail when customer with same email already exists', async () => {
+    const inputDto: CreateCustomerInputDTO = {
+      name: 'João Silva',
+      cpf: '11144477735',
+      email: 'test@example.com',
+    };
+
+    const { value: cpf } = CPF.create('22255588846');
+    const { value: email } = Email.create('test@example.com');
+    const { value: existingCustomer } = Customer.create({
+      cpf: cpf!,
+      name: 'Existing Customer',
+      email: email!,
+    });
+
+    // Mock que não encontra cliente com mesmo CPF
+    (mockCustomerGateway.findCustomerByCpf as jest.Mock).mockResolvedValue({
+      error: undefined,
+      value: undefined,
+    });
+
+    // Mock que encontra cliente existente com mesmo email
+    (mockCustomerGateway.findCustomerByEmail as jest.Mock).mockResolvedValue({
+      error: undefined,
+      value: existingCustomer,
+    });
+
+    const result = await createCustomerUseCase.execute(inputDto);
+
+    expect(result.error).toBeDefined();
+    expect(result.error).toBeInstanceOf(ResourceConflictException);
+    expect(result.error?.message).toContain('email already exists');
+    expect(result.value).toBeUndefined();
+    expect(mockCustomerGateway.findCustomerByCpf).toHaveBeenCalled();
+    expect(mockCustomerGateway.findCustomerByEmail).toHaveBeenCalled();
+    expect(mockCustomerGateway.saveCustomer).not.toHaveBeenCalled();
+  });
+
+  it('should handle gateway errors when finding by CPF', async () => {
+    const inputDto: CreateCustomerInputDTO = {
+      name: 'João Silva',
+      cpf: '11144477735',
+      email: 'test@example.com',
+    };
+
+    // Mock que retorna erro ao buscar por CPF
+    (mockCustomerGateway.findCustomerByCpf as jest.Mock).mockResolvedValue({
+      error: new Error('Database error'),
+      value: undefined,
+    });
+
+    const result = await createCustomerUseCase.execute(inputDto);
+
+    expect(result.error).toBeDefined();
+    expect(result.error?.message).toBe('Database error');
+    expect(result.value).toBeUndefined();
+    expect(mockCustomerGateway.findCustomerByCpf).toHaveBeenCalled();
+    expect(mockCustomerGateway.findCustomerByEmail).not.toHaveBeenCalled();
+  });
+
+  it('should handle gateway errors when saving customer', async () => {
+    const inputDto: CreateCustomerInputDTO = {
+      name: 'João Silva',
+      cpf: '11144477735',
+      email: 'test@example.com',
+    };
+
+    // Mock que não encontra cliente existente
+    (mockCustomerGateway.findCustomerByCpf as jest.Mock).mockResolvedValue({
+      error: undefined,
+      value: undefined,
+    });
+    (mockCustomerGateway.findCustomerByEmail as jest.Mock).mockResolvedValue({
+      error: undefined,
+      value: undefined,
+    });
+
+    // Mock que retorna erro ao salvar
+    (mockCustomerGateway.saveCustomer as jest.Mock).mockResolvedValue({
+      error: new Error('Save error'),
+      value: undefined,
+    });
+
+    const result = await createCustomerUseCase.execute(inputDto);
+
+    expect(result.error).toBeDefined();
+    expect(result.error?.message).toBe('Save error');
+    expect(result.value).toBeUndefined();
+    expect(mockCustomerGateway.saveCustomer).toHaveBeenCalled();
+  });
+});
