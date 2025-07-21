@@ -4,16 +4,32 @@ import { Order } from '../entities/order.entity';
 import { CreateOrderDto } from '../DTOs/create-order.dto';
 import { OrderItem } from '../entities/order-item.entity';
 import { CoreException } from 'src-clean/common/exceptions/coreException';
+import { FindProductsByIdUseCase } from '../../product/useCases/findProductsById.useCase';
 
 export class SaveOrderUseCase {
-  constructor(private orderGateway: OrderGateway) {}
+  constructor(
+    private orderGateway: OrderGateway,
+    private findProductsByIdUseCase: FindProductsByIdUseCase,
+  ) {}
 
   async execute(dto: CreateOrderDto): Promise<CoreResponse<Order | undefined>> {
+    const productIds = new Set<string>();
+    dto.orderItems.forEach((item) => productIds.add(item.productId));
+
+    const findProducts = await this.findProductsByIdUseCase.execute(
+      Array.from(productIds),
+      dto.storeId,
+    );
+    if (findProducts.error) {
+      return { error: findProducts.error, value: undefined };
+    }
+
     const orderItemResults = dto.orderItems.map((item) =>
       OrderItem.create({
         productId: item.productId,
         quantity: item.quantity,
-        unitPrice: 1 /* get price from product UseCase */,
+        unitPrice:
+          findProducts.value.find((p) => p.id === item.productId)?.price || 0,
       }),
     );
 

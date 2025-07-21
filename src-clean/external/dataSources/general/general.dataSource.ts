@@ -8,6 +8,7 @@ import { PaginatedDataSourceResponseDTO } from 'src-clean/common/dataSource/DTOs
 import { PaymentDataSourceDTO } from 'src-clean/common/dataSource/DTOs/paymentDataSource.dto';
 import { StoreDataSourceDTO } from 'src-clean/common/dataSource/DTOs/storeDataSource.dto';
 import { OrderFilteredDto } from 'src-clean/core/modules/order/DTOs/order-filtered.dto';
+import { ProductDataSourceDTO } from 'src-clean/common/dataSource/DTOs/productDataSource.dto';
 
 export interface GeneralDataSource {
   // Store
@@ -28,6 +29,7 @@ export interface GeneralDataSource {
     name: string,
     storeId: string,
   ): Promise<CategoryDataSourceDTO | null>;
+  findProductsById(productIds: string[]): Promise<ProductDataSourceDTO[]>;
 
   // Payment
   savePayment(paymentDTO: PaymentDataSourceDTO): Promise<void>;
