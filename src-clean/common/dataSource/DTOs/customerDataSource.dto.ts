@@ -3,6 +3,6 @@ export interface CustomerDataSourceDTO {
   cpf: string;
   name: string;
   email: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
 }

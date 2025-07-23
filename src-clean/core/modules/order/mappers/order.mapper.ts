@@ -5,10 +5,25 @@ import { OrderDataSourceDto } from 'src-clean/common/dataSource/DTOs/orderDataSo
 import { OrderItemMapper } from './order-item.mapper';
 import { CoreException } from 'src-clean/common/exceptions/coreException';
 import { OrderStatusEnum } from 'src/modules/order/models/enum/order-status.enum';
+import { Customer } from '../../customer/entities/customer.entity';
+import { Email } from 'src-clean/core/common/valueObjects/email.vo';
+import { CPF } from 'src-clean/core/common/valueObjects/cpf.vo';
 
 export class OrderMapper {
   static toEntity(dto: OrderDataSourceDto): CoreResponse<Order> {
     const orderItems: OrderItem[] = [];
+    let customer: Customer | undefined = undefined;
+
+    if (dto.customer) {
+      customer = Customer.restore({
+        id: dto.customer.id,
+        cpf: CPF.create(dto.customer.cpf)?.value as CPF,
+        name: dto.customer.name,
+        email: Email.create(dto.customer.email)?.value as Email,
+        createdAt: new Date(dto.customer.createdAt),
+        updatedAt: new Date(dto.customer.updatedAt),
+      }).value;
+    }
 
     try {
       dto.order_items.forEach((item) => {
@@ -24,7 +39,8 @@ export class OrderMapper {
 
     return Order.restore({
       id: dto.id,
-      customer: dto.customer_id ?? null,
+      customer: customer,
+      customerId: dto.customer_id ?? undefined,
       status: dto.status as OrderStatusEnum,
       storeId: dto.store_id,
       totemId: dto.totem_id ?? undefined,
@@ -36,7 +52,7 @@ export class OrderMapper {
   static toPersistenceDTO(entity: Order): OrderDataSourceDto {
     return {
       id: entity.id,
-      customer_id: entity.customer ?? null,
+      customer_id: entity.customer?.id ?? null,
       status: entity.status,
       store_id: entity.storeId,
       total_price: entity.totalPrice,
