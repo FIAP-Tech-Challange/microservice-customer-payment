@@ -1,10 +1,10 @@
-import { randomUUID } from 'node:crypto';
 import { CoreResponse } from 'src-clean/common/DTOs/coreResponse';
 import { CoreException } from 'src-clean/common/exceptions/coreException';
 import { ResourceInvalidException } from 'src-clean/common/exceptions/resourceInvalidException';
 import { NotificationStatus, NotificationChannel } from './notification.enums';
 import { Email } from 'src-clean/core/common/valueObjects/email.vo';
 import { BrazilianPhone } from 'src-clean/core/common/valueObjects/brazilian-phone.vo';
+import { generateUUID } from 'src-clean/core/common/utils/uuid.helper';
 
 export type NotificationDestinationToken = BrazilianPhone | Email | string;
 
@@ -96,6 +96,34 @@ export class Notification {
       );
     }
 
+    if (
+      this._channel === NotificationChannel.EMAIL &&
+      !(this._destinationToken instanceof Email)
+    ) {
+      throw new ResourceInvalidException(
+        'Destination token must be an Email for EMAIL channel',
+      );
+    }
+
+    if (
+      (this._channel === NotificationChannel.WHATSAPP ||
+        this._channel === NotificationChannel.SMS) &&
+      !(this._destinationToken instanceof BrazilianPhone)
+    ) {
+      throw new ResourceInvalidException(
+        'Destination token must be a BrazilianPhone for WHATSAPP or SMS channel',
+      );
+    }
+
+    if (
+      this._channel === NotificationChannel.MONITOR &&
+      typeof this._destinationToken !== 'string'
+    ) {
+      throw new ResourceInvalidException(
+        'Destination token must be a string for MONITOR channel',
+      );
+    }
+
     if (!this._message || this._message.trim() === '') {
       throw new ResourceInvalidException('Notification message is required');
     }
@@ -108,6 +136,18 @@ export class Notification {
 
     if (!this._status) {
       throw new ResourceInvalidException('Notification status is required');
+    } else {
+      if (this._status === NotificationStatus.FAILED && !this._errorMessage) {
+        throw new ResourceInvalidException(
+          'Notification errorMessage is required when status is FAILED',
+        );
+      }
+
+      if (this._status === NotificationStatus.SENT && !this._sentAt) {
+        throw new ResourceInvalidException(
+          'Notification sentAt is required when status is SENT',
+        );
+      }
     }
 
     if (!this._createdAt) {
@@ -116,6 +156,18 @@ export class Notification {
 
     if (!this._updatedAt) {
       throw new ResourceInvalidException('Notification updatedAt is required');
+    }
+
+    if (this._sentAt && this._status !== NotificationStatus.SENT) {
+      throw new ResourceInvalidException(
+        'Notification sentAt is only valid when status is SENT',
+      );
+    }
+
+    if (this._errorMessage && this._status !== NotificationStatus.FAILED) {
+      throw new ResourceInvalidException(
+        'Notification errorMessage is only valid when status is FAILED',
+      );
     }
   }
 
@@ -126,7 +178,7 @@ export class Notification {
   }): CoreResponse<Notification> {
     try {
       const notification = new Notification({
-        id: randomUUID(),
+        id: generateUUID(),
         channel: props.channel,
         destinationToken: props.destinationToken,
         message: props.message.trim(),
@@ -156,55 +208,45 @@ export class Notification {
     }
   }
 
-  public markAsSent(): CoreResponse<Notification> {
-    try {
-      const updatedNotification = new Notification({
-        id: this._id,
-        channel: this._channel,
-        destinationToken: this._destinationToken,
-        message: this._message,
-        status: NotificationStatus.SENT,
-        errorMessage: undefined,
-        sentAt: new Date(),
-        createdAt: this._createdAt,
-        updatedAt: new Date(),
-      });
-
-      return { value: updatedNotification, error: undefined };
-    } catch (error) {
+  public markAsSent(): CoreResponse<void> {
+    if (this._status !== NotificationStatus.PENDING) {
       return {
-        error: error as CoreException,
+        error: new ResourceInvalidException(
+          'Notification can only be marked as sent if it is pending',
+        ),
         value: undefined,
       };
     }
+
+    this._status = NotificationStatus.SENT;
+    this._sentAt = new Date();
+    this._updatedAt = new Date();
+
+    return { value: undefined, error: undefined };
   }
 
-  public markAsFailed(errorMessage: string): CoreResponse<Notification> {
-    try {
-      if (!errorMessage || errorMessage.trim() === '') {
-        throw new ResourceInvalidException(
-          'Error message is required when marking as failed',
-        );
-      }
-
-      const updatedNotification = new Notification({
-        id: this._id,
-        channel: this._channel,
-        destinationToken: this._destinationToken,
-        message: this._message,
-        status: NotificationStatus.FAILED,
-        errorMessage: errorMessage.trim(),
-        sentAt: undefined,
-        createdAt: this._createdAt,
-        updatedAt: new Date(),
-      });
-
-      return { value: updatedNotification, error: undefined };
-    } catch (error) {
+  public markAsFailed(errorMessage: string): CoreResponse<void> {
+    if (!errorMessage || errorMessage.trim() === '') {
       return {
-        error: error as CoreException,
+        error: new ResourceInvalidException(
+          'Error message is required when marking as failed',
+        ),
         value: undefined,
       };
     }
+
+    if (this._status !== NotificationStatus.PENDING) {
+      return {
+        error: new ResourceInvalidException(
+          'Notification can only be marked as failed if it is pending',
+        ),
+        value: undefined,
+      };
+    }
+
+    this._status = NotificationStatus.FAILED;
+    this._errorMessage = errorMessage.trim();
+    this._updatedAt = new Date();
+    return { value: undefined, error: undefined };
   }
 }

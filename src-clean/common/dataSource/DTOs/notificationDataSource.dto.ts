@@ -1,22 +1,17 @@
-import {
-  NotificationStatus,
-  NotificationChannel,
-} from 'src-clean/core/modules/notification/entities/notification.enums';
-
 export interface NotificationDataSourceDTO {
   id: string;
-  channel: NotificationChannel;
+  channel: string;
   destination_token: string;
   message: string;
-  status: NotificationStatus;
+  status: string;
   error_message?: string;
-  sent_at?: Date;
-  created_at: Date;
-  updated_at: Date;
+  sent_at?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface FindNotificationsByStatusParamsDTO {
-  status?: NotificationStatus;
+  status?: string;
   page?: number;
   size?: number;
 }

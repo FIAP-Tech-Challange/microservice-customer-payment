@@ -9,6 +9,7 @@ import { PaymentDataSourceDTO } from 'src-clean/common/dataSource/DTOs/paymentDa
 import { StoreDataSourceDTO } from 'src-clean/common/dataSource/DTOs/storeDataSource.dto';
 import { OrderFilteredDto } from 'src-clean/core/modules/order/DTOs/order-filtered.dto';
 import { ProductDataSourceDTO } from 'src-clean/common/dataSource/DTOs/productDataSource.dto';
+import { NotificationDataSourceDTO } from 'src-clean/common/dataSource/DTOs/notificationDataSource.dto';
 
 export interface GeneralDataSource {
   // Store
@@ -59,4 +60,7 @@ export interface GeneralDataSource {
   findOrderById(id: string): Promise<OrderDataSourceDto | null>;
   findByOrderItemId(id: string): Promise<OrderDataSourceDto | null>;
   getFilteredAndSortedOrders(storeId: string): Promise<OrderFilteredDto>;
+
+  // Notification
+  saveNotification(notification: NotificationDataSourceDTO): Promise<void>;
 }

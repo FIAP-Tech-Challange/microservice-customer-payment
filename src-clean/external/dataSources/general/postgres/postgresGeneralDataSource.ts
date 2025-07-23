@@ -20,6 +20,8 @@ import { CategoryEntity } from './entities/category.entity';
 import { OrderFilteredDto } from 'src-clean/core/modules/order/DTOs/order-filtered.dto';
 import { ProductDataSourceDTO } from 'src-clean/common/dataSource/DTOs/productDataSource.dto';
 import { ProductEntity } from './entities/product.entity';
+import { NotificationDataSourceDTO } from 'src-clean/common/dataSource/DTOs/notificationDataSource.dto';
+import { NotificationEntity } from './entities/notification.entity';
 import { CustomerEntity } from './entities/customer.entity';
 
 export class PostgresGeneralDataSource implements GeneralDataSource {
@@ -29,6 +31,7 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
   private paymentRepository: Repository<PaymentEntity>;
   private categoryRepository: Repository<CategoryEntity>;
   private productRepository: Repository<ProductEntity>;
+  private notificationRepository: Repository<NotificationEntity>;
   private customerRepository: Repository<CustomerEntity>;
 
   constructor(private dataSource: DataSource) {
@@ -38,6 +41,8 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
     this.paymentRepository = this.dataSource.getRepository(PaymentEntity);
     this.categoryRepository = this.dataSource.getRepository(CategoryEntity);
     this.productRepository = this.dataSource.getRepository(ProductEntity);
+    this.notificationRepository =
+      this.dataSource.getRepository(NotificationEntity);
     this.customerRepository = this.dataSource.getRepository(CustomerEntity);
   }
   // --------------- PRODUCT CATEGORY --------------- \\
@@ -629,5 +634,26 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
       qr_code: payment.qr_code ?? undefined,
       created_at: payment.created_at.toISOString(),
     };
+  }
+
+  // --------------- NOTIFICATION --------------- \\
+  async saveNotification(
+    notification: NotificationDataSourceDTO,
+  ): Promise<void> {
+    const notificationEntity = this.notificationRepository.create({
+      id: notification.id,
+      channel: notification.channel,
+      destination_token: notification.destination_token,
+      message: notification.message,
+      status: notification.status,
+      error_message: notification.error_message ?? undefined,
+      sent_at: notification.sent_at
+        ? new Date(notification.sent_at)
+        : undefined,
+      created_at: new Date(notification.created_at),
+      updated_at: new Date(notification.updated_at),
+    });
+
+    await this.notificationRepository.save(notificationEntity);
   }
 }
