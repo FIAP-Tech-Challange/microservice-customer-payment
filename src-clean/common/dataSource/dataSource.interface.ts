@@ -9,6 +9,10 @@ import { PaymentCreateExternalDataSourceResponseDTO } from './DTOs/paymentCreate
 import { PaymentExternalDataSourceDTO } from './DTOs/paymentExternalDataSource.dto';
 import { OrderDataSourceDto } from './DTOs/orderDataSource.dto';
 import { OrderPaginationDto } from 'src-clean/core/modules/order/DTOs/order-pagination.dto';
+import {
+  NotificationDataSourceDTO,
+  FindNotificationsByStatusParamsDTO,
+} from './DTOs/notificationDataSource.dto';
 import { OrderFilteredDto } from 'src-clean/core/modules/order/DTOs/order-filtered.dto';
 import { ProductDataSourceDTO } from './DTOs/productDataSource.dto';
 
@@ -66,4 +70,16 @@ export interface DataSource {
     storeId: string,
   ): Promise<OrderPaginationDto>;
   getFilteredAndSortedOrders(storeId: string): Promise<OrderFilteredDto>;
+
+  // Notification
+  findNotificationById(id: string): Promise<NotificationDataSourceDTO | null>;
+  findNotificationsByStatus(
+    params: FindNotificationsByStatusParamsDTO,
+  ): Promise<NotificationDataSourceDTO[]>;
+  findAllNotifications(params: {
+    page?: number;
+    size?: number;
+  }): Promise<NotificationDataSourceDTO[]>;
+  saveNotification(notification: NotificationDataSourceDTO): Promise<void>;
+  updateNotification(notification: NotificationDataSourceDTO): Promise<void>;
 }

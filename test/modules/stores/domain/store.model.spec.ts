@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { StoreModel } from '../../../../src/modules/stores/models/domain/store.model';
