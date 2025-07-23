@@ -444,4 +444,56 @@ export class OrderController {
     this.logger.log(`Order item ${orderItemId} deleted successfully`);
     return order;
   }
+
+  @ApiResponse({
+    status: 200,
+    description: 'Customer ID updated successfully',
+    type: OrderResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'it is not possible to update the customer id in the order',
+    type: BusinessException,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Order not found',
+    type: BusinessException,
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Order ID',
+    type: String,
+    required: true,
+  })
+  @ApiOperation({ summary: 'Link customer to order' })
+  @ApiBearerAuth('access-token')
+  @ApiBearerAuth('totem-token')
+  @UseGuards(StoreOrTotemGuard)
+  @Patch(':id/customer')
+  async updateCustomerId(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body('customerId') customerId: string,
+    @Request() req: RequestFromStore,
+  ): Promise<OrderResponseDto> {
+    const { error: err, value: order } = await new OrderCoreController(
+      this.dataSource,
+    ).linkCustomerToOrder(id, customerId, req.storeId);
+
+    if (err) {
+      this.logger.error(`Failed to link customer to order: ${err?.message}`);
+      throw new BusinessException(
+        `it is not possible to update the customer id in the order: ${err?.message}`,
+        400,
+      );
+    }
+
+    if (!order) {
+      this.logger.error(`Order with ID ${id} not found`);
+      throw new BusinessException(`Order with ID ${id} not found`, 404);
+    }
+
+    this.logger.log(`Customer ID updated successfully for order ${id}`);
+    return order;
+  }
 }

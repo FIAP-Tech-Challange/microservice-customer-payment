@@ -14,12 +14,37 @@ import { PaymentCreateExternalDataSourceResponseDTO } from 'src-clean/common/dat
 import { PaymentExternalDataSourceDTO } from 'src-clean/common/dataSource/DTOs/paymentExternalDataSource.dto';
 import { OrderFilteredDto } from 'src-clean/core/modules/order/DTOs/order-filtered.dto';
 import { ProductDataSourceDTO } from 'src-clean/common/dataSource/DTOs/productDataSource.dto';
+import {
+  NotificationDataSourceDTO,
+  FindNotificationsByStatusParamsDTO,
+} from 'src-clean/common/dataSource/DTOs/notificationDataSource.dto';
 
 export class DataSourceProxy implements DataSource {
   constructor(
     private generalDataSource: GeneralDataSource,
     private paymentDataSource: PaymentDataSource,
   ) {}
+
+  findNotificationById(id: string): Promise<NotificationDataSourceDTO | null> {
+    throw new Error('Method not implemented.');
+  }
+  findNotificationsByStatus(
+    params: FindNotificationsByStatusParamsDTO,
+  ): Promise<NotificationDataSourceDTO[]> {
+    throw new Error('Method not implemented.');
+  }
+  findAllNotifications(params: {
+    page?: number;
+    size?: number;
+  }): Promise<NotificationDataSourceDTO[]> {
+    throw new Error('Method not implemented.');
+  }
+  saveNotification(notification: NotificationDataSourceDTO): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  updateNotification(notification: NotificationDataSourceDTO): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
 
   // Order
   saveOrder(order: OrderDataSourceDto): Promise<OrderDataSourceDto> {

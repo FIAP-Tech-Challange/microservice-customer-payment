@@ -4,9 +4,12 @@ import {
   CreateDateColumn,
   OneToMany,
   PrimaryColumn,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 import { OrderItemEntity } from './order-item.entity';
 import { OrderStatusEnum } from 'src-clean/core/modules/order/entities/order.entity';
+import { CustomerEntity } from './customer.entity';
 
 @Entity('order')
 export class OrderEntity {
@@ -44,4 +47,8 @@ export class OrderEntity {
     eager: true,
   })
   order_items: OrderItemEntity[];
+
+  @ManyToOne(() => CustomerEntity)
+  @JoinColumn({ name: 'customer_id' })
+  customer: CustomerEntity | null;
 }
