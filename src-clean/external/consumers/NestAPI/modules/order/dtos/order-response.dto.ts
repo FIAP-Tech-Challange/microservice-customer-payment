@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNumber, IsString } from 'class-validator';
 import { OrderItemResponseDto } from './order-item-response.dto';
-//import { CustomerOrderDto } from './customer-order.dto';
 import { OrderStatusEnum } from 'src-clean/core/modules/order/entities/order.entity';
+import { CustomerResponseDto } from '../../customer/dtos/response-customer.dto';
 
 export class OrderResponseDto {
   @ApiProperty({
@@ -15,9 +15,9 @@ export class OrderResponseDto {
   @ApiProperty({
     description: 'Customer information',
     required: false,
-    /*type: CustomerOrderDto,*/
+    type: CustomerResponseDto,
   })
-  customer?: string;
+  customer?: CustomerResponseDto;
 
   @ApiProperty({
     description: 'Status of the order',

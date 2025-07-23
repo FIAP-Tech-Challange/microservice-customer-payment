@@ -20,6 +20,7 @@ import { CategoryEntity } from './entities/category.entity';
 import { OrderFilteredDto } from 'src-clean/core/modules/order/DTOs/order-filtered.dto';
 import { ProductDataSourceDTO } from 'src-clean/common/dataSource/DTOs/productDataSource.dto';
 import { ProductEntity } from './entities/product.entity';
+import { CustomerEntity } from './entities/customer.entity';
 
 export class PostgresGeneralDataSource implements GeneralDataSource {
   private storeRepository: Repository<StoreEntity>;
@@ -28,6 +29,7 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
   private paymentRepository: Repository<PaymentEntity>;
   private categoryRepository: Repository<CategoryEntity>;
   private productRepository: Repository<ProductEntity>;
+  private customerRepository: Repository<CustomerEntity>;
 
   constructor(private dataSource: DataSource) {
     this.storeRepository = this.dataSource.getRepository(StoreEntity);
@@ -36,6 +38,7 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
     this.paymentRepository = this.dataSource.getRepository(PaymentEntity);
     this.categoryRepository = this.dataSource.getRepository(CategoryEntity);
     this.productRepository = this.dataSource.getRepository(ProductEntity);
+    this.customerRepository = this.dataSource.getRepository(CustomerEntity);
   }
   // --------------- PRODUCT CATEGORY --------------- \\
   async findAllCategoriesByStoreId(
@@ -160,8 +163,20 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
   }
 
   // --------------- CUSTOMER --------------- \\
-  findCustomerById(id: string): Promise<CustomerDataSourceDTO | null> {
-    throw new Error('Method not implemented.');
+  async findCustomerById(id: string): Promise<CustomerDataSourceDTO | null> {
+    const costumer = await this.customerRepository.findOne({
+      where: { id: id },
+    });
+    if (!costumer) return null;
+
+    return {
+      id: costumer.id,
+      cpf: costumer.cpf,
+      name: costumer.name,
+      email: costumer.email,
+      createdAt: costumer.createdAt?.toISOString(),
+      updatedAt: costumer.updatedAt?.toISOString(),
+    };
   }
   findCustomerByCpf(cpf: string): Promise<CustomerDataSourceDTO | null> {
     throw new Error('Method not implemented.');
@@ -211,15 +226,24 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
   async findOrderById(id: string): Promise<OrderDataSourceDto | null> {
     const order = await this.orderRepository.findOne({
       where: { id: id },
-      relations: ['order_items'], //add customer relation if needed
+      relations: ['order_items', 'customer'],
     });
 
     if (!order) return null;
-
     return {
       id: order.id,
       store_id: order.store_id,
       totem_id: order.totem_id,
+      customer: order.customer
+        ? {
+            id: order.customer.id,
+            cpf: order.customer.cpf,
+            name: order.customer.name,
+            email: order.customer.email,
+            createdAt: order.customer.createdAt.toISOString(),
+            updatedAt: order.customer.updatedAt.toISOString(),
+          }
+        : null,
       customer_id: order.customer_id,
       total_price: order.total_price,
       status: order.status,

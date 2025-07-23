@@ -2,6 +2,7 @@ import { ResourceInvalidException } from 'src-clean/common/exceptions/resourceIn
 import { OrderItem } from './order-item.entity';
 import { CoreException } from 'src-clean/common/exceptions/coreException';
 import { CoreResponse } from 'src-clean/common/DTOs/coreResponse';
+import { Customer } from '../../customer/entities/customer.entity';
 
 export enum OrderStatusEnum {
   PENDING = 'P',
@@ -14,7 +15,8 @@ export enum OrderStatusEnum {
 
 interface OrderProps {
   id: string;
-  customer?: string | null;
+  customer?: Customer;
+  customerId?: string | undefined;
   status: OrderStatusEnum;
   storeId: string;
   totemId?: string;
@@ -24,7 +26,8 @@ interface OrderProps {
 
 export class Order {
   private _id: string;
-  private _customer?: string;
+  private _customer?: Customer;
+  private _customerId?: string | undefined;
   private _status: OrderStatusEnum;
   private _storeId: string;
   private _totemId?: string;
@@ -33,7 +36,8 @@ export class Order {
 
   private constructor(props: OrderProps) {
     this._id = props.id;
-    this._customer = props.customer ?? undefined;
+    this._customer = props.customer;
+    this._customerId = props.customerId;
     this._status = props.status;
     this._storeId = props.storeId;
     this._totemId = props.totemId;
@@ -131,7 +135,7 @@ export class Order {
     }
   }
 
-  associateCustomer(customer: string): CoreResponse<void> {
+  associateCustomer(customer: Customer): CoreResponse<void> {
     try {
       if (
         this._status === OrderStatusEnum.FINISHED ||
@@ -164,7 +168,7 @@ export class Order {
         id: crypto.randomUUID(),
         status: OrderStatusEnum.PENDING,
         orderItems: props.orderItems,
-        customer: props.customer,
+        customerId: props.customerId,
         storeId: props.storeId,
         createdAt: new Date(),
       });
@@ -193,8 +197,11 @@ export class Order {
   get id(): string {
     return this._id;
   }
-  get customer(): string | undefined {
+  get customer(): Customer | undefined {
     return this._customer;
+  }
+  get customerId(): string | undefined {
+    return this._customerId;
   }
   get status(): OrderStatusEnum {
     return this._status;

@@ -3,7 +3,9 @@ import { StoreEntity } from './entities/store.entity';
 import { TotemEntity } from './entities/totem.entity';
 import { OrderEntity } from './entities/order.entity';
 import { OrderItemEntity } from './entities/order-item.entity';
-import { CustomerEntity } from './entities/customer.entity';  
+import { CustomerEntity } from './entities/customer.entity';
+import { CategoryEntity } from './entities/category.entity';
+import { ProductEntity } from './entities/product.entity';
 
 export interface PostgresConfig {
   host: string;
@@ -22,7 +24,15 @@ export class PostgresDataSourceConfig {
       username: config.username,
       password: config.password,
       database: config.database,
-      entities: [StoreEntity, TotemEntity, OrderEntity, OrderItemEntity, CustomerEntity],
+      entities: [
+        StoreEntity,
+        TotemEntity,
+        OrderEntity,
+        OrderItemEntity,
+        CustomerEntity,
+        ProductEntity,
+        CategoryEntity,
+      ],
       synchronize: false,
       logging: false,
     });
