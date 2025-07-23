@@ -49,7 +49,7 @@ export class SaveOrderUseCase {
       orderItems: orderItems,
       storeId: dto.storeId,
       totemId: dto.totemId,
-      customer: dto.customerId,
+      customerId: dto.customerId,
     });
 
     if (createErr) {

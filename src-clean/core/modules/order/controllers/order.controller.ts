@@ -20,6 +20,9 @@ import { OrderPaginationDto } from 'src-clean/external/consumers/NestAPI/modules
 import { OrderSortedListDto } from 'src-clean/external/consumers/NestAPI/modules/order/dtos/order-sorted-list.dto';
 import { ProductGateway } from '../../product/gateways/product.gateway';
 import { FindProductsByIdUseCase } from '../../product/useCases/findProductsById.useCase';
+import { CustomerGateway } from '../../customer/gateways/customer.gateway';
+import { FindCustomerByIdUseCase } from '../../customer/useCases/findCustomerById.useCase';
+import { LinkCustomerToOrderUseCase } from '../useCases/linkCustomerToOrder.useCase';
 
 export class OrderCoreController {
   constructor(private dataSource: DataSource) {}
@@ -346,6 +349,37 @@ export class OrderCoreController {
       return {
         error: new UnexpectedError(
           `Something went wrong while setting order to in progress.. ${error}`,
+        ),
+        value: undefined,
+      };
+    }
+  }
+
+  async linkCustomerToOrder(
+    orderId: string,
+    customerId: string,
+    storeId: string,
+  ): Promise<CoreResponse<OrderResponseDto>> {
+    try {
+      const orderGateway = new OrderGateway(this.dataSource);
+      const findCustomerByIdUseCase = new FindCustomerByIdUseCase(
+        new CustomerGateway(this.dataSource),
+      );
+      const linkCustomerToOrderUseCase = new LinkCustomerToOrderUseCase(
+        orderGateway,
+        findCustomerByIdUseCase,
+      );
+
+      const { error: err, value: order } =
+        await linkCustomerToOrderUseCase.execute(orderId, customerId, storeId);
+
+      if (err) return { error: err, value: undefined };
+
+      return { error: undefined, value: OrderPresenter.toDto(order) };
+    } catch (error) {
+      return {
+        error: new UnexpectedError(
+          `Something went wrong while linking customer to order ${error.message}`,
         ),
         value: undefined,
       };
