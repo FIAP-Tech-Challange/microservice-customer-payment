@@ -11,8 +11,8 @@ export class CustomerMapper {
       cpf: customer.cpf.toString(),
       name: customer.name,
       email: customer.email.toString(),
-      createdAt: customer.createdAt,
-      updatedAt: customer.updatedAt,
+      createdAt: customer.createdAt.toISOString(),
+      updatedAt: customer.updatedAt.toISOString(),
     };
   }
 
@@ -32,8 +32,8 @@ export class CustomerMapper {
       cpf,
       name: dto.name,
       email,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
     };
 
     return Customer.restore(customerProps);
