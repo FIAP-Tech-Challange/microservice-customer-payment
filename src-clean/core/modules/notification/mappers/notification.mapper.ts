@@ -3,62 +3,65 @@ import {
   Notification,
   NotificationDestinationToken,
 } from '../entities/notification.entity';
-import { NotificationDTO } from '../DTOs/notification.dto';
-import { NotificationChannel } from '../entities/notification.enums';
+import {
+  NotificationChannel,
+  NotificationStatus,
+} from '../entities/notification.enums';
 import { Email } from 'src-clean/core/common/valueObjects/email.vo';
 import { BrazilianPhone } from 'src-clean/core/common/valueObjects/brazilian-phone.vo';
+import { NotificationDataSourceDTO } from 'src-clean/common/dataSource/DTOs/notificationDataSource.dto';
 
 export class NotificationMapper {
-  static toDTO(notification: Notification): NotificationDTO {
+  static toPersistenceDTO(
+    notification: Notification,
+  ): NotificationDataSourceDTO {
     return {
       id: notification.id,
       channel: notification.channel,
-      destinationToken: notification.destinationToken.toString(),
+      destination_token: notification.destinationToken.toString(),
       message: notification.message,
       status: notification.status,
-      errorMessage: notification.errorMessage,
-      sentAt: notification.sentAt,
-      createdAt: notification.createdAt,
-      updatedAt: notification.updatedAt,
+      error_message: notification.errorMessage,
+      sent_at: notification.sentAt
+        ? notification.sentAt.toISOString()
+        : undefined,
+      created_at: notification.createdAt.toISOString(),
+      updated_at: notification.updatedAt.toISOString(),
     };
   }
 
-  static toEntity(dto: NotificationDTO): CoreResponse<Notification> {
+  static toEntity(dto: NotificationDataSourceDTO): CoreResponse<Notification> {
     let destinationToken: NotificationDestinationToken;
 
-    if (dto.channel === NotificationChannel.EMAIL) {
-      const { error: emailError, value: email } = Email.create(
-        dto.destinationToken,
-      );
-      if (emailError) {
-        return { error: emailError, value: undefined };
+    if ((dto.channel as NotificationChannel) === NotificationChannel.EMAIL) {
+      const createEmail = Email.create(dto.destination_token);
+      if (createEmail.error) {
+        return { error: createEmail.error, value: undefined };
       }
-      destinationToken = email;
+      destinationToken = createEmail.value;
     } else if (
-      dto.channel === NotificationChannel.WHATSAPP ||
-      dto.channel === NotificationChannel.SMS
+      (dto.channel as NotificationChannel) === NotificationChannel.WHATSAPP ||
+      (dto.channel as NotificationChannel) === NotificationChannel.SMS
     ) {
-      const { error: phoneError, value: phone } = BrazilianPhone.create(
-        dto.destinationToken,
-      );
-      if (phoneError) {
-        return { error: phoneError, value: undefined };
+      const createPhone = BrazilianPhone.create(dto.destination_token);
+      if (createPhone.error) {
+        return { error: createPhone.error, value: undefined };
       }
-      destinationToken = phone;
+      destinationToken = createPhone.value;
     } else {
-      destinationToken = dto.destinationToken;
+      destinationToken = dto.destination_token;
     }
 
     const notificationProps = {
       id: dto.id,
-      channel: dto.channel,
+      channel: dto.channel as NotificationChannel,
       destinationToken,
       message: dto.message,
-      status: dto.status,
-      errorMessage: dto.errorMessage,
-      sentAt: dto.sentAt,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      status: dto.status as NotificationStatus,
+      errorMessage: dto.error_message,
+      sentAt: dto.sent_at ? new Date(dto.sent_at) : undefined,
+      createdAt: new Date(dto.created_at),
+      updatedAt: new Date(dto.updated_at),
     };
 
     return Notification.restore(notificationProps);

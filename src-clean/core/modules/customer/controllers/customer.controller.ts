@@ -12,6 +12,8 @@ import { FindCustomerByCpfUseCase } from '../useCases/findCustomerByCpf.useCase'
 import { FindAllCustomersInputDTO } from '../DTOs/findCustomerInput.dto';
 import { FindAllCustomersUseCase } from '../useCases/findAllCustomers.useCase';
 import { PaginatedResponse } from 'src-clean/core/common/DTOs/paginatedResponse.dto';
+import { SendNotificationUseCase } from '../../notification/useCases/sendNotification.useCase';
+import { NotificationGateway } from '../../notification/gateways/notification.gateway';
 
 export class CustomerCoreController {
   constructor(private dataSource: DataSource) {}
@@ -21,7 +23,15 @@ export class CustomerCoreController {
   ): Promise<CoreResponse<CustomerDTO>> {
     try {
       const gateway = new CustomerGateway(this.dataSource);
-      const useCase = new CreateCustomerUseCase(gateway);
+      const notificationGateway = new NotificationGateway(this.dataSource);
+
+      const sendNotificationUseCase = new SendNotificationUseCase(
+        notificationGateway,
+      );
+      const useCase = new CreateCustomerUseCase(
+        gateway,
+        sendNotificationUseCase,
+      );
 
       const { error: err, value: customer } = await useCase.execute(dto);
 

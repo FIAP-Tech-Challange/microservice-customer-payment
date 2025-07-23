@@ -9,10 +9,7 @@ import { PaymentCreateExternalDataSourceResponseDTO } from './DTOs/paymentCreate
 import { PaymentExternalDataSourceDTO } from './DTOs/paymentExternalDataSource.dto';
 import { OrderDataSourceDto } from './DTOs/orderDataSource.dto';
 import { OrderPaginationDto } from 'src-clean/core/modules/order/DTOs/order-pagination.dto';
-import {
-  NotificationDataSourceDTO,
-  FindNotificationsByStatusParamsDTO,
-} from './DTOs/notificationDataSource.dto';
+import { NotificationDataSourceDTO } from './DTOs/notificationDataSource.dto';
 import { OrderFilteredDto } from 'src-clean/core/modules/order/DTOs/order-filtered.dto';
 import { ProductDataSourceDTO } from './DTOs/productDataSource.dto';
 
@@ -72,14 +69,21 @@ export interface DataSource {
   getFilteredAndSortedOrders(storeId: string): Promise<OrderFilteredDto>;
 
   // Notification
-  findNotificationById(id: string): Promise<NotificationDataSourceDTO | null>;
-  findNotificationsByStatus(
-    params: FindNotificationsByStatusParamsDTO,
-  ): Promise<NotificationDataSourceDTO[]>;
-  findAllNotifications(params: {
-    page?: number;
-    size?: number;
-  }): Promise<NotificationDataSourceDTO[]>;
+  sendSMSNotification(
+    phone: string,
+    message: string,
+  ): Promise<{ error?: string }>;
+  sendWhatsappNotification(
+    phone: string,
+    message: string,
+  ): Promise<{ error?: string }>;
+  sendEmailNotification(
+    email: string,
+    message: string,
+  ): Promise<{ error?: string }>;
+  sendMonitorNotification(
+    ip: string,
+    message: string,
+  ): Promise<{ error?: string }>;
   saveNotification(notification: NotificationDataSourceDTO): Promise<void>;
-  updateNotification(notification: NotificationDataSourceDTO): Promise<void>;
 }

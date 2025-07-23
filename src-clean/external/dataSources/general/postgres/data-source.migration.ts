@@ -7,6 +7,8 @@ import { OrderItemEntity } from './entities/order-item.entity';
 import { CustomerEntity } from './entities/customer.entity';
 import { CategoryEntity } from './entities/category.entity';
 import { ProductEntity } from './entities/product.entity';
+import { PaymentEntity } from 'src/modules/payment/models/entities/payment.entity';
+import { NotificationEntity } from './entities/notification.entity';
 
 const dataSourceOptions: DataSourceOptions = {
   type: 'postgres',
@@ -20,9 +22,11 @@ const dataSourceOptions: DataSourceOptions = {
     TotemEntity,
     OrderEntity,
     OrderItemEntity,
-    CustomerEntity,
-    ProductEntity,
+    PaymentEntity,
     CategoryEntity,
+    ProductEntity,
+    NotificationEntity,
+    CustomerEntity,
   ],
   migrations: [__dirname + '/migrations/*.{js,ts}'],
   synchronize: false,

@@ -5,9 +5,14 @@ import { CustomerGateway } from '../gateways/customer.gateway';
 import { CreateCustomerInputDTO } from '../DTOs/createCustomerInput.dto';
 import { CPF } from 'src-clean/core/common/valueObjects/cpf.vo';
 import { Email } from 'src-clean/core/common/valueObjects/email.vo';
+import { SendNotificationUseCase } from '../../notification/useCases/sendNotification.useCase';
+import { NotificationChannel } from '../../notification/entities/notification.enums';
 
 export class CreateCustomerUseCase {
-  constructor(private customerGateway: CustomerGateway) {}
+  constructor(
+    private customerGateway: CustomerGateway,
+    private sendNotificationUseCase: SendNotificationUseCase,
+  ) {}
 
   async execute(dto: CreateCustomerInputDTO): Promise<CoreResponse<Customer>> {
     const cpf = CPF.create(dto.cpf);
@@ -56,6 +61,17 @@ export class CreateCustomerUseCase {
 
     if (saveCustomer.error) {
       return { error: saveCustomer.error, value: undefined };
+    }
+
+    const sendNotification = await this.sendNotificationUseCase.execute({
+      channel: NotificationChannel.EMAIL,
+      destinationToken: email.value.toString(),
+      message: `Welcome ${customerCreate.value.name}, your registration was successful!`,
+    });
+
+    if (sendNotification.error) {
+      console.error('Failed to send notification:', sendNotification.error);
+      return { error: sendNotification.error, value: undefined };
     }
 
     return { error: undefined, value: customerCreate.value };

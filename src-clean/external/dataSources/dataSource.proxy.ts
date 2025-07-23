@@ -14,38 +14,15 @@ import { PaymentCreateExternalDataSourceResponseDTO } from 'src-clean/common/dat
 import { PaymentExternalDataSourceDTO } from 'src-clean/common/dataSource/DTOs/paymentExternalDataSource.dto';
 import { OrderFilteredDto } from 'src-clean/core/modules/order/DTOs/order-filtered.dto';
 import { ProductDataSourceDTO } from 'src-clean/common/dataSource/DTOs/productDataSource.dto';
-import {
-  NotificationDataSourceDTO,
-  FindNotificationsByStatusParamsDTO,
-} from 'src-clean/common/dataSource/DTOs/notificationDataSource.dto';
+import { NotificationDataSourceDTO } from 'src-clean/common/dataSource/DTOs/notificationDataSource.dto';
+import { NotificationDataSource } from './notification/notification.dataSource';
 
 export class DataSourceProxy implements DataSource {
   constructor(
     private generalDataSource: GeneralDataSource,
     private paymentDataSource: PaymentDataSource,
+    private notificationDataSource: NotificationDataSource,
   ) {}
-
-  findNotificationById(id: string): Promise<NotificationDataSourceDTO | null> {
-    throw new Error('Method not implemented.');
-  }
-  findNotificationsByStatus(
-    params: FindNotificationsByStatusParamsDTO,
-  ): Promise<NotificationDataSourceDTO[]> {
-    throw new Error('Method not implemented.');
-  }
-  findAllNotifications(params: {
-    page?: number;
-    size?: number;
-  }): Promise<NotificationDataSourceDTO[]> {
-    throw new Error('Method not implemented.');
-  }
-  saveNotification(notification: NotificationDataSourceDTO): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-  updateNotification(notification: NotificationDataSourceDTO): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-
   // Order
   saveOrder(order: OrderDataSourceDto): Promise<OrderDataSourceDto> {
     return this.generalDataSource.saveOrder(order);
@@ -165,5 +142,34 @@ export class DataSourceProxy implements DataSource {
   }
   deleteCustomer(id: string): Promise<void> {
     return this.generalDataSource.deleteCustomer(id);
+  }
+
+  // Notification
+  sendSMSNotification(
+    phone: string,
+    message: string,
+  ): Promise<{ error?: string }> {
+    return this.notificationDataSource.sendSMSNotification(phone, message);
+  }
+  sendWhatsappNotification(
+    phone: string,
+    message: string,
+  ): Promise<{ error?: string }> {
+    return this.notificationDataSource.sendWhatsappNotification(phone, message);
+  }
+  sendEmailNotification(
+    email: string,
+    message: string,
+  ): Promise<{ error?: string }> {
+    return this.notificationDataSource.sendEmailNotification(email, message);
+  }
+  sendMonitorNotification(
+    ip: string,
+    message: string,
+  ): Promise<{ error?: string }> {
+    return this.notificationDataSource.sendMonitorNotification(ip, message);
+  }
+  saveNotification(notification: NotificationDataSourceDTO): Promise<void> {
+    return this.generalDataSource.saveNotification(notification);
   }
 }
