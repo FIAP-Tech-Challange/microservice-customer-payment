@@ -7,18 +7,60 @@ import { Totem } from 'src-clean/core/modules/store/entities/totem.entity';
 import { StoreGateway } from 'src-clean/core/modules/store/gateways/store.gateway';
 import { FindStoreByTotemAccessTokenUseCase } from 'src-clean/core/modules/store/useCases/findStoreByTotemAccessToken.useCase';
 import { DataSourceProxy } from 'src-clean/external/dataSources/dataSource.proxy';
-import { InMemoryGeneralDataSource } from 'src-clean/external/dataSources/general/inMemory/inMemoryGeneralDataSource';
+import { GeneralDataSource } from 'src-clean/external/dataSources/general/general.dataSource';
 import { FakePaymentDataSource } from 'src-clean/external/dataSources/payment/fake/fakePaymentDataSource';
+import { NotificationDataSource } from 'src-clean/external/dataSources/notification/notification.dataSource';
 
 describe('FindStoreByTotemAccessTokenUseCase', () => {
   let useCase: FindStoreByTotemAccessTokenUseCase;
   let storeGateway: StoreGateway;
   let dataSource: DataSourceProxy;
+  let mockGeneralDataSource: jest.Mocked<GeneralDataSource>;
 
   beforeEach(() => {
-    const inMemoryDataSource = new InMemoryGeneralDataSource();
+    mockGeneralDataSource = {
+      findStoreByEmail: jest.fn(),
+      findStoreByCnpj: jest.fn(),
+      findStoreByName: jest.fn(),
+      findStoreById: jest.fn(),
+      saveStore: jest.fn(),
+      findStoreByTotemAccessToken: jest.fn(),
+      findAllCategoriesByStoreId: jest.fn(),
+      saveCategory: jest.fn(),
+      findCategoryById: jest.fn(),
+      findCategoryByNameAndStoreId: jest.fn(),
+      findProductsById: jest.fn(),
+      savePayment: jest.fn(),
+      findPaymentById: jest.fn(),
+      findCustomerById: jest.fn(),
+      findCustomerByCpf: jest.fn(),
+      findCustomerByEmail: jest.fn(),
+      findAllCustomers: jest.fn(),
+      saveCustomer: jest.fn(),
+      deleteCustomer: jest.fn(),
+      saveOrder: jest.fn(),
+      deleteOrder: jest.fn(),
+      deleteOrderItem: jest.fn(),
+      getAllOrders: jest.fn(),
+      findOrderById: jest.fn(),
+      findByOrderItemId: jest.fn(),
+      getFilteredAndSortedOrders: jest.fn(),
+      saveNotification: jest.fn(),
+    };
+
+    const mockNotificationDataSource: jest.Mocked<NotificationDataSource> = {
+      sendSMSNotification: jest.fn(),
+      sendWhatsappNotification: jest.fn(),
+      sendEmailNotification: jest.fn(),
+      sendMonitorNotification: jest.fn(),
+    };
+
     const fakePaymentDataSource = new FakePaymentDataSource();
-    dataSource = new DataSourceProxy(inMemoryDataSource, fakePaymentDataSource);
+    dataSource = new DataSourceProxy(
+      mockGeneralDataSource,
+      fakePaymentDataSource,
+      mockNotificationDataSource,
+    );
 
     storeGateway = new StoreGateway(dataSource);
     useCase = new FindStoreByTotemAccessTokenUseCase(storeGateway);
@@ -37,7 +79,31 @@ describe('FindStoreByTotemAccessTokenUseCase', () => {
     const totem = Totem.create({ name: 'Test Totem' });
     store.value!.addTotem(totem.value!);
 
-    await storeGateway.saveStore(store.value!);
+    // Mock the store with totem
+    const mockStoreDTO = {
+      id: store.value!.id,
+      name: 'Test Store',
+      fantasy_name: 'Test Fantasy Store',
+      email: 'store@example.com',
+      cnpj: '11222333000181',
+      salt: store.value!.salt,
+      password_hash: store.value!.passwordHash,
+      phone: '5511999999999',
+      created_at: store.value!.createdAt.toISOString(),
+      totems: [
+        {
+          id: totem.value!.id,
+          name: 'Test Totem',
+          token_access: totem.value!.tokenAccess,
+          status: 'active',
+          created_at: totem.value!.createdAt.toISOString(),
+        },
+      ],
+    };
+
+    mockGeneralDataSource.findStoreByTotemAccessToken.mockResolvedValue(
+      mockStoreDTO,
+    );
 
     const result = await useCase.execute(totem.value!.tokenAccess);
 
@@ -54,6 +120,8 @@ describe('FindStoreByTotemAccessTokenUseCase', () => {
   });
 
   it('should return ResourceNotFoundException for non-existing totem', async () => {
+    mockGeneralDataSource.findStoreByTotemAccessToken.mockResolvedValue(null);
+
     const result = await useCase.execute('non-existent-totem-access-token');
 
     expect(result.error).toBeInstanceOf(ResourceNotFoundException);
@@ -86,8 +154,53 @@ describe('FindStoreByTotemAccessTokenUseCase', () => {
     const totem2 = Totem.create({ name: 'Totem 2' });
     store2.value!.addTotem(totem2.value!);
 
-    await storeGateway.saveStore(store1.value!);
-    await storeGateway.saveStore(store2.value!);
+    // Mock store 1 with totem 1
+    const mockStore1DTO = {
+      id: store1.value!.id,
+      name: 'Store 1',
+      fantasy_name: 'Fantasy Store 1',
+      email: 'store1@example.com',
+      cnpj: '11222333000181',
+      salt: store1.value!.salt,
+      password_hash: store1.value!.passwordHash,
+      phone: '5511999999999',
+      created_at: store1.value!.createdAt.toISOString(),
+      totems: [
+        {
+          id: totem1.value!.id,
+          name: 'Totem 1',
+          token_access: totem1.value!.tokenAccess,
+          status: 'active',
+          created_at: totem1.value!.createdAt.toISOString(),
+        },
+      ],
+    };
+
+    // Mock store 2 with totem 2
+    const mockStore2DTO = {
+      id: store2.value!.id,
+      name: 'Store 2',
+      fantasy_name: 'Fantasy Store 2',
+      email: 'store2@example.com',
+      cnpj: '75914784000162',
+      salt: store2.value!.salt,
+      password_hash: store2.value!.passwordHash,
+      phone: '5592999999999',
+      created_at: store2.value!.createdAt.toISOString(),
+      totems: [
+        {
+          id: totem2.value!.id,
+          name: 'Totem 2',
+          token_access: totem2.value!.tokenAccess,
+          status: 'active',
+          created_at: totem2.value!.createdAt.toISOString(),
+        },
+      ],
+    };
+
+    mockGeneralDataSource.findStoreByTotemAccessToken
+      .mockResolvedValueOnce(mockStore1DTO)
+      .mockResolvedValueOnce(mockStore2DTO);
 
     const result1 = await useCase.execute(totem1.value!.tokenAccess);
     expect(result1.error).toBeUndefined();
@@ -120,7 +233,6 @@ describe('FindStoreByTotemAccessTokenUseCase', () => {
       phone: BrazilianPhone.create('5511999999999').value!,
     });
 
-    // Add multiple totems to the store
     const totem1 = Totem.create({ name: 'First Totem' });
     const totem2 = Totem.create({ name: 'Second Totem' });
     const totem3 = Totem.create({ name: 'Third Totem' });
@@ -129,9 +241,47 @@ describe('FindStoreByTotemAccessTokenUseCase', () => {
     store.value!.addTotem(totem2.value!);
     store.value!.addTotem(totem3.value!);
 
-    await storeGateway.saveStore(store.value!);
+    // Mock store with multiple totems
+    const mockStoreDTO = {
+      id: store.value!.id,
+      name: 'Multi Totem Store',
+      fantasy_name: 'Multi Totem Fantasy',
+      email: 'multi@example.com',
+      cnpj: '11222333000181',
+      salt: store.value!.salt,
+      password_hash: store.value!.passwordHash,
+      phone: '5511999999999',
+      created_at: store.value!.createdAt.toISOString(),
+      totems: [
+        {
+          id: totem1.value!.id,
+          name: 'First Totem',
+          token_access: totem1.value!.tokenAccess,
+          status: 'active',
+          created_at: totem1.value!.createdAt.toISOString(),
+        },
+        {
+          id: totem2.value!.id,
+          name: 'Second Totem',
+          token_access: totem2.value!.tokenAccess,
+          status: 'active',
+          created_at: totem2.value!.createdAt.toISOString(),
+        },
+        {
+          id: totem3.value!.id,
+          name: 'Third Totem',
+          token_access: totem3.value!.tokenAccess,
+          status: 'active',
+          created_at: totem3.value!.createdAt.toISOString(),
+        },
+      ],
+    };
 
-    // Find each totem individually
+    mockGeneralDataSource.findStoreByTotemAccessToken
+      .mockResolvedValueOnce(mockStoreDTO)
+      .mockResolvedValueOnce(mockStoreDTO)
+      .mockResolvedValueOnce(mockStoreDTO);
+
     const result1 = await useCase.execute(totem1.value!.tokenAccess);
     expect(result1.error).toBeUndefined();
     expect(result1.value!.name).toBe('Multi Totem Store');
@@ -215,7 +365,31 @@ describe('FindStoreByTotemAccessTokenUseCase', () => {
     const totem = Totem.create({ name: totemName });
     store.value!.addTotem(totem.value!);
 
-    await storeGateway.saveStore(store.value!);
+    // Mock complete store with totem
+    const mockStoreDTO = {
+      id: store.value!.id,
+      name: 'Complete Test Store',
+      fantasy_name: 'Complete Fantasy Store',
+      email: 'complete@example.com',
+      cnpj: '11222333000181',
+      salt: store.value!.salt,
+      password_hash: store.value!.passwordHash,
+      phone: '5511999999999',
+      created_at: store.value!.createdAt.toISOString(),
+      totems: [
+        {
+          id: totem.value!.id,
+          name: totemName,
+          token_access: totem.value!.tokenAccess,
+          status: 'active',
+          created_at: totem.value!.createdAt.toISOString(),
+        },
+      ],
+    };
+
+    mockGeneralDataSource.findStoreByTotemAccessToken.mockResolvedValue(
+      mockStoreDTO,
+    );
 
     const result = await useCase.execute(totem.value!.tokenAccess);
 
@@ -252,7 +426,31 @@ describe('FindStoreByTotemAccessTokenUseCase', () => {
     const totem = Totem.create({ name: specialTotemName });
     store.value!.addTotem(totem.value!);
 
-    await storeGateway.saveStore(store.value!);
+    // Mock store with special character totem
+    const mockStoreDTO = {
+      id: store.value!.id,
+      name: 'Special Store',
+      fantasy_name: 'Special Fantasy',
+      email: 'special@example.com',
+      cnpj: '11222333000181',
+      salt: store.value!.salt,
+      password_hash: store.value!.passwordHash,
+      phone: '5511999999999',
+      created_at: store.value!.createdAt.toISOString(),
+      totems: [
+        {
+          id: totem.value!.id,
+          name: specialTotemName,
+          token_access: totem.value!.tokenAccess,
+          status: 'active',
+          created_at: totem.value!.createdAt.toISOString(),
+        },
+      ],
+    };
+
+    mockGeneralDataSource.findStoreByTotemAccessToken.mockResolvedValue(
+      mockStoreDTO,
+    );
 
     const result = await useCase.execute(totem.value!.tokenAccess);
 
