@@ -137,7 +137,7 @@ describe('CreateProductUseCase', () => {
   it('should fail when product data is invalid', async () => {
     const inputDto: CreateProductInputDTO = {
       product: {
-        name: 'AB', // Too short
+        name: 'AB',
         price: 25.99,
         prepTime: 15,
       },
@@ -178,7 +178,6 @@ describe('CreateProductUseCase', () => {
       storeId: 'store-123',
     }).value!;
 
-    // Add a product with the same name to trigger conflict
     const existingProduct = Product.create({
       name: 'Duplicate Product',
       price: 20.99,
@@ -237,7 +236,7 @@ describe('CreateProductUseCase', () => {
     const inputDto: CreateProductInputDTO = {
       product: {
         name: 'Invalid Product',
-        price: -10, // Invalid price
+        price: -10,
         prepTime: 15,
       },
       categoryId: 'category-123',

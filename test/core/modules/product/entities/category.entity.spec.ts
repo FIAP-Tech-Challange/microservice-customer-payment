@@ -158,7 +158,7 @@ describe('Category Entity Tests', () => {
       category.addProduct(product1);
 
       const duplicateNameProduct = Product.create({
-        name: 'Big Burger', // Same name as product1
+        name: 'Big Burger',
         price: 30.99,
         prepTime: 18,
         storeId: 'store-123',
@@ -177,15 +177,13 @@ describe('Category Entity Tests', () => {
     it('should fail to add product with duplicate ID', () => {
       category.addProduct(product1);
 
-      // Create a different product with different name but we'll simulate same ID
       const differentProduct = Product.create({
-        name: 'Different Product', // Different name
+        name: 'Different Product',
         price: 30.99,
         prepTime: 18,
         storeId: 'store-123',
       }).value!;
 
-      // Override the ID to be the same as product1
       Object.defineProperty(differentProduct, '_id', {
         value: product1.id,
         writable: false,
@@ -231,7 +229,6 @@ describe('Category Entity Tests', () => {
 
       category.addProduct(product1);
 
-      // Since operations are synchronous, the updatedAt should be different
       expect(category.updatedAt.getTime()).toBeGreaterThanOrEqual(
         initialUpdatedAt.getTime(),
       );
@@ -243,7 +240,6 @@ describe('Category Entity Tests', () => {
 
       category.removeProduct(product1.id);
 
-      // Since operations are synchronous, the updatedAt should be different
       expect(category.updatedAt.getTime()).toBeGreaterThanOrEqual(
         updatedAtAfterAdd.getTime(),
       );

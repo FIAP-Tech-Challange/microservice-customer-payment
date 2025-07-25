@@ -186,7 +186,7 @@ describe('Product Entity Tests', () => {
       const now = new Date();
       const productProps = {
         id: 'product-123',
-        name: '', // Invalid name
+        name: '',
         price: 25.99,
         description: 'Delicioso hamburger',
         prepTime: 15,

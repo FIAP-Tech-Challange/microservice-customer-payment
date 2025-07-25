@@ -43,7 +43,6 @@ describe('DeleteProductUseCase', () => {
       storeId: 'store-123',
     }).value!;
 
-    // Override the product ID to match what we're trying to delete
     Object.defineProperty(mockProduct, '_id', {
       value: productId,
       writable: false,
@@ -143,7 +142,6 @@ describe('DeleteProductUseCase', () => {
       storeId: 'store-123',
     }).value!;
 
-    // Override the product ID to match what we're trying to delete
     Object.defineProperty(mockProduct, '_id', {
       value: productId,
       writable: false,
@@ -197,7 +195,6 @@ describe('DeleteProductUseCase', () => {
       storeId: 'store-123',
     }).value!;
 
-    // Override the product IDs
     Object.defineProperty(mockProduct1, '_id', {
       value: productId1,
       writable: false,

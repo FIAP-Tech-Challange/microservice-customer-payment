@@ -63,7 +63,7 @@ describe('FindCategoryByIdUseCase', () => {
 
     const mockCategory = Category.create({
       name: 'Hamburgers',
-      storeId: 'different-store-456', // Different store
+      storeId: 'different-store-456',
     }).value!;
 
     (mockCategoryGateway.findCategoryById as jest.Mock).mockResolvedValue({

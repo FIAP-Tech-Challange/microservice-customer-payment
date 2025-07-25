@@ -33,7 +33,6 @@ describe('CreateCategoryUseCase', () => {
       storeId: 'store-123',
     };
 
-    // Mock store exists
     const mockStore = { id: 'store-123', name: 'Test Store' };
 
     (mockFindStoreByIdUseCase.execute as jest.Mock).mockResolvedValue({
@@ -41,13 +40,11 @@ describe('CreateCategoryUseCase', () => {
       value: mockStore,
     });
 
-    // Mock no conflicting category
     (mockCategoryGateway.findCategoryByName as jest.Mock).mockResolvedValue({
       error: undefined,
       value: undefined,
     });
 
-    // Mock successful save
     (mockCategoryGateway.save as jest.Mock).mockResolvedValue({
       error: undefined,
       value: undefined,
@@ -176,7 +173,7 @@ describe('CreateCategoryUseCase', () => {
 
   it('should fail with invalid category data', async () => {
     const inputDto: CreateCategoryInputDTO = {
-      name: 'AB', // Too short
+      name: 'AB',
       storeId: 'store-123',
     };
 

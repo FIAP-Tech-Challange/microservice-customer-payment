@@ -5,23 +5,20 @@ import { Email } from 'src-clean/core/common/valueObjects/email.vo';
 import { Store } from 'src-clean/core/modules/store/entities/store.entity';
 import { StoreGateway } from 'src-clean/core/modules/store/gateways/store.gateway';
 import { FindStoreByIdUseCase } from 'src-clean/core/modules/store/useCases/findStoreById.useCase';
-import { DataSourceProxy } from 'src-clean/external/dataSources/dataSource.proxy';
-import { InMemoryGeneralDataSource } from 'src-clean/external/dataSources/general/inMemory/inMemoryGeneralDataSource';
-import { FakePaymentDataSource } from 'src-clean/external/dataSources/payment/fake/fakePaymentDataSource';
+import { DataSource } from 'src-clean/common/dataSource/dataSource.interface';
 
 describe('FindStoreByIdUseCase', () => {
   let useCase: FindStoreByIdUseCase;
   let storeGateway: StoreGateway;
+  let mockDataSource: Partial<DataSource>;
 
   beforeEach(() => {
-    const inMemoryDataSource = new InMemoryGeneralDataSource();
-    const fakePaymentDataSource = new FakePaymentDataSource();
-    const dataSource = new DataSourceProxy(
-      inMemoryDataSource,
-      fakePaymentDataSource,
-    );
+    mockDataSource = {
+      findStoreById: jest.fn(),
+      saveStore: jest.fn(),
+    };
 
-    storeGateway = new StoreGateway(dataSource);
+    storeGateway = new StoreGateway(mockDataSource as DataSource);
     useCase = new FindStoreByIdUseCase(storeGateway);
   });
 
@@ -35,7 +32,20 @@ describe('FindStoreByIdUseCase', () => {
       phone: BrazilianPhone.create('5511999999999').value!,
     });
 
-    await storeGateway.saveStore(store.value!);
+    const mockStoreDTO = {
+      id: store.value!.id,
+      name: 'Test Store',
+      fantasy_name: 'Test Fantasy Store',
+      email: 'store@example.com',
+      cnpj: '11222333000181',
+      phone: '5511999999999',
+      salt: store.value!.salt,
+      password_hash: store.value!.passwordHash,
+      created_at: store.value!.createdAt.toISOString(),
+      totems: [],
+    };
+
+    (mockDataSource.findStoreById as jest.Mock).mockResolvedValue(mockStoreDTO);
 
     const result = await useCase.execute(store.value!.id);
 
@@ -50,6 +60,8 @@ describe('FindStoreByIdUseCase', () => {
   });
 
   it('should return ResourceNotFoundException for non-existing store', async () => {
+    (mockDataSource.findStoreById as jest.Mock).mockResolvedValue(null);
+
     const result = await useCase.execute('nonexistent');
 
     expect(result.error).toBeInstanceOf(ResourceNotFoundException);
@@ -73,7 +85,20 @@ describe('FindStoreByIdUseCase', () => {
       phone: BrazilianPhone.create(phone).value!,
     });
 
-    await storeGateway.saveStore(store.value!);
+    const mockStoreDTO = {
+      id: store.value!.id,
+      name: storeName,
+      fantasy_name: fantasyName,
+      email: email,
+      cnpj: cnpj,
+      phone: phone,
+      salt: store.value!.salt,
+      password_hash: store.value!.passwordHash,
+      created_at: store.value!.createdAt.toISOString(),
+      totems: [],
+    };
+
+    (mockDataSource.findStoreById as jest.Mock).mockResolvedValue(mockStoreDTO);
 
     const result = await useCase.execute(store.value!.id);
 
