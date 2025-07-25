@@ -17,9 +17,11 @@ describe('AddTotemUseCase', () => {
   let useCase: AddTotemUseCase;
   let storeGateway: StoreGateway;
   let findStoreByIdUseCase: FindStoreByIdUseCase;
+  let mockGeneralDataSource: jest.Mocked<GeneralDataSource>;
 
   beforeEach(() => {
-    const mockGeneralDataSource: jest.Mocked<GeneralDataSource> = {
+    // Create mock data sources
+    mockGeneralDataSource = {
       findStoreByEmail: jest.fn(),
       findStoreByCnpj: jest.fn(),
       findStoreByName: jest.fn(),
@@ -80,7 +82,22 @@ describe('AddTotemUseCase', () => {
       phone: BrazilianPhone.create('5511999999999').value!,
     });
 
-    await storeGateway.saveStore(store.value!);
+    // Configure mock to return the store data
+    const mockStoreDTO = {
+      id: store.value!.id,
+      name: 'Store Name',
+      fantasy_name: 'Fantasy Name',
+      email: 'email@example.com',
+      cnpj: '11222333000181',
+      salt: store.value!.salt,
+      password_hash: store.value!.passwordHash,
+      phone: '5511999999999',
+      created_at: new Date().toISOString(),
+      totems: [],
+    };
+
+    mockGeneralDataSource.findStoreById.mockResolvedValue(mockStoreDTO);
+    mockGeneralDataSource.saveStore.mockResolvedValue(undefined);
 
     const result = await useCase.execute({
       storeId: store.value!.id,
@@ -94,6 +111,9 @@ describe('AddTotemUseCase', () => {
   it('should fail to create a totem if the store does not exist', async () => {
     const storeId = 'non-existent-store-id';
     const totemName = 'New Totem';
+
+    // Configure mock to return null for non-existing store
+    mockGeneralDataSource.findStoreById.mockResolvedValue(null);
 
     const result = await useCase.execute({ storeId, totemName });
 
@@ -117,7 +137,29 @@ describe('AddTotemUseCase', () => {
 
     store.value!.addTotem(totem.value!);
 
-    await storeGateway.saveStore(store.value!);
+    // Configure mock to return store with existing totem
+    const mockStoreDTO = {
+      id: store.value!.id,
+      name: 'Store Name',
+      fantasy_name: 'Fantasy Name',
+      email: 'email@example.com',
+      cnpj: '11222333000181',
+      salt: store.value!.salt,
+      password_hash: store.value!.passwordHash,
+      phone: '5511999999999',
+      created_at: new Date().toISOString(),
+      totems: [
+        {
+          id: totem.value!.id,
+          name: totemName,
+          token_access: totem.value!.tokenAccess,
+          status: 'active',
+          created_at: new Date().toISOString(),
+        },
+      ],
+    };
+
+    mockGeneralDataSource.findStoreById.mockResolvedValue(mockStoreDTO);
 
     const result = await useCase.execute({
       storeId: store.value!.id,

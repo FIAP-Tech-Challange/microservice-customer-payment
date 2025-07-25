@@ -20,8 +20,10 @@ describe('CreateStoreWithDefaultCategoriesUseCase', () => {
   let createCategoryUseCase: CreateCategoryUseCase;
   let findStoreByIdUseCase: FindStoreByIdUseCase;
 
+  let mockGeneralDataSource: jest.Mocked<GeneralDataSource>;
+
   beforeEach(() => {
-    const mockGeneralDataSource: jest.Mocked<GeneralDataSource> = {
+    mockGeneralDataSource = {
       findStoreByEmail: jest.fn(),
       findStoreByCnpj: jest.fn(),
       findStoreByName: jest.fn(),
@@ -81,6 +83,13 @@ describe('CreateStoreWithDefaultCategoriesUseCase', () => {
   });
 
   it('should create a store successfully', async () => {
+    // Configure mocks to simulate store creation success
+    mockGeneralDataSource.findStoreByEmail.mockResolvedValue(null);
+    mockGeneralDataSource.findStoreByCnpj.mockResolvedValue(null);
+    mockGeneralDataSource.findStoreByName.mockResolvedValue(null);
+    mockGeneralDataSource.saveStore.mockResolvedValue();
+    mockGeneralDataSource.saveCategory.mockResolvedValue();
+
     const result = await useCase.execute({
       cnpj: '11222333000181',
       email: 'email@example.com',
@@ -103,6 +112,22 @@ describe('CreateStoreWithDefaultCategoriesUseCase', () => {
     expect(result.value!.salt).toBeDefined();
     expect(result.value!.passwordHash).toBeDefined();
 
+    // Mock findStoreById to return the created store
+    const mockStoreDTO = {
+      id: result.value!.id,
+      name: 'Store Name',
+      fantasy_name: 'Fantasy Name',
+      email: 'email@example.com',
+      cnpj: '11222333000181',
+      salt: result.value!.salt,
+      password_hash: result.value!.passwordHash,
+      phone: '5511999999999',
+      created_at: result.value!.createdAt.toISOString(),
+      totems: [],
+    };
+
+    mockGeneralDataSource.findStoreById.mockResolvedValue(mockStoreDTO);
+
     const gatewayStore = await storeGateway.findStoreById(result.value!.id);
     expect(gatewayStore.error).toBeUndefined();
     expect(gatewayStore.value).toBeInstanceOf(Store);
@@ -121,6 +146,13 @@ describe('CreateStoreWithDefaultCategoriesUseCase', () => {
   });
 
   it('should fail to create a store with the same email', async () => {
+    // Configure mocks for successful first store creation
+    mockGeneralDataSource.findStoreByEmail.mockResolvedValueOnce(null);
+    mockGeneralDataSource.findStoreByCnpj.mockResolvedValueOnce(null);
+    mockGeneralDataSource.findStoreByName.mockResolvedValueOnce(null);
+    mockGeneralDataSource.saveStore.mockResolvedValue();
+    mockGeneralDataSource.saveCategory.mockResolvedValue();
+
     await useCase.execute({
       cnpj: '11222333000181',
       email: 'email@example.com',
@@ -129,6 +161,24 @@ describe('CreateStoreWithDefaultCategoriesUseCase', () => {
       phone: '5511999999999',
       plainPassword: 'password123',
     });
+
+    // Configure mocks to simulate email already exists
+    const existingStoreDTO = {
+      id: 'existing-store-id',
+      name: 'Store Name',
+      fantasy_name: 'Fantasy Name',
+      email: 'email@example.com',
+      cnpj: '11222333000181',
+      salt: 'some-salt',
+      password_hash: 'some-hash',
+      phone: '5511999999999',
+      created_at: new Date().toISOString(),
+      totems: [],
+    };
+
+    mockGeneralDataSource.findStoreByEmail.mockResolvedValue(existingStoreDTO);
+    mockGeneralDataSource.findStoreByCnpj.mockResolvedValue(null);
+    mockGeneralDataSource.findStoreByName.mockResolvedValue(null);
 
     const result = await useCase.execute({
       cnpj: '75914784000162',
@@ -144,6 +194,13 @@ describe('CreateStoreWithDefaultCategoriesUseCase', () => {
   });
 
   it('should fail to create a store with the same CNPJ', async () => {
+    // Configure mocks for successful first store creation
+    mockGeneralDataSource.findStoreByEmail.mockResolvedValueOnce(null);
+    mockGeneralDataSource.findStoreByCnpj.mockResolvedValueOnce(null);
+    mockGeneralDataSource.findStoreByName.mockResolvedValueOnce(null);
+    mockGeneralDataSource.saveStore.mockResolvedValue();
+    mockGeneralDataSource.saveCategory.mockResolvedValue();
+
     await useCase.execute({
       cnpj: '11222333000181',
       email: 'email@example.com',
@@ -152,6 +209,24 @@ describe('CreateStoreWithDefaultCategoriesUseCase', () => {
       phone: '5511999999999',
       plainPassword: 'password123',
     });
+
+    // Configure mocks to simulate CNPJ already exists
+    const existingStoreDTO = {
+      id: 'existing-store-id',
+      name: 'Store Name',
+      fantasy_name: 'Fantasy Name',
+      email: 'email@example.com',
+      cnpj: '11222333000181',
+      salt: 'some-salt',
+      password_hash: 'some-hash',
+      phone: '5511999999999',
+      created_at: new Date().toISOString(),
+      totems: [],
+    };
+
+    mockGeneralDataSource.findStoreByEmail.mockResolvedValue(null);
+    mockGeneralDataSource.findStoreByCnpj.mockResolvedValue(existingStoreDTO);
+    mockGeneralDataSource.findStoreByName.mockResolvedValue(null);
 
     const result = await useCase.execute({
       cnpj: '11222333000181',
@@ -167,6 +242,13 @@ describe('CreateStoreWithDefaultCategoriesUseCase', () => {
   });
 
   it('should fail to create a store with the same name', async () => {
+    // Configure mocks for successful first store creation
+    mockGeneralDataSource.findStoreByEmail.mockResolvedValueOnce(null);
+    mockGeneralDataSource.findStoreByCnpj.mockResolvedValueOnce(null);
+    mockGeneralDataSource.findStoreByName.mockResolvedValueOnce(null);
+    mockGeneralDataSource.saveStore.mockResolvedValue();
+    mockGeneralDataSource.saveCategory.mockResolvedValue();
+
     await useCase.execute({
       cnpj: '11222333000181',
       email: 'email@example.com',
@@ -175,6 +257,24 @@ describe('CreateStoreWithDefaultCategoriesUseCase', () => {
       phone: '5511999999999',
       plainPassword: 'password123',
     });
+
+    // Configure mocks to simulate name already exists
+    const existingStoreDTO = {
+      id: 'existing-store-id',
+      name: 'Store Name',
+      fantasy_name: 'Fantasy Name',
+      email: 'email@example.com',
+      cnpj: '11222333000181',
+      salt: 'some-salt',
+      password_hash: 'some-hash',
+      phone: '5511999999999',
+      created_at: new Date().toISOString(),
+      totems: [],
+    };
+
+    mockGeneralDataSource.findStoreByEmail.mockResolvedValue(null);
+    mockGeneralDataSource.findStoreByCnpj.mockResolvedValue(null);
+    mockGeneralDataSource.findStoreByName.mockResolvedValue(existingStoreDTO);
 
     const result = await useCase.execute({
       cnpj: '75914784000162',
@@ -190,6 +290,13 @@ describe('CreateStoreWithDefaultCategoriesUseCase', () => {
   });
 
   it('should create the base categories for the store', async () => {
+    // Configure mocks for successful store creation
+    mockGeneralDataSource.findStoreByEmail.mockResolvedValue(null);
+    mockGeneralDataSource.findStoreByCnpj.mockResolvedValue(null);
+    mockGeneralDataSource.findStoreByName.mockResolvedValue(null);
+    mockGeneralDataSource.saveStore.mockResolvedValue();
+    mockGeneralDataSource.saveCategory.mockResolvedValue();
+
     const result = await useCase.execute({
       cnpj: '11222333000181',
       email: 'email@example.com',
@@ -201,6 +308,42 @@ describe('CreateStoreWithDefaultCategoriesUseCase', () => {
 
     expect(result.error).toBeUndefined();
     expect(result.value).toBeInstanceOf(Store);
+
+    // Mock store for category gateway calls
+    const mockStoreDTO = {
+      id: result.value!.id,
+      name: 'Store Name',
+      fantasy_name: 'Fantasy Name',
+      email: 'email@example.com',
+      cnpj: '11222333000181',
+      salt: result.value!.salt,
+      password_hash: result.value!.passwordHash,
+      phone: '5511999999999',
+      created_at: result.value!.createdAt.toISOString(),
+      totems: [],
+    };
+
+    mockGeneralDataSource.findStoreById.mockResolvedValue(mockStoreDTO);
+
+    // Mock category responses
+    const createMockCategoryDTO = (name: string, id: string) => ({
+      id,
+      name,
+      store_id: result.value!.id,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      products: [],
+    });
+
+    mockGeneralDataSource.findCategoryByNameAndStoreId
+      .mockResolvedValueOnce(createMockCategoryDTO('Lanche', 'lanche-id'))
+      .mockResolvedValueOnce(
+        createMockCategoryDTO('Acompanhamento', 'acompanhamento-id'),
+      )
+      .mockResolvedValueOnce(createMockCategoryDTO('Bebida', 'bebida-id'))
+      .mockResolvedValueOnce(
+        createMockCategoryDTO('Sobremesa', 'sobremesa-id'),
+      );
 
     const categories = await Promise.all([
       categoryGateway.findCategoryByName('Lanche', result.value!.id),

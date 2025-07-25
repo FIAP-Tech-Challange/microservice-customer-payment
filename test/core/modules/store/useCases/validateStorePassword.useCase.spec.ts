@@ -16,9 +16,10 @@ describe('ValidateStorePasswordUseCase', () => {
   let useCase: ValidateStorePasswordUseCase;
   let storeGateway: StoreGateway;
   let findStoreByEmailUseCase: FindStoreByEmailUseCase;
+  let mockGeneralDataSource: jest.Mocked<GeneralDataSource>;
 
   beforeEach(() => {
-    const mockGeneralDataSource: jest.Mocked<GeneralDataSource> = {
+    mockGeneralDataSource = {
       findStoreByEmail: jest.fn(),
       findStoreByCnpj: jest.fn(),
       findStoreByName: jest.fn(),
@@ -80,7 +81,21 @@ describe('ValidateStorePasswordUseCase', () => {
       phone: BrazilianPhone.create('5511999999999').value!,
     });
 
-    await storeGateway.saveStore(store.value!);
+    // Configure mock to return the store data
+    const mockStoreDTO = {
+      id: store.value!.id,
+      name: 'Store Name',
+      fantasy_name: 'Fantasy Name',
+      email: email,
+      cnpj: '11222333000181',
+      salt: store.value!.salt,
+      password_hash: store.value!.passwordHash,
+      phone: '5511999999999',
+      created_at: new Date().toISOString(),
+      totems: [],
+    };
+
+    mockGeneralDataSource.findStoreByEmail.mockResolvedValue(mockStoreDTO);
 
     const result = await useCase.execute({
       email,
@@ -105,7 +120,21 @@ describe('ValidateStorePasswordUseCase', () => {
       phone: BrazilianPhone.create('5511999999999').value!,
     });
 
-    await storeGateway.saveStore(store.value!);
+    // Configure mock to return the store data with correct password hash
+    const mockStoreDTO = {
+      id: store.value!.id,
+      name: 'Store Name',
+      fantasy_name: 'Fantasy Name',
+      email: email,
+      cnpj: '11222333000181',
+      salt: store.value!.salt,
+      password_hash: store.value!.passwordHash,
+      phone: '5511999999999',
+      created_at: new Date().toISOString(),
+      totems: [],
+    };
+
+    mockGeneralDataSource.findStoreByEmail.mockResolvedValue(mockStoreDTO);
 
     const result = await useCase.execute({
       email,
@@ -117,6 +146,9 @@ describe('ValidateStorePasswordUseCase', () => {
   });
 
   it('should fail to validate password for non-existing store', async () => {
+    // Mock returns null for non-existing store
+    mockGeneralDataSource.findStoreByEmail.mockResolvedValue(null);
+
     const result = await useCase.execute({
       email: 'nonexistent@example.com',
       password: 'password123',
@@ -157,7 +189,21 @@ describe('ValidateStorePasswordUseCase', () => {
         phone: BrazilianPhone.create('5511999999999').value!,
       });
 
-      await storeGateway.saveStore(store.value!);
+      // Configure mock to return store data for this email
+      const mockStoreDTO = {
+        id: store.value!.id,
+        name: `Store ${email}`,
+        fantasy_name: `Fantasy ${email}`,
+        email: email,
+        cnpj: '11222333000181',
+        salt: store.value!.salt,
+        password_hash: store.value!.passwordHash,
+        phone: '5511999999999',
+        created_at: new Date().toISOString(),
+        totems: [],
+      };
+
+      mockGeneralDataSource.findStoreByEmail.mockResolvedValue(mockStoreDTO);
 
       const result = await useCase.execute({
         email,
@@ -182,7 +228,21 @@ describe('ValidateStorePasswordUseCase', () => {
       phone: BrazilianPhone.create('5511999999999').value!,
     });
 
-    await storeGateway.saveStore(store.value!);
+    // Configure mock to return store data
+    const mockStoreDTO = {
+      id: store.value!.id,
+      name: 'Store Name',
+      fantasy_name: 'Fantasy Name',
+      email: email,
+      cnpj: '11222333000181',
+      salt: store.value!.salt,
+      password_hash: store.value!.passwordHash,
+      phone: '5511999999999',
+      created_at: new Date().toISOString(),
+      totems: [],
+    };
+
+    mockGeneralDataSource.findStoreByEmail.mockResolvedValue(mockStoreDTO);
 
     const result = await useCase.execute({
       email,
