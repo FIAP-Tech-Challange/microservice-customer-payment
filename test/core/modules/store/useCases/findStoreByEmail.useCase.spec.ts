@@ -1,44 +1,45 @@
-import { ResourceInvalidException } from 'src/common/exceptions/resourceInvalidException';
-import { ResourceNotFoundException } from 'src/common/exceptions/resourceNotFoundException';
-import { BrazilianPhone } from 'src/core/common/valueObjects/brazilian-phone.vo';
-import { CNPJ } from 'src/core/common/valueObjects/cnpj.vo';
-import { Email } from 'src/core/common/valueObjects/email.vo';
-import { Store } from 'src/core/modules/store/entities/store.entity';
-import { StoreGateway } from 'src/core/modules/store/gateways/store.gateway';
-import { FindStoreByEmailUseCase } from 'src/core/modules/store/useCases/findStoreByEmail.useCase';
-import { DataSourceProxy } from 'src/external/dataSources/dataSource.proxy';
-import { InMemoryGeneralDataSource } from 'src/external/dataSources/general/inMemory/inMemoryGeneralDataSource';
-import { FakePaymentDataSource } from 'src/external/dataSources/payment/fake/fakePaymentDataSource';
+import { ResourceInvalidException } from 'src-clean/common/exceptions/resourceInvalidException';
+import { ResourceNotFoundException } from 'src-clean/common/exceptions/resourceNotFoundException';
+import { Store } from 'src-clean/core/modules/store/entities/store.entity';
+import { StoreGateway } from 'src-clean/core/modules/store/gateways/store.gateway';
+import { FindStoreByEmailUseCase } from 'src-clean/core/modules/store/useCases/findStoreByEmail.useCase';
+import { DataSource } from 'src-clean/common/dataSource/dataSource.interface';
 
 describe('FindStoreByEmailUseCase', () => {
   let useCase: FindStoreByEmailUseCase;
   let storeGateway: StoreGateway;
+  let mockDataSource: Partial<DataSource>;
 
   beforeEach(() => {
-    const inMemoryDataSource = new InMemoryGeneralDataSource();
-    const fakePaymentDataSource = new FakePaymentDataSource();
-    const dataSource = new DataSourceProxy(
-      inMemoryDataSource,
-      fakePaymentDataSource,
-    );
+    mockDataSource = {
+      findStoreByEmail: jest.fn(),
+      saveStore: jest.fn(),
+    };
 
-    storeGateway = new StoreGateway(dataSource);
+    storeGateway = new StoreGateway(mockDataSource as DataSource);
     useCase = new FindStoreByEmailUseCase(storeGateway);
   });
 
   it('should find store successfully by email', async () => {
     const email = 'store@example.com';
 
-    const store = Store.create({
+    const mockStoreDTO = {
+      id: 'store-123',
       name: 'Test Store',
-      fantasyName: 'Test Fantasy Store',
-      email: Email.create(email).value!,
-      cnpj: CNPJ.create('11222333000181').value!,
-      plainPassword: 'password123',
-      phone: BrazilianPhone.create('5511999999999').value!,
-    });
+      fantasy_name: 'Test Fantasy Store',
+      email: email,
+      cnpj: '11222333000181',
+      salt: 'test_salt',
+      password_hash: 'hashed_password',
+      phone: '5511999999999',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      totems: [],
+    };
 
-    await storeGateway.saveStore(store.value!);
+    (mockDataSource.findStoreByEmail as jest.Mock).mockResolvedValue(
+      mockStoreDTO,
+    );
 
     const result = await useCase.execute(email);
 
@@ -52,6 +53,8 @@ describe('FindStoreByEmailUseCase', () => {
   });
 
   it('should return ResourceNotFoundException for non-existing store', async () => {
+    (mockDataSource.findStoreByEmail as jest.Mock).mockResolvedValue(null);
+
     const result = await useCase.execute('nonexistent@example.com');
 
     expect(result.error).toBeInstanceOf(ResourceNotFoundException);
@@ -68,21 +71,26 @@ describe('FindStoreByEmailUseCase', () => {
   });
 
   it('should handle email normalization correctly', async () => {
-    const originalEmail = 'Test.Store@Example.COM';
     const normalizedEmail = 'test.store@example.com';
 
-    const store = Store.create({
+    const mockStoreDTO = {
+      id: 'store-123',
       name: 'Test Store',
-      fantasyName: 'Test Fantasy Store',
-      email: Email.create(originalEmail).value!,
-      cnpj: CNPJ.create('11222333000181').value!,
-      plainPassword: 'password123',
-      phone: BrazilianPhone.create('5511999999999').value!,
-    });
+      fantasy_name: 'Test Fantasy Store',
+      email: normalizedEmail,
+      cnpj: '11222333000181',
+      salt: 'test_salt',
+      password_hash: 'hashed_password',
+      phone: '5511999999999',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      totems: [],
+    };
 
-    await storeGateway.saveStore(store.value!);
+    (mockDataSource.findStoreByEmail as jest.Mock).mockResolvedValue(
+      mockStoreDTO,
+    );
 
-    // Should find store with normalized email
     const result = await useCase.execute(normalizedEmail);
 
     expect(result.error).toBeUndefined();
@@ -94,16 +102,23 @@ describe('FindStoreByEmailUseCase', () => {
     const emailWithSpaces = '   store@example.com   ';
     const trimmedEmail = 'store@example.com';
 
-    const store = Store.create({
+    const mockStoreDTO = {
+      id: 'store-123',
       name: 'Test Store',
-      fantasyName: 'Test Fantasy Store',
-      email: Email.create(trimmedEmail).value!,
-      cnpj: CNPJ.create('11222333000181').value!,
-      plainPassword: 'password123',
-      phone: BrazilianPhone.create('5511999999999').value!,
-    });
+      fantasy_name: 'Test Fantasy Store',
+      email: trimmedEmail,
+      cnpj: '11222333000181',
+      salt: 'test_salt',
+      password_hash: 'hashed_password',
+      phone: '5511999999999',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      totems: [],
+    };
 
-    await storeGateway.saveStore(store.value!);
+    (mockDataSource.findStoreByEmail as jest.Mock).mockResolvedValue(
+      mockStoreDTO,
+    );
 
     const result = await useCase.execute(emailWithSpaces);
 
@@ -120,24 +135,27 @@ describe('FindStoreByEmailUseCase', () => {
       'user123@subdomain.example.com',
     ];
 
-    // Create stores with different email formats
     for (let i = 0; i < emails.length; i++) {
       const email = emails[i];
-      const store = Store.create({
+
+      const mockStoreDTO = {
+        id: `store-${i}`,
         name: `Store ${i + 1}`,
-        fantasyName: `Fantasy Store ${i + 1}`,
-        email: Email.create(email).value!,
-        cnpj: CNPJ.create('11222333000181').value!,
-        plainPassword: 'password123',
-        phone: BrazilianPhone.create('5511999999999').value!,
-      });
+        fantasy_name: `Fantasy Store ${i + 1}`,
+        email: email,
+        cnpj: '11222333000181',
+        salt: 'test_salt',
+        password_hash: 'hashed_password',
+        phone: '5511999999999',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        totems: [],
+      };
 
-      await storeGateway.saveStore(store.value!);
-    }
+      (mockDataSource.findStoreByEmail as jest.Mock).mockResolvedValue(
+        mockStoreDTO,
+      );
 
-    // Test finding each store
-    for (let i = 0; i < emails.length; i++) {
-      const email = emails[i];
       const result = await useCase.execute(email);
 
       expect(result.error).toBeUndefined();
@@ -176,16 +194,23 @@ describe('FindStoreByEmailUseCase', () => {
     const cnpj = '11222333000181';
     const phone = '5511999999999';
 
-    const store = Store.create({
+    const mockStoreDTO = {
+      id: 'store-complete',
       name: storeName,
-      fantasyName: fantasyName,
-      email: Email.create(email).value!,
-      cnpj: CNPJ.create(cnpj).value!,
-      plainPassword: 'password123',
-      phone: BrazilianPhone.create(phone).value!,
-    });
+      fantasy_name: fantasyName,
+      email: email,
+      cnpj: cnpj,
+      salt: 'test_salt',
+      password_hash: 'hashed_password',
+      phone: phone,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      totems: [],
+    };
 
-    await storeGateway.saveStore(store.value!);
+    (mockDataSource.findStoreByEmail as jest.Mock).mockResolvedValue(
+      mockStoreDTO,
+    );
 
     const result = await useCase.execute(email);
 

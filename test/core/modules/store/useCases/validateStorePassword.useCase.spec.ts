@@ -1,27 +1,66 @@
-import { ResourceInvalidException } from 'src/common/exceptions/resourceInvalidException';
-import { ResourceNotFoundException } from 'src/common/exceptions/resourceNotFoundException';
-import { BrazilianPhone } from 'src/core/common/valueObjects/brazilian-phone.vo';
-import { CNPJ } from 'src/core/common/valueObjects/cnpj.vo';
-import { Email } from 'src/core/common/valueObjects/email.vo';
-import { Store } from 'src/core/modules/store/entities/store.entity';
-import { StoreGateway } from 'src/core/modules/store/gateways/store.gateway';
-import { FindStoreByEmailUseCase } from 'src/core/modules/store/useCases/findStoreByEmail.useCase';
-import { ValidateStorePasswordUseCase } from 'src/core/modules/store/useCases/validateStorePassword.useCase';
-import { DataSourceProxy } from 'src/external/dataSources/dataSource.proxy';
-import { InMemoryGeneralDataSource } from 'src/external/dataSources/general/inMemory/inMemoryGeneralDataSource';
-import { FakePaymentDataSource } from 'src/external/dataSources/payment/fake/fakePaymentDataSource';
+import { ResourceInvalidException } from 'src-clean/common/exceptions/resourceInvalidException';
+import { ResourceNotFoundException } from 'src-clean/common/exceptions/resourceNotFoundException';
+import { BrazilianPhone } from 'src-clean/core/common/valueObjects/brazilian-phone.vo';
+import { CNPJ } from 'src-clean/core/common/valueObjects/cnpj.vo';
+import { Email } from 'src-clean/core/common/valueObjects/email.vo';
+import { Store } from 'src-clean/core/modules/store/entities/store.entity';
+import { StoreGateway } from 'src-clean/core/modules/store/gateways/store.gateway';
+import { FindStoreByEmailUseCase } from 'src-clean/core/modules/store/useCases/findStoreByEmail.useCase';
+import { ValidateStorePasswordUseCase } from 'src-clean/core/modules/store/useCases/validateStorePassword.useCase';
+import { DataSourceProxy } from 'src-clean/external/dataSources/dataSource.proxy';
+import { GeneralDataSource } from 'src-clean/external/dataSources/general/general.dataSource';
+import { FakePaymentDataSource } from 'src-clean/external/dataSources/payment/fake/fakePaymentDataSource';
+import { NotificationDataSource } from 'src-clean/external/dataSources/notification/notification.dataSource';
 
 describe('ValidateStorePasswordUseCase', () => {
   let useCase: ValidateStorePasswordUseCase;
   let storeGateway: StoreGateway;
   let findStoreByEmailUseCase: FindStoreByEmailUseCase;
+  let mockGeneralDataSource: jest.Mocked<GeneralDataSource>;
 
   beforeEach(() => {
-    const inMemoryDataSource = new InMemoryGeneralDataSource();
+    mockGeneralDataSource = {
+      findStoreByEmail: jest.fn(),
+      findStoreByCnpj: jest.fn(),
+      findStoreByName: jest.fn(),
+      findStoreById: jest.fn(),
+      saveStore: jest.fn(),
+      findStoreByTotemAccessToken: jest.fn(),
+      findAllCategoriesByStoreId: jest.fn(),
+      saveCategory: jest.fn(),
+      findCategoryById: jest.fn(),
+      findCategoryByNameAndStoreId: jest.fn(),
+      findProductsById: jest.fn(),
+      savePayment: jest.fn(),
+      findPaymentById: jest.fn(),
+      findCustomerById: jest.fn(),
+      findCustomerByCpf: jest.fn(),
+      findCustomerByEmail: jest.fn(),
+      findAllCustomers: jest.fn(),
+      saveCustomer: jest.fn(),
+      deleteCustomer: jest.fn(),
+      saveOrder: jest.fn(),
+      deleteOrder: jest.fn(),
+      deleteOrderItem: jest.fn(),
+      getAllOrders: jest.fn(),
+      findOrderById: jest.fn(),
+      findByOrderItemId: jest.fn(),
+      getFilteredAndSortedOrders: jest.fn(),
+      saveNotification: jest.fn(),
+    };
+
+    const mockNotificationDataSource: jest.Mocked<NotificationDataSource> = {
+      sendSMSNotification: jest.fn(),
+      sendWhatsappNotification: jest.fn(),
+      sendEmailNotification: jest.fn(),
+      sendMonitorNotification: jest.fn(),
+    };
+
     const fakePaymentDataSource = new FakePaymentDataSource();
     const dataSource = new DataSourceProxy(
-      inMemoryDataSource,
+      mockGeneralDataSource,
       fakePaymentDataSource,
+      mockNotificationDataSource,
     );
 
     storeGateway = new StoreGateway(dataSource);
@@ -42,7 +81,21 @@ describe('ValidateStorePasswordUseCase', () => {
       phone: BrazilianPhone.create('5511999999999').value!,
     });
 
-    await storeGateway.saveStore(store.value!);
+    // Configure mock to return the store data
+    const mockStoreDTO = {
+      id: store.value!.id,
+      name: 'Store Name',
+      fantasy_name: 'Fantasy Name',
+      email: email,
+      cnpj: '11222333000181',
+      salt: store.value!.salt,
+      password_hash: store.value!.passwordHash,
+      phone: '5511999999999',
+      created_at: new Date().toISOString(),
+      totems: [],
+    };
+
+    mockGeneralDataSource.findStoreByEmail.mockResolvedValue(mockStoreDTO);
 
     const result = await useCase.execute({
       email,
@@ -67,7 +120,21 @@ describe('ValidateStorePasswordUseCase', () => {
       phone: BrazilianPhone.create('5511999999999').value!,
     });
 
-    await storeGateway.saveStore(store.value!);
+    // Configure mock to return the store data with correct password hash
+    const mockStoreDTO = {
+      id: store.value!.id,
+      name: 'Store Name',
+      fantasy_name: 'Fantasy Name',
+      email: email,
+      cnpj: '11222333000181',
+      salt: store.value!.salt,
+      password_hash: store.value!.passwordHash,
+      phone: '5511999999999',
+      created_at: new Date().toISOString(),
+      totems: [],
+    };
+
+    mockGeneralDataSource.findStoreByEmail.mockResolvedValue(mockStoreDTO);
 
     const result = await useCase.execute({
       email,
@@ -79,6 +146,9 @@ describe('ValidateStorePasswordUseCase', () => {
   });
 
   it('should fail to validate password for non-existing store', async () => {
+    // Mock returns null for non-existing store
+    mockGeneralDataSource.findStoreByEmail.mockResolvedValue(null);
+
     const result = await useCase.execute({
       email: 'nonexistent@example.com',
       password: 'password123',
@@ -119,7 +189,21 @@ describe('ValidateStorePasswordUseCase', () => {
         phone: BrazilianPhone.create('5511999999999').value!,
       });
 
-      await storeGateway.saveStore(store.value!);
+      // Configure mock to return store data for this email
+      const mockStoreDTO = {
+        id: store.value!.id,
+        name: `Store ${email}`,
+        fantasy_name: `Fantasy ${email}`,
+        email: email,
+        cnpj: '11222333000181',
+        salt: store.value!.salt,
+        password_hash: store.value!.passwordHash,
+        phone: '5511999999999',
+        created_at: new Date().toISOString(),
+        totems: [],
+      };
+
+      mockGeneralDataSource.findStoreByEmail.mockResolvedValue(mockStoreDTO);
 
       const result = await useCase.execute({
         email,
@@ -144,7 +228,21 @@ describe('ValidateStorePasswordUseCase', () => {
       phone: BrazilianPhone.create('5511999999999').value!,
     });
 
-    await storeGateway.saveStore(store.value!);
+    // Configure mock to return store data
+    const mockStoreDTO = {
+      id: store.value!.id,
+      name: 'Store Name',
+      fantasy_name: 'Fantasy Name',
+      email: email,
+      cnpj: '11222333000181',
+      salt: store.value!.salt,
+      password_hash: store.value!.passwordHash,
+      phone: '5511999999999',
+      created_at: new Date().toISOString(),
+      totems: [],
+    };
+
+    mockGeneralDataSource.findStoreByEmail.mockResolvedValue(mockStoreDTO);
 
     const result = await useCase.execute({
       email,

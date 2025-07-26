@@ -1,28 +1,68 @@
-import { ResourceConflictException } from 'src/common/exceptions/resourceConflictException';
-import { ResourceNotFoundException } from 'src/common/exceptions/resourceNotFoundException';
-import { BrazilianPhone } from 'src/core/common/valueObjects/brazilian-phone.vo';
-import { CNPJ } from 'src/core/common/valueObjects/cnpj.vo';
-import { Email } from 'src/core/common/valueObjects/email.vo';
-import { Store } from 'src/core/modules/store/entities/store.entity';
-import { Totem } from 'src/core/modules/store/entities/totem.entity';
-import { StoreGateway } from 'src/core/modules/store/gateways/store.gateway';
-import { AddTotemUseCase } from 'src/core/modules/store/useCases/addTotem.useCase';
-import { FindStoreByIdUseCase } from 'src/core/modules/store/useCases/findStoreById.useCase';
-import { DataSourceProxy } from 'src/external/dataSources/dataSource.proxy';
-import { InMemoryGeneralDataSource } from 'src/external/dataSources/general/inMemory/inMemoryGeneralDataSource';
-import { FakePaymentDataSource } from 'src/external/dataSources/payment/fake/fakePaymentDataSource';
+import { ResourceConflictException } from 'src-clean/common/exceptions/resourceConflictException';
+import { ResourceNotFoundException } from 'src-clean/common/exceptions/resourceNotFoundException';
+import { BrazilianPhone } from 'src-clean/core/common/valueObjects/brazilian-phone.vo';
+import { CNPJ } from 'src-clean/core/common/valueObjects/cnpj.vo';
+import { Email } from 'src-clean/core/common/valueObjects/email.vo';
+import { Store } from 'src-clean/core/modules/store/entities/store.entity';
+import { Totem } from 'src-clean/core/modules/store/entities/totem.entity';
+import { StoreGateway } from 'src-clean/core/modules/store/gateways/store.gateway';
+import { AddTotemUseCase } from 'src-clean/core/modules/store/useCases/addTotem.useCase';
+import { FindStoreByIdUseCase } from 'src-clean/core/modules/store/useCases/findStoreById.useCase';
+import { DataSourceProxy } from 'src-clean/external/dataSources/dataSource.proxy';
+import { GeneralDataSource } from 'src-clean/external/dataSources/general/general.dataSource';
+import { FakePaymentDataSource } from 'src-clean/external/dataSources/payment/fake/fakePaymentDataSource';
+import { NotificationDataSource } from 'src-clean/external/dataSources/notification/notification.dataSource';
 
 describe('AddTotemUseCase', () => {
   let useCase: AddTotemUseCase;
   let storeGateway: StoreGateway;
   let findStoreByIdUseCase: FindStoreByIdUseCase;
+  let mockGeneralDataSource: jest.Mocked<GeneralDataSource>;
 
   beforeEach(() => {
-    const inMemoryDataSource = new InMemoryGeneralDataSource();
+    // Create mock data sources
+    mockGeneralDataSource = {
+      findStoreByEmail: jest.fn(),
+      findStoreByCnpj: jest.fn(),
+      findStoreByName: jest.fn(),
+      findStoreById: jest.fn(),
+      saveStore: jest.fn(),
+      findStoreByTotemAccessToken: jest.fn(),
+      findAllCategoriesByStoreId: jest.fn(),
+      saveCategory: jest.fn(),
+      findCategoryById: jest.fn(),
+      findCategoryByNameAndStoreId: jest.fn(),
+      findProductsById: jest.fn(),
+      savePayment: jest.fn(),
+      findPaymentById: jest.fn(),
+      findCustomerById: jest.fn(),
+      findCustomerByCpf: jest.fn(),
+      findCustomerByEmail: jest.fn(),
+      findAllCustomers: jest.fn(),
+      saveCustomer: jest.fn(),
+      deleteCustomer: jest.fn(),
+      saveOrder: jest.fn(),
+      deleteOrder: jest.fn(),
+      deleteOrderItem: jest.fn(),
+      getAllOrders: jest.fn(),
+      findOrderById: jest.fn(),
+      findByOrderItemId: jest.fn(),
+      getFilteredAndSortedOrders: jest.fn(),
+      saveNotification: jest.fn(),
+    };
+
+    const mockNotificationDataSource: jest.Mocked<NotificationDataSource> = {
+      sendSMSNotification: jest.fn(),
+      sendWhatsappNotification: jest.fn(),
+      sendEmailNotification: jest.fn(),
+      sendMonitorNotification: jest.fn(),
+    };
+
     const fakePaymentDataSource = new FakePaymentDataSource();
     const dataSource = new DataSourceProxy(
-      inMemoryDataSource,
+      mockGeneralDataSource,
       fakePaymentDataSource,
+      mockNotificationDataSource,
     );
 
     storeGateway = new StoreGateway(dataSource);
@@ -42,7 +82,22 @@ describe('AddTotemUseCase', () => {
       phone: BrazilianPhone.create('5511999999999').value!,
     });
 
-    await storeGateway.saveStore(store.value!);
+    // Configure mock to return the store data
+    const mockStoreDTO = {
+      id: store.value!.id,
+      name: 'Store Name',
+      fantasy_name: 'Fantasy Name',
+      email: 'email@example.com',
+      cnpj: '11222333000181',
+      salt: store.value!.salt,
+      password_hash: store.value!.passwordHash,
+      phone: '5511999999999',
+      created_at: new Date().toISOString(),
+      totems: [],
+    };
+
+    mockGeneralDataSource.findStoreById.mockResolvedValue(mockStoreDTO);
+    mockGeneralDataSource.saveStore.mockResolvedValue(undefined);
 
     const result = await useCase.execute({
       storeId: store.value!.id,
@@ -56,6 +111,9 @@ describe('AddTotemUseCase', () => {
   it('should fail to create a totem if the store does not exist', async () => {
     const storeId = 'non-existent-store-id';
     const totemName = 'New Totem';
+
+    // Configure mock to return null for non-existing store
+    mockGeneralDataSource.findStoreById.mockResolvedValue(null);
 
     const result = await useCase.execute({ storeId, totemName });
 
@@ -79,7 +137,29 @@ describe('AddTotemUseCase', () => {
 
     store.value!.addTotem(totem.value!);
 
-    await storeGateway.saveStore(store.value!);
+    // Configure mock to return store with existing totem
+    const mockStoreDTO = {
+      id: store.value!.id,
+      name: 'Store Name',
+      fantasy_name: 'Fantasy Name',
+      email: 'email@example.com',
+      cnpj: '11222333000181',
+      salt: store.value!.salt,
+      password_hash: store.value!.passwordHash,
+      phone: '5511999999999',
+      created_at: new Date().toISOString(),
+      totems: [
+        {
+          id: totem.value!.id,
+          name: totemName,
+          token_access: totem.value!.tokenAccess,
+          status: 'active',
+          created_at: new Date().toISOString(),
+        },
+      ],
+    };
+
+    mockGeneralDataSource.findStoreById.mockResolvedValue(mockStoreDTO);
 
     const result = await useCase.execute({
       storeId: store.value!.id,

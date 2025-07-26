@@ -9,11 +9,10 @@ describe('Totem Entity', () => {
   const MOCKED_TOKEN_ACCESS = 'mocked-token-access';
 
   beforeEach(() => {
-    // Mock generateUUID to return different values for id and tokenAccess
     jest
       .mocked(generateUUID)
-      .mockReturnValueOnce(MOCKED_UUID) // First call for id
-      .mockReturnValueOnce(MOCKED_TOKEN_ACCESS); // Second call for tokenAccess
+      .mockReturnValueOnce(MOCKED_UUID)
+      .mockReturnValueOnce(MOCKED_TOKEN_ACCESS);
   });
 
   afterEach(() => {
@@ -151,7 +150,6 @@ describe('Totem Entity', () => {
       const originalTokenAccess = totem.tokenAccess;
       const originalCreatedAt = totem.createdAt;
 
-      // Properties should be read-only (getters only)
       expect(totem.id).toBe(originalId);
       expect(totem.name).toBe(originalName);
       expect(totem.tokenAccess).toBe(originalTokenAccess);

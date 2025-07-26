@@ -1,28 +1,32 @@
-import { ResourceConflictException } from 'src/common/exceptions/resourceConflictException';
-import { Store } from 'src/core/modules/store/entities/store.entity';
-import { StoreGateway } from 'src/core/modules/store/gateways/store.gateway';
-import { CreateStoreUseCase } from 'src/core/modules/store/useCases/createStore.useCase';
-import { DataSourceProxy } from 'src/external/dataSources/dataSource.proxy';
-import { InMemoryGeneralDataSource } from 'src/external/dataSources/general/inMemory/inMemoryGeneralDataSource';
-import { FakePaymentDataSource } from 'src/external/dataSources/payment/fake/fakePaymentDataSource';
+import { ResourceConflictException } from 'src-clean/common/exceptions/resourceConflictException';
+import { Store } from 'src-clean/core/modules/store/entities/store.entity';
+import { StoreGateway } from 'src-clean/core/modules/store/gateways/store.gateway';
+import { CreateStoreUseCase } from 'src-clean/core/modules/store/useCases/createStore.useCase';
+import { DataSource } from 'src-clean/common/dataSource/dataSource.interface';
 
 describe('CreateStoreUseCase', () => {
   let useCase: CreateStoreUseCase;
   let storeGateway: StoreGateway;
+  let mockDataSource: Partial<DataSource>;
 
   beforeEach(() => {
-    const inMemoryDataSource = new InMemoryGeneralDataSource();
-    const fakePaymentDataSource = new FakePaymentDataSource();
-    const dataSource = new DataSourceProxy(
-      inMemoryDataSource,
-      fakePaymentDataSource,
-    );
+    mockDataSource = {
+      findStoreByEmail: jest.fn(),
+      findStoreByCnpj: jest.fn(),
+      findStoreByName: jest.fn(),
+      saveStore: jest.fn(),
+    };
 
-    storeGateway = new StoreGateway(dataSource);
+    storeGateway = new StoreGateway(mockDataSource as DataSource);
     useCase = new CreateStoreUseCase(storeGateway);
   });
 
   it('should create a store successfully', async () => {
+    (mockDataSource.findStoreByEmail as jest.Mock).mockResolvedValue(null);
+    (mockDataSource.findStoreByCnpj as jest.Mock).mockResolvedValue(null);
+    (mockDataSource.findStoreByName as jest.Mock).mockResolvedValue(null);
+    (mockDataSource.saveStore as jest.Mock).mockResolvedValue(undefined);
+
     const result = await useCase.execute({
       cnpj: '11222333000181',
       email: 'email@example.com',
@@ -45,32 +49,36 @@ describe('CreateStoreUseCase', () => {
     expect(result.value!.salt).toBeDefined();
     expect(result.value!.passwordHash).toBeDefined();
 
-    const gatewayStore = await storeGateway.findStoreById(result.value!.id);
-    expect(gatewayStore.error).toBeUndefined();
-    expect(gatewayStore.value).toBeInstanceOf(Store);
-    expect(gatewayStore.value!.id).toBe(result.value!.id);
-    expect(gatewayStore.value!.name).toBe('Store Name');
-    expect(gatewayStore.value!.fantasyName).toBe('Fantasy Name');
-    expect(gatewayStore.value!.cnpj.toString()).toBe('11222333000181');
-    expect(gatewayStore.value!.email.toString()).toBe('email@example.com');
-    expect(gatewayStore.value!.phone.toString()).toBe('5511999999999');
-    expect(gatewayStore.value!.totems).toEqual([]);
-    expect(gatewayStore.value!.createdAt.toISOString()).toBe(
-      result.value!.createdAt.toISOString(),
+    expect(mockDataSource.saveStore).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: 'Store Name',
+        fantasy_name: 'Fantasy Name',
+        email: 'email@example.com',
+        cnpj: '11222333000181',
+        phone: '5511999999999',
+      }),
     );
-    expect(gatewayStore.value!.salt).toBe(result.value!.salt);
-    expect(gatewayStore.value!.passwordHash).toBe(result.value!.passwordHash);
   });
 
   it('should fail to create a store with the same email', async () => {
-    await useCase.execute({
-      cnpj: '11222333000181',
+    const existingStoreDTO = {
+      id: 'existing-store-id',
+      name: 'Existing Store',
+      fantasy_name: 'Existing Fantasy',
       email: 'email@example.com',
-      fantasyName: 'Fantasy Name',
-      name: 'Store Name',
+      cnpj: '11222333000181',
       phone: '5511999999999',
-      plainPassword: 'password123',
-    });
+      salt: 'some-salt',
+      password_hash: 'some-hash',
+      created_at: new Date().toISOString(),
+      totems: [],
+    };
+
+    (mockDataSource.findStoreByEmail as jest.Mock).mockResolvedValue(
+      existingStoreDTO,
+    );
+    (mockDataSource.findStoreByCnpj as jest.Mock).mockResolvedValue(null);
+    (mockDataSource.findStoreByName as jest.Mock).mockResolvedValue(null);
 
     const result = await useCase.execute({
       cnpj: '75914784000162',
@@ -86,14 +94,24 @@ describe('CreateStoreUseCase', () => {
   });
 
   it('should fail to create a store with the same CNPJ', async () => {
-    await useCase.execute({
+    const existingStoreDTO = {
+      id: 'existing-store-id',
+      name: 'Existing Store',
+      fantasy_name: 'Existing Fantasy',
+      email: 'existing@example.com',
       cnpj: '11222333000181',
-      email: 'email@example.com',
-      fantasyName: 'Fantasy Name',
-      name: 'Store Name',
       phone: '5511999999999',
-      plainPassword: 'password123',
-    });
+      salt: 'some-salt',
+      password_hash: 'some-hash',
+      created_at: new Date().toISOString(),
+      totems: [],
+    };
+
+    (mockDataSource.findStoreByEmail as jest.Mock).mockResolvedValue(null);
+    (mockDataSource.findStoreByCnpj as jest.Mock).mockResolvedValue(
+      existingStoreDTO,
+    );
+    (mockDataSource.findStoreByName as jest.Mock).mockResolvedValue(null);
 
     const result = await useCase.execute({
       cnpj: '11222333000181',
@@ -109,14 +127,24 @@ describe('CreateStoreUseCase', () => {
   });
 
   it('should fail to create a store with the same name', async () => {
-    await useCase.execute({
-      cnpj: '11222333000181',
-      email: 'email@example.com',
-      fantasyName: 'Fantasy Name',
+    const existingStoreDTO = {
+      id: 'existing-store-id',
       name: 'Store Name',
+      fantasy_name: 'Existing Fantasy',
+      email: 'existing@example.com',
+      cnpj: '11222333000181',
       phone: '5511999999999',
-      plainPassword: 'password123',
-    });
+      salt: 'some-salt',
+      password_hash: 'some-hash',
+      created_at: new Date().toISOString(),
+      totems: [],
+    };
+
+    (mockDataSource.findStoreByEmail as jest.Mock).mockResolvedValue(null);
+    (mockDataSource.findStoreByCnpj as jest.Mock).mockResolvedValue(null);
+    (mockDataSource.findStoreByName as jest.Mock).mockResolvedValue(
+      existingStoreDTO,
+    );
 
     const result = await useCase.execute({
       cnpj: '75914784000162',
