@@ -1,5 +1,5 @@
-import { CPF } from 'src-clean/core/common/valueObjects/cpf.vo';
-import { ResourceInvalidException } from 'src-clean/common/exceptions/resourceInvalidException';
+import { CPF } from 'src/core/common/valueObjects/cpf.vo';
+import { ResourceInvalidException } from 'src/common/exceptions/resourceInvalidException';
 
 describe('CPF Value Object', () => {
   describe('create', () => {

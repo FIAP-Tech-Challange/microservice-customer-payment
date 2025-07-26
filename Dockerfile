@@ -1,4 +1,4 @@
-FROM node:22-slim AS builder
+FROM node:24-alpine	 AS builder
 
 WORKDIR /app
 
@@ -8,11 +8,11 @@ RUN npm install
 COPY . .
 RUN npm run build
 
-FROM node:22-slim
+FROM node:24-alpine	
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y postgresql-client
+RUN apk update && apk add --no-cache postgresql-client
 
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/node_modules ./node_modules

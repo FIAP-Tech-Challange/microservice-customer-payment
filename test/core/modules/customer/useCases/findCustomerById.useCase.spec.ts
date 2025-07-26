@@ -1,9 +1,9 @@
-import { FindCustomerByIdUseCase } from 'src-clean/core/modules/customer/useCases/findCustomerById.useCase';
-import { CustomerGateway } from 'src-clean/core/modules/customer/gateways/customer.gateway';
-import { Customer } from 'src-clean/core/modules/customer/entities/customer.entity';
-import { CPF } from 'src-clean/core/common/valueObjects/cpf.vo';
-import { Email } from 'src-clean/core/common/valueObjects/email.vo';
-import { ResourceNotFoundException } from 'src-clean/common/exceptions/resourceNotFoundException';
+import { FindCustomerByIdUseCase } from 'src/core/modules/customer/useCases/findCustomerById.useCase';
+import { CustomerGateway } from 'src/core/modules/customer/gateways/customer.gateway';
+import { Customer } from 'src/core/modules/customer/entities/customer.entity';
+import { CPF } from 'src/core/common/valueObjects/cpf.vo';
+import { Email } from 'src/core/common/valueObjects/email.vo';
+import { ResourceNotFoundException } from 'src/common/exceptions/resourceNotFoundException';
 
 describe('FindCustomerByIdUseCase', () => {
   let mockCustomerGateway: Partial<CustomerGateway>;

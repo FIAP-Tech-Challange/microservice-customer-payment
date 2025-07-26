@@ -1,5 +1,5 @@
-import { CNPJ } from 'src-clean/core/common/valueObjects/cnpj.vo';
-import { ResourceInvalidException } from 'src-clean/common/exceptions/resourceInvalidException';
+import { CNPJ } from 'src/core/common/valueObjects/cnpj.vo';
+import { ResourceInvalidException } from 'src/common/exceptions/resourceInvalidException';
 
 describe('CNPJ Value Object', () => {
   describe('create', () => {

@@ -1,19 +1,18 @@
-jest.mock('src-clean/core/common/utils/uuid.helper');
+jest.mock('src/core/common/utils/uuid.helper');
 
-import { Totem } from 'src-clean/core/modules/store/entities/totem.entity';
-import { ResourceInvalidException } from 'src-clean/common/exceptions/resourceInvalidException';
-import { generateUUID } from 'src-clean/core/common/utils/uuid.helper';
+import { Totem } from 'src/core/modules/store/entities/totem.entity';
+import { ResourceInvalidException } from 'src/common/exceptions/resourceInvalidException';
+import { generateUUID } from 'src/core/common/utils/uuid.helper';
 
 describe('Totem Entity', () => {
   const MOCKED_UUID = 'mocked-uuid';
   const MOCKED_TOKEN_ACCESS = 'mocked-token-access';
 
   beforeEach(() => {
-    // Mock generateUUID to return different values for id and tokenAccess
     jest
       .mocked(generateUUID)
-      .mockReturnValueOnce(MOCKED_UUID) // First call for id
-      .mockReturnValueOnce(MOCKED_TOKEN_ACCESS); // Second call for tokenAccess
+      .mockReturnValueOnce(MOCKED_UUID)
+      .mockReturnValueOnce(MOCKED_TOKEN_ACCESS);
   });
 
   afterEach(() => {
@@ -151,7 +150,6 @@ describe('Totem Entity', () => {
       const originalTokenAccess = totem.tokenAccess;
       const originalCreatedAt = totem.createdAt;
 
-      // Properties should be read-only (getters only)
       expect(totem.id).toBe(originalId);
       expect(totem.name).toBe(originalName);
       expect(totem.tokenAccess).toBe(originalTokenAccess);

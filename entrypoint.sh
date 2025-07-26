@@ -19,4 +19,4 @@ npm run typeorm:migration:run-js || {
 
 echo "✅ Migrations aplicadas com sucesso."
 echo "🚀 Iniciando a aplicação NestJS..."
-exec node dist/src-clean/external/consumers/NestAPI/main.js
+exec node dist/external/consumers/NestAPI/main.js

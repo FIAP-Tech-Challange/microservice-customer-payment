@@ -1,11 +1,11 @@
-import { Notification } from 'src-clean/core/modules/notification/entities/notification.entity';
+import { Notification } from 'src/core/modules/notification/entities/notification.entity';
 import {
   NotificationStatus,
   NotificationChannel,
-} from 'src-clean/core/modules/notification/entities/notification.enums';
-import { Email } from 'src-clean/core/common/valueObjects/email.vo';
-import { BrazilianPhone } from 'src-clean/core/common/valueObjects/brazilian-phone.vo';
-import { ResourceInvalidException } from 'src-clean/common/exceptions/resourceInvalidException';
+} from 'src/core/modules/notification/entities/notification.enums';
+import { Email } from 'src/core/common/valueObjects/email.vo';
+import { BrazilianPhone } from 'src/core/common/valueObjects/brazilian-phone.vo';
+import { ResourceInvalidException } from 'src/common/exceptions/resourceInvalidException';
 
 describe('Notification Entity Tests', () => {
   describe('Notification Creation', () => {
