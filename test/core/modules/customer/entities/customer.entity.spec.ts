@@ -1,6 +1,6 @@
-import { Customer } from 'src-clean/core/modules/customer/entities/customer.entity';
-import { CPF } from 'src-clean/core/common/valueObjects/cpf.vo';
-import { Email } from 'src-clean/core/common/valueObjects/email.vo';
+import { Customer } from 'src/core/modules/customer/entities/customer.entity';
+import { CPF } from 'src/core/common/valueObjects/cpf.vo';
+import { Email } from 'src/core/common/valueObjects/email.vo';
 
 describe('Customer Entity Tests', () => {
   describe('Customer Creation', () => {

@@ -1,5 +1,5 @@
-import { BrazilianPhone } from 'src-clean/core/common/valueObjects/brazilian-phone.vo';
-import { ResourceInvalidException } from 'src-clean/common/exceptions/resourceInvalidException';
+import { BrazilianPhone } from 'src/core/common/valueObjects/brazilian-phone.vo';
+import { ResourceInvalidException } from 'src/common/exceptions/resourceInvalidException';
 
 describe('BrazilianPhone Value Object', () => {
   describe('create', () => {

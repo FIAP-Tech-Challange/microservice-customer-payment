@@ -1,5 +1,5 @@
-import { Product } from 'src-clean/core/modules/product/entities/product.entity';
-import { ResourceInvalidException } from 'src-clean/common/exceptions/resourceInvalidException';
+import { Product } from 'src/core/modules/product/entities/product.entity';
+import { ResourceInvalidException } from 'src/common/exceptions/resourceInvalidException';
 
 describe('Product Entity Tests', () => {
   describe('Product Creation', () => {

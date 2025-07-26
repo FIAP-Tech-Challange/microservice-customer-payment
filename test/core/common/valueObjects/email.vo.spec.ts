@@ -1,5 +1,5 @@
-import { Email } from 'src-clean/core/common/valueObjects/email.vo';
-import { ResourceInvalidException } from 'src-clean/common/exceptions/resourceInvalidException';
+import { Email } from 'src/core/common/valueObjects/email.vo';
+import { ResourceInvalidException } from 'src/common/exceptions/resourceInvalidException';
 
 describe('Email Value Object', () => {
   describe('create', () => {

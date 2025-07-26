@@ -1,9 +1,9 @@
-import { ResourceInvalidException } from 'src-clean/common/exceptions/resourceInvalidException';
-import { ResourceNotFoundException } from 'src-clean/common/exceptions/resourceNotFoundException';
-import { Store } from 'src-clean/core/modules/store/entities/store.entity';
-import { StoreGateway } from 'src-clean/core/modules/store/gateways/store.gateway';
-import { FindStoreByEmailUseCase } from 'src-clean/core/modules/store/useCases/findStoreByEmail.useCase';
-import { DataSource } from 'src-clean/common/dataSource/dataSource.interface';
+import { ResourceInvalidException } from 'src/common/exceptions/resourceInvalidException';
+import { ResourceNotFoundException } from 'src/common/exceptions/resourceNotFoundException';
+import { Store } from 'src/core/modules/store/entities/store.entity';
+import { StoreGateway } from 'src/core/modules/store/gateways/store.gateway';
+import { FindStoreByEmailUseCase } from 'src/core/modules/store/useCases/findStoreByEmail.useCase';
+import { DataSource } from 'src/common/dataSource/dataSource.interface';
 
 describe('FindStoreByEmailUseCase', () => {
   let useCase: FindStoreByEmailUseCase;

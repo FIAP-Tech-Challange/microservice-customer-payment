@@ -1,6 +1,6 @@
-import { FindAllCategoriesByStoreIdUseCase } from 'src-clean/core/modules/product/useCases/findAllCategoriesByStoreId.useCase';
-import { CategoryGateway } from 'src-clean/core/modules/product/gateways/category.gateway';
-import { Category } from 'src-clean/core/modules/product/entities/category.entity';
+import { FindAllCategoriesByStoreIdUseCase } from 'src/core/modules/product/useCases/findAllCategoriesByStoreId.useCase';
+import { CategoryGateway } from 'src/core/modules/product/gateways/category.gateway';
+import { Category } from 'src/core/modules/product/entities/category.entity';
 
 describe('FindAllCategoriesByStoreIdUseCase', () => {
   let mockCategoryGateway: Partial<CategoryGateway>;

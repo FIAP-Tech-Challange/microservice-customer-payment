@@ -1,7 +1,7 @@
-import { Category } from 'src-clean/core/modules/product/entities/category.entity';
-import { Product } from 'src-clean/core/modules/product/entities/product.entity';
-import { ResourceInvalidException } from 'src-clean/common/exceptions/resourceInvalidException';
-import { ResourceConflictException } from 'src-clean/common/exceptions/resourceConflictException';
+import { Category } from 'src/core/modules/product/entities/category.entity';
+import { Product } from 'src/core/modules/product/entities/product.entity';
+import { ResourceInvalidException } from 'src/common/exceptions/resourceInvalidException';
+import { ResourceConflictException } from 'src/common/exceptions/resourceConflictException';
 
 describe('Category Entity Tests', () => {
   describe('Category Creation', () => {

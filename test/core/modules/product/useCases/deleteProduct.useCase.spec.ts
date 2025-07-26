@@ -1,10 +1,10 @@
-import { DeleteProductUseCase } from 'src-clean/core/modules/product/useCases/deleteProduct.useCase';
-import { CategoryGateway } from 'src-clean/core/modules/product/gateways/category.gateway';
-import { FindCategoryByIdUseCase } from 'src-clean/core/modules/product/useCases/findCategoryById.useCase';
-import { Category } from 'src-clean/core/modules/product/entities/category.entity';
-import { Product } from 'src-clean/core/modules/product/entities/product.entity';
-import { ResourceNotFoundException } from 'src-clean/common/exceptions/resourceNotFoundException';
-import { ResourceConflictException } from 'src-clean/common/exceptions/resourceConflictException';
+import { DeleteProductUseCase } from 'src/core/modules/product/useCases/deleteProduct.useCase';
+import { CategoryGateway } from 'src/core/modules/product/gateways/category.gateway';
+import { FindCategoryByIdUseCase } from 'src/core/modules/product/useCases/findCategoryById.useCase';
+import { Category } from 'src/core/modules/product/entities/category.entity';
+import { Product } from 'src/core/modules/product/entities/product.entity';
+import { ResourceNotFoundException } from 'src/common/exceptions/resourceNotFoundException';
+import { ResourceConflictException } from 'src/common/exceptions/resourceConflictException';
 
 describe('DeleteProductUseCase', () => {
   let mockCategoryGateway: Partial<CategoryGateway>;

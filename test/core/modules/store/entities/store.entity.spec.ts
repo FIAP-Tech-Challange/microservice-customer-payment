@@ -1,15 +1,15 @@
-jest.mock('src-clean/core/common/utils/uuid.helper');
-jest.mock('src-clean/core/common/utils/encoder.helper');
+jest.mock('src/core/common/utils/uuid.helper');
+jest.mock('src/core/common/utils/encoder.helper');
 
-import { Store } from 'src-clean/core/modules/store/entities/store.entity';
-import { Totem } from 'src-clean/core/modules/store/entities/totem.entity';
-import { Email } from 'src-clean/core/common/valueObjects/email.vo';
-import { CNPJ } from 'src-clean/core/common/valueObjects/cnpj.vo';
-import { BrazilianPhone } from 'src-clean/core/common/valueObjects/brazilian-phone.vo';
-import { ResourceInvalidException } from 'src-clean/common/exceptions/resourceInvalidException';
-import { ResourceConflictException } from 'src-clean/common/exceptions/resourceConflictException';
-import { generateUUID } from 'src-clean/core/common/utils/uuid.helper';
-import { encodeString } from 'src-clean/core/common/utils/encoder.helper';
+import { Store } from 'src/core/modules/store/entities/store.entity';
+import { Totem } from 'src/core/modules/store/entities/totem.entity';
+import { Email } from 'src/core/common/valueObjects/email.vo';
+import { CNPJ } from 'src/core/common/valueObjects/cnpj.vo';
+import { BrazilianPhone } from 'src/core/common/valueObjects/brazilian-phone.vo';
+import { ResourceInvalidException } from 'src/common/exceptions/resourceInvalidException';
+import { ResourceConflictException } from 'src/common/exceptions/resourceConflictException';
+import { generateUUID } from 'src/core/common/utils/uuid.helper';
+import { encodeString } from 'src/core/common/utils/encoder.helper';
 
 describe('Store Entity', () => {
   let validEmail: Email;
