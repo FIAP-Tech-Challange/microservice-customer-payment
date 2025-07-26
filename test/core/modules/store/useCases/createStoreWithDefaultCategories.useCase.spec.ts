@@ -1,15 +1,15 @@
-import { ResourceConflictException } from 'src-clean/common/exceptions/resourceConflictException';
-import { CategoryGateway } from 'src-clean/core/modules/product/gateways/category.gateway';
-import { CreateCategoryUseCase } from 'src-clean/core/modules/product/useCases/createCategory.useCase';
-import { Store } from 'src-clean/core/modules/store/entities/store.entity';
-import { StoreGateway } from 'src-clean/core/modules/store/gateways/store.gateway';
-import { CreateStoreUseCase } from 'src-clean/core/modules/store/useCases/createStore.useCase';
-import { CreateStoreWithDefaultCategoriesUseCase } from 'src-clean/core/modules/store/useCases/createStoreWithDeafaultCategories.useCase';
-import { FindStoreByIdUseCase } from 'src-clean/core/modules/store/useCases/findStoreById.useCase';
-import { DataSourceProxy } from 'src-clean/external/dataSources/dataSource.proxy';
-import { GeneralDataSource } from 'src-clean/external/dataSources/general/general.dataSource';
-import { FakePaymentDataSource } from 'src-clean/external/dataSources/payment/fake/fakePaymentDataSource';
-import { NotificationDataSource } from 'src-clean/external/dataSources/notification/notification.dataSource';
+import { ResourceConflictException } from 'src/common/exceptions/resourceConflictException';
+import { CategoryGateway } from 'src/core/modules/product/gateways/category.gateway';
+import { CreateCategoryUseCase } from 'src/core/modules/product/useCases/createCategory.useCase';
+import { Store } from 'src/core/modules/store/entities/store.entity';
+import { StoreGateway } from 'src/core/modules/store/gateways/store.gateway';
+import { CreateStoreUseCase } from 'src/core/modules/store/useCases/createStore.useCase';
+import { CreateStoreWithDefaultCategoriesUseCase } from 'src/core/modules/store/useCases/createStoreWithDeafaultCategories.useCase';
+import { FindStoreByIdUseCase } from 'src/core/modules/store/useCases/findStoreById.useCase';
+import { DataSourceProxy } from 'src/external/dataSources/dataSource.proxy';
+import { GeneralDataSource } from 'src/external/dataSources/general/general.dataSource';
+import { FakePaymentDataSource } from 'src/external/dataSources/payment/fake/fakePaymentDataSource';
+import { NotificationDataSource } from 'src/external/dataSources/notification/notification.dataSource';
 
 describe('CreateStoreWithDefaultCategoriesUseCase', () => {
   let storeGateway: StoreGateway;

@@ -1,7 +1,7 @@
-import { FindCategoryByIdUseCase } from 'src-clean/core/modules/product/useCases/findCategoryById.useCase';
-import { CategoryGateway } from 'src-clean/core/modules/product/gateways/category.gateway';
-import { Category } from 'src-clean/core/modules/product/entities/category.entity';
-import { ResourceNotFoundException } from 'src-clean/common/exceptions/resourceNotFoundException';
+import { FindCategoryByIdUseCase } from 'src/core/modules/product/useCases/findCategoryById.useCase';
+import { CategoryGateway } from 'src/core/modules/product/gateways/category.gateway';
+import { Category } from 'src/core/modules/product/entities/category.entity';
+import { ResourceNotFoundException } from 'src/common/exceptions/resourceNotFoundException';
 
 describe('FindCategoryByIdUseCase', () => {
   let mockCategoryGateway: Partial<CategoryGateway>;

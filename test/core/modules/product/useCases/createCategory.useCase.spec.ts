@@ -1,10 +1,10 @@
-import { CreateCategoryUseCase } from 'src-clean/core/modules/product/useCases/createCategory.useCase';
-import { CategoryGateway } from 'src-clean/core/modules/product/gateways/category.gateway';
-import { FindStoreByIdUseCase } from 'src-clean/core/modules/store/useCases/findStoreById.useCase';
-import { Category } from 'src-clean/core/modules/product/entities/category.entity';
-import { CreateCategoryInputDTO } from 'src-clean/core/modules/product/DTOs/createCategoryInput.dto';
-import { ResourceConflictException } from 'src-clean/common/exceptions/resourceConflictException';
-import { ResourceNotFoundException } from 'src-clean/common/exceptions/resourceNotFoundException';
+import { CreateCategoryUseCase } from 'src/core/modules/product/useCases/createCategory.useCase';
+import { CategoryGateway } from 'src/core/modules/product/gateways/category.gateway';
+import { FindStoreByIdUseCase } from 'src/core/modules/store/useCases/findStoreById.useCase';
+import { Category } from 'src/core/modules/product/entities/category.entity';
+import { CreateCategoryInputDTO } from 'src/core/modules/product/DTOs/createCategoryInput.dto';
+import { ResourceConflictException } from 'src/common/exceptions/resourceConflictException';
+import { ResourceNotFoundException } from 'src/common/exceptions/resourceNotFoundException';
 
 describe('CreateCategoryUseCase', () => {
   let mockCategoryGateway: Partial<CategoryGateway>;

@@ -1,16 +1,16 @@
-import { ResourceInvalidException } from 'src-clean/common/exceptions/resourceInvalidException';
-import { ResourceNotFoundException } from 'src-clean/common/exceptions/resourceNotFoundException';
-import { BrazilianPhone } from 'src-clean/core/common/valueObjects/brazilian-phone.vo';
-import { CNPJ } from 'src-clean/core/common/valueObjects/cnpj.vo';
-import { Email } from 'src-clean/core/common/valueObjects/email.vo';
-import { Store } from 'src-clean/core/modules/store/entities/store.entity';
-import { StoreGateway } from 'src-clean/core/modules/store/gateways/store.gateway';
-import { FindStoreByEmailUseCase } from 'src-clean/core/modules/store/useCases/findStoreByEmail.useCase';
-import { ValidateStorePasswordUseCase } from 'src-clean/core/modules/store/useCases/validateStorePassword.useCase';
-import { DataSourceProxy } from 'src-clean/external/dataSources/dataSource.proxy';
-import { GeneralDataSource } from 'src-clean/external/dataSources/general/general.dataSource';
-import { FakePaymentDataSource } from 'src-clean/external/dataSources/payment/fake/fakePaymentDataSource';
-import { NotificationDataSource } from 'src-clean/external/dataSources/notification/notification.dataSource';
+import { ResourceInvalidException } from 'src/common/exceptions/resourceInvalidException';
+import { ResourceNotFoundException } from 'src/common/exceptions/resourceNotFoundException';
+import { BrazilianPhone } from 'src/core/common/valueObjects/brazilian-phone.vo';
+import { CNPJ } from 'src/core/common/valueObjects/cnpj.vo';
+import { Email } from 'src/core/common/valueObjects/email.vo';
+import { Store } from 'src/core/modules/store/entities/store.entity';
+import { StoreGateway } from 'src/core/modules/store/gateways/store.gateway';
+import { FindStoreByEmailUseCase } from 'src/core/modules/store/useCases/findStoreByEmail.useCase';
+import { ValidateStorePasswordUseCase } from 'src/core/modules/store/useCases/validateStorePassword.useCase';
+import { DataSourceProxy } from 'src/external/dataSources/dataSource.proxy';
+import { GeneralDataSource } from 'src/external/dataSources/general/general.dataSource';
+import { FakePaymentDataSource } from 'src/external/dataSources/payment/fake/fakePaymentDataSource';
+import { NotificationDataSource } from 'src/external/dataSources/notification/notification.dataSource';
 
 describe('ValidateStorePasswordUseCase', () => {
   let useCase: ValidateStorePasswordUseCase;

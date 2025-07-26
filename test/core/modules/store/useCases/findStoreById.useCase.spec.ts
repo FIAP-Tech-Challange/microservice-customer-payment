@@ -1,11 +1,11 @@
-import { ResourceNotFoundException } from 'src-clean/common/exceptions/resourceNotFoundException';
-import { BrazilianPhone } from 'src-clean/core/common/valueObjects/brazilian-phone.vo';
-import { CNPJ } from 'src-clean/core/common/valueObjects/cnpj.vo';
-import { Email } from 'src-clean/core/common/valueObjects/email.vo';
-import { Store } from 'src-clean/core/modules/store/entities/store.entity';
-import { StoreGateway } from 'src-clean/core/modules/store/gateways/store.gateway';
-import { FindStoreByIdUseCase } from 'src-clean/core/modules/store/useCases/findStoreById.useCase';
-import { DataSource } from 'src-clean/common/dataSource/dataSource.interface';
+import { ResourceNotFoundException } from 'src/common/exceptions/resourceNotFoundException';
+import { BrazilianPhone } from 'src/core/common/valueObjects/brazilian-phone.vo';
+import { CNPJ } from 'src/core/common/valueObjects/cnpj.vo';
+import { Email } from 'src/core/common/valueObjects/email.vo';
+import { Store } from 'src/core/modules/store/entities/store.entity';
+import { StoreGateway } from 'src/core/modules/store/gateways/store.gateway';
+import { FindStoreByIdUseCase } from 'src/core/modules/store/useCases/findStoreById.useCase';
+import { DataSource } from 'src/common/dataSource/dataSource.interface';
 
 describe('FindStoreByIdUseCase', () => {
   let useCase: FindStoreByIdUseCase;

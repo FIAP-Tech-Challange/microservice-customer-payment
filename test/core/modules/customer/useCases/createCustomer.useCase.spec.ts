@@ -1,11 +1,11 @@
-import { CreateCustomerUseCase } from 'src-clean/core/modules/customer/useCases/createCustomer.useCase';
-import { CustomerGateway } from 'src-clean/core/modules/customer/gateways/customer.gateway';
-import { Customer } from 'src-clean/core/modules/customer/entities/customer.entity';
-import { CPF } from 'src-clean/core/common/valueObjects/cpf.vo';
-import { Email } from 'src-clean/core/common/valueObjects/email.vo';
-import { ResourceConflictException } from 'src-clean/common/exceptions/resourceConflictException';
-import { CreateCustomerInputDTO } from 'src-clean/core/modules/customer/DTOs/createCustomerInput.dto';
-import { SendNotificationUseCase } from 'src-clean/core/modules/notification/useCases/sendNotification.useCase';
+import { CreateCustomerUseCase } from 'src/core/modules/customer/useCases/createCustomer.useCase';
+import { CustomerGateway } from 'src/core/modules/customer/gateways/customer.gateway';
+import { Customer } from 'src/core/modules/customer/entities/customer.entity';
+import { CPF } from 'src/core/common/valueObjects/cpf.vo';
+import { Email } from 'src/core/common/valueObjects/email.vo';
+import { ResourceConflictException } from 'src/common/exceptions/resourceConflictException';
+import { CreateCustomerInputDTO } from 'src/core/modules/customer/DTOs/createCustomerInput.dto';
+import { SendNotificationUseCase } from 'src/core/modules/notification/useCases/sendNotification.useCase';
 
 describe('CreateCustomerUseCase', () => {
   let mockCustomerGateway: Partial<CustomerGateway>;

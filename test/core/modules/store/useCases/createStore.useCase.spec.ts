@@ -1,8 +1,8 @@
-import { ResourceConflictException } from 'src-clean/common/exceptions/resourceConflictException';
-import { Store } from 'src-clean/core/modules/store/entities/store.entity';
-import { StoreGateway } from 'src-clean/core/modules/store/gateways/store.gateway';
-import { CreateStoreUseCase } from 'src-clean/core/modules/store/useCases/createStore.useCase';
-import { DataSource } from 'src-clean/common/dataSource/dataSource.interface';
+import { ResourceConflictException } from 'src/common/exceptions/resourceConflictException';
+import { Store } from 'src/core/modules/store/entities/store.entity';
+import { StoreGateway } from 'src/core/modules/store/gateways/store.gateway';
+import { CreateStoreUseCase } from 'src/core/modules/store/useCases/createStore.useCase';
+import { DataSource } from 'src/common/dataSource/dataSource.interface';
 
 describe('CreateStoreUseCase', () => {
   let useCase: CreateStoreUseCase;

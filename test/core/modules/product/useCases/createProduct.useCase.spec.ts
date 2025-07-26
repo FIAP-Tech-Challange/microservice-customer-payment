@@ -1,11 +1,11 @@
-import { CreateProductUseCase } from 'src-clean/core/modules/product/useCases/createProduct.useCase';
-import { CategoryGateway } from 'src-clean/core/modules/product/gateways/category.gateway';
-import { FindCategoryByIdUseCase } from 'src-clean/core/modules/product/useCases/findCategoryById.useCase';
-import { Category } from 'src-clean/core/modules/product/entities/category.entity';
-import { Product } from 'src-clean/core/modules/product/entities/product.entity';
-import { CreateProductInputDTO } from 'src-clean/core/modules/product/DTOs/createProductInput.dto';
-import { ResourceNotFoundException } from 'src-clean/common/exceptions/resourceNotFoundException';
-import { ResourceConflictException } from 'src-clean/common/exceptions/resourceConflictException';
+import { CreateProductUseCase } from 'src/core/modules/product/useCases/createProduct.useCase';
+import { CategoryGateway } from 'src/core/modules/product/gateways/category.gateway';
+import { FindCategoryByIdUseCase } from 'src/core/modules/product/useCases/findCategoryById.useCase';
+import { Category } from 'src/core/modules/product/entities/category.entity';
+import { Product } from 'src/core/modules/product/entities/product.entity';
+import { CreateProductInputDTO } from 'src/core/modules/product/DTOs/createProductInput.dto';
+import { ResourceNotFoundException } from 'src/common/exceptions/resourceNotFoundException';
+import { ResourceConflictException } from 'src/common/exceptions/resourceConflictException';
 
 describe('CreateProductUseCase', () => {
   let mockCategoryGateway: Partial<CategoryGateway>;

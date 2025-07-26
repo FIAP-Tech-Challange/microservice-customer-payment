@@ -1,8 +1,8 @@
-import { FindProductsByIdUseCase } from 'src-clean/core/modules/product/useCases/findProductsById.useCase';
-import { ProductGateway } from 'src-clean/core/modules/product/gateways/product.gateway';
-import { Product } from 'src-clean/core/modules/product/entities/product.entity';
-import { ResourceInvalidException } from 'src-clean/common/exceptions/resourceInvalidException';
-import { ResourceNotFoundException } from 'src-clean/common/exceptions/resourceNotFoundException';
+import { FindProductsByIdUseCase } from 'src/core/modules/product/useCases/findProductsById.useCase';
+import { ProductGateway } from 'src/core/modules/product/gateways/product.gateway';
+import { Product } from 'src/core/modules/product/entities/product.entity';
+import { ResourceInvalidException } from 'src/common/exceptions/resourceInvalidException';
+import { ResourceNotFoundException } from 'src/common/exceptions/resourceNotFoundException';
 
 describe('FindProductsByIdUseCase', () => {
   let mockProductGateway: Partial<ProductGateway>;
