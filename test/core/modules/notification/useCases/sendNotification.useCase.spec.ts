@@ -1,8 +1,8 @@
-import { SendNotificationUseCase } from 'src-clean/core/modules/notification/useCases/sendNotification.useCase';
-import { NotificationGateway } from 'src-clean/core/modules/notification/gateways/notification.gateway';
-import { Notification } from 'src-clean/core/modules/notification/entities/notification.entity';
-import { NotificationChannel } from 'src-clean/core/modules/notification/entities/notification.enums';
-import { SendNotificationInputDTO } from 'src-clean/core/modules/notification/DTOs/notificationInput.dto';
+import { SendNotificationUseCase } from 'src/core/modules/notification/useCases/sendNotification.useCase';
+import { NotificationGateway } from 'src/core/modules/notification/gateways/notification.gateway';
+import { Notification } from 'src/core/modules/notification/entities/notification.entity';
+import { NotificationChannel } from 'src/core/modules/notification/entities/notification.enums';
+import { SendNotificationInputDTO } from 'src/core/modules/notification/DTOs/notificationInput.dto';
 
 describe('SendNotificationUseCase', () => {
   let mockNotificationGateway: Partial<NotificationGateway>;

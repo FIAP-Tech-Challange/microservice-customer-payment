@@ -1,14 +1,14 @@
-import { ResourceInvalidException } from 'src-clean/common/exceptions/resourceInvalidException';
-import { ResourceNotFoundException } from 'src-clean/common/exceptions/resourceNotFoundException';
-import { BrazilianPhone } from 'src-clean/core/common/valueObjects/brazilian-phone.vo';
-import { CNPJ } from 'src-clean/core/common/valueObjects/cnpj.vo';
-import { Email } from 'src-clean/core/common/valueObjects/email.vo';
-import { Store } from 'src-clean/core/modules/store/entities/store.entity';
-import { StoreGateway } from 'src-clean/core/modules/store/gateways/store.gateway';
-import { FindStoreByEmailUseCase } from 'src-clean/core/modules/store/useCases/findStoreByEmail.useCase';
-import { DataSourceProxy } from 'src-clean/external/dataSources/dataSource.proxy';
-import { InMemoryGeneralDataSource } from 'src-clean/external/dataSources/general/inMemory/inMemoryGeneralDataSource';
-import { FakePaymentDataSource } from 'src-clean/external/dataSources/payment/fake/fakePaymentDataSource';
+import { ResourceInvalidException } from 'src/common/exceptions/resourceInvalidException';
+import { ResourceNotFoundException } from 'src/common/exceptions/resourceNotFoundException';
+import { BrazilianPhone } from 'src/core/common/valueObjects/brazilian-phone.vo';
+import { CNPJ } from 'src/core/common/valueObjects/cnpj.vo';
+import { Email } from 'src/core/common/valueObjects/email.vo';
+import { Store } from 'src/core/modules/store/entities/store.entity';
+import { StoreGateway } from 'src/core/modules/store/gateways/store.gateway';
+import { FindStoreByEmailUseCase } from 'src/core/modules/store/useCases/findStoreByEmail.useCase';
+import { DataSourceProxy } from 'src/external/dataSources/dataSource.proxy';
+import { InMemoryGeneralDataSource } from 'src/external/dataSources/general/inMemory/inMemoryGeneralDataSource';
+import { FakePaymentDataSource } from 'src/external/dataSources/payment/fake/fakePaymentDataSource';
 
 describe('FindStoreByEmailUseCase', () => {
   let useCase: FindStoreByEmailUseCase;

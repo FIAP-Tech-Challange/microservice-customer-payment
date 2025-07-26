@@ -1,8 +1,8 @@
-jest.mock('src-clean/core/common/utils/uuid.helper');
+jest.mock('src/core/common/utils/uuid.helper');
 
-import { Totem } from 'src-clean/core/modules/store/entities/totem.entity';
-import { ResourceInvalidException } from 'src-clean/common/exceptions/resourceInvalidException';
-import { generateUUID } from 'src-clean/core/common/utils/uuid.helper';
+import { Totem } from 'src/core/modules/store/entities/totem.entity';
+import { ResourceInvalidException } from 'src/common/exceptions/resourceInvalidException';
+import { generateUUID } from 'src/core/common/utils/uuid.helper';
 
 describe('Totem Entity', () => {
   const MOCKED_UUID = 'mocked-uuid';
