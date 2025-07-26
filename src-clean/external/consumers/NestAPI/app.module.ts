@@ -9,6 +9,8 @@ import { DataSourceModule } from './shared/data-source.module';
 import { StoresModule } from './modules/stores/stores.module';
 import { OrderModule } from './modules/order/order.module';
 import { CustomerModule } from './modules/customer/customer.module';
+import { CategoryModule } from './modules/categories/category.module';
+import { PaymentModule } from './modules/payment/payment.module';
 
 @Module({
   imports: [
@@ -22,6 +24,8 @@ import { CustomerModule } from './modules/customer/customer.module';
     StoresModule,
     OrderModule,
     CustomerModule,
+    CategoryModule,
+    PaymentModule,
   ],
   controllers: [],
   providers: [],

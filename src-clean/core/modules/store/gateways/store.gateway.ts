@@ -74,4 +74,9 @@ export class StoreGateway {
 
     return { error: undefined, value: dto };
   }
+
+  async removeTotem(totemId: string): Promise<CoreResponse<void>> {
+    await this.dataSource.removeTotem(totemId);
+    return { error: undefined, value: undefined };
+  }
 }

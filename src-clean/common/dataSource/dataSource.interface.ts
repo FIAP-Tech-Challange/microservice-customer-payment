@@ -14,7 +14,7 @@ import { OrderFilteredDto } from 'src-clean/core/modules/order/DTOs/order-filter
 import { ProductDataSourceDTO } from './DTOs/productDataSource.dto';
 
 export interface DataSource {
-  // Store
+  // Store/totem
   findStoreByEmail(email: string): Promise<StoreDataSourceDTO | null>;
   findStoreByCnpj(cnpj: string): Promise<StoreDataSourceDTO | null>;
   findStoreByName(name: string): Promise<StoreDataSourceDTO | null>;
@@ -23,6 +23,7 @@ export interface DataSource {
   findStoreByTotemAccessToken(
     accessToken: string,
   ): Promise<StoreDataSourceDTO | null>;
+  removeTotem(totemId: string): Promise<void>;
 
   // Product/Category
   findAllCategoriesByStoreId(storeId: string): Promise<CategoryDataSourceDTO[]>;
@@ -52,7 +53,6 @@ export interface DataSource {
     filters: FindAllCustomersDataSourceFiltersDTO,
   ): Promise<PaginatedDataSourceResponseDTO<CustomerDataSourceDTO>>;
   saveCustomer(customer: CustomerDataSourceDTO): Promise<void>;
-  deleteCustomer(id: string): Promise<void>;
 
   // Order
   saveOrder(order: OrderDataSourceDto): Promise<OrderDataSourceDto>;

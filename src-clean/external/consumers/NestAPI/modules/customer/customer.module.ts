@@ -6,4 +6,4 @@ import { CustomerController } from './controllers/customer.controller';
   imports: [JwtModule],
   controllers: [CustomerController],
 })
-export class CustomerModule {}  
+export class CustomerModule {}

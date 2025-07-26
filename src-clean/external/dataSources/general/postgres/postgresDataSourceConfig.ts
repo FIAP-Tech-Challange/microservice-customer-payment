@@ -6,6 +6,7 @@ import { OrderItemEntity } from './entities/order-item.entity';
 import { CustomerEntity } from './entities/customer.entity';
 import { CategoryEntity } from './entities/category.entity';
 import { ProductEntity } from './entities/product.entity';
+import { PaymentEntity } from './entities/payment.entity';
 
 export interface PostgresConfig {
   host: string;
@@ -32,6 +33,7 @@ export class PostgresDataSourceConfig {
         CustomerEntity,
         ProductEntity,
         CategoryEntity,
+        PaymentEntity,
       ],
       synchronize: false,
       logging: false,

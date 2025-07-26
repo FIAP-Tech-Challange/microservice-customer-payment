@@ -6,7 +6,7 @@ import { PaymentExternalDataSourceDTO } from 'src-clean/common/dataSource/DTOs/p
 import { PaymentStatusEnum } from '../enums/paymentStatus.enum';
 import { PaymentTypeEnum } from '../enums/paymentType.enum';
 import { PaymentPlatformEnum } from '../enums/paymentPlatform.enum';
-import { PaymentTypeDataSourceEnum } from 'src-clean/common/dataSource/enums/paymentTypeDataSource.enum';
+import { paymentTypeMap } from '../enums/paymentTypeMapper';
 
 export class PaymentMapper {
   static toPersistenceDTO(entity: Payment): CoreResponse<PaymentDataSourceDTO> {
@@ -40,25 +40,11 @@ export class PaymentMapper {
       id: entity.id,
       external_id: entity.externalId,
       total: entity.total,
-      payment_type: PaymentTypeDataSourceEnum[
-        entity.paymentType
-      ] as PaymentTypeDataSourceEnum,
+      payment_type: paymentTypeMap[entity.paymentType],
     };
   }
 
   static toEntity(dto: PaymentDataSourceDTO): CoreResponse<Payment> {
-    const type: PaymentTypeEnum = PaymentTypeEnum[
-      dto.payment_type
-    ] as PaymentTypeEnum;
-
-    const status: PaymentStatusEnum = PaymentStatusEnum[
-      dto.status
-    ] as PaymentStatusEnum;
-
-    const platform: PaymentPlatformEnum = PaymentPlatformEnum[
-      dto.platform
-    ] as PaymentPlatformEnum;
-
     return Payment.restore({
       id: dto.id,
       orderId: dto.order_id,
@@ -66,10 +52,10 @@ export class PaymentMapper {
       total: dto.total,
       externalId: dto.external_id,
       qrCode: dto.qr_code,
-      platform: platform,
+      platform: dto.platform as PaymentPlatformEnum,
       createdAt: new Date(dto.created_at),
-      paymentType: type,
-      status: status,
+      paymentType: dto.payment_type as PaymentTypeEnum,
+      status: dto.status as PaymentStatusEnum,
     });
   }
 }

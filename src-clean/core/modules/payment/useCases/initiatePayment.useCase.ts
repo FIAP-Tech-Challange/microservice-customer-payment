@@ -25,6 +25,7 @@ export class InitiatePaymentUseCase {
       storeId: store.value.id,
       paymentType: dto.paymentType,
     });
+
     if (createPayment.error) {
       return { error: createPayment.error, value: undefined };
     }

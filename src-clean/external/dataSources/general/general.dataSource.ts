@@ -12,7 +12,7 @@ import { ProductDataSourceDTO } from 'src-clean/common/dataSource/DTOs/productDa
 import { NotificationDataSourceDTO } from 'src-clean/common/dataSource/DTOs/notificationDataSource.dto';
 
 export interface GeneralDataSource {
-  // Store
+  // Store/Totem
   findStoreByEmail(email: string): Promise<StoreDataSourceDTO | null>;
   findStoreByCnpj(cnpj: string): Promise<StoreDataSourceDTO | null>;
   findStoreByName(name: string): Promise<StoreDataSourceDTO | null>;
@@ -21,6 +21,7 @@ export interface GeneralDataSource {
   findStoreByTotemAccessToken(
     accessToken: string,
   ): Promise<StoreDataSourceDTO | null>;
+  removeTotem(totemId: string): Promise<void>;
 
   // Product/Category
   findAllCategoriesByStoreId(storeId: string): Promise<CategoryDataSourceDTO[]>;
@@ -45,7 +46,6 @@ export interface GeneralDataSource {
     filters: FindAllCustomersDataSourceFiltersDTO,
   ): Promise<PaginatedDataSourceResponseDTO<CustomerDataSourceDTO>>;
   saveCustomer(customer: CustomerDataSourceDTO): Promise<void>;
-  deleteCustomer(id: string): Promise<void>;
 
   // Order
   saveOrder(order: OrderDataSourceDto): Promise<OrderDataSourceDto>;

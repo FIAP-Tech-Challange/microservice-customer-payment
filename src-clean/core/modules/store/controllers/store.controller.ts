@@ -18,7 +18,7 @@ import { CategoryGateway } from '../../product/gateways/category.gateway';
 import { CreateCategoryUseCase } from '../../product/useCases/createCategory.useCase';
 import { CreateStoreWithDefaultCategoriesUseCase } from '../useCases/createStoreWithDeafaultCategories.useCase';
 import { FindStoreByIdUseCase } from '../useCases/findStoreById.useCase';
-import { DeleteTotemUseCase } from '../useCases/addTotem.useCase copy';
+import { DeleteTotemUseCase } from '../useCases/DeleteTotem.useCase';
 
 export class StoreCoreController {
   constructor(private dataSource: DataSource) {}

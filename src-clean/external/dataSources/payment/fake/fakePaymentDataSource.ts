@@ -13,16 +13,21 @@ export class FakePaymentDataSource implements PaymentDataSource {
     const newExternalId = new Date().toISOString();
 
     this.payments.set(newExternalId, paymentDTO);
-
-    const paymentType: PaymentTypeDataSourceEnum = PaymentTypeDataSourceEnum[
-      paymentDTO.payment_type
-    ] as PaymentTypeDataSourceEnum;
+    if (
+      !Object.values(PaymentTypeDataSourceEnum).includes(
+        paymentDTO.payment_type,
+      )
+    ) {
+      throw new Error('Payment type not found');
+    }
 
     return Promise.resolve({
       externalId: newExternalId,
       paymentPlatform: PaymentPlatformDataSourceEnum.FK,
       qrCode:
-        paymentType === PaymentTypeDataSourceEnum.QR ? newExternalId : null,
+        paymentDTO.payment_type === PaymentTypeDataSourceEnum.QR
+          ? newExternalId
+          : null,
     });
   }
   rejectPaymentExternal(externalId: string): Promise<void> {

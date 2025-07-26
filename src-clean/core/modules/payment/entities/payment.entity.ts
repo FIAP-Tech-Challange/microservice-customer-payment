@@ -162,15 +162,15 @@ export class Payment {
     }
     if (!this._paymentType) {
       throw new ResourceInvalidException('Payment Type is required');
-    } else if (isValidPaymentType(this._paymentType)) {
+    } else if (!isValidPaymentType(this._paymentType)) {
       throw new ResourceInvalidException('Payment type is not valid');
     }
     if (!this._status) {
       throw new ResourceInvalidException('Status is required');
-    } else if (isValidPaymentStatus(this._status)) {
+    } else if (!isValidPaymentStatus(this._status)) {
       throw new ResourceInvalidException('Status is not valid');
     }
-    if (this._platform && isValidPaymentPlatform(this._platform)) {
+    if (this._platform && !isValidPaymentPlatform(this._platform)) {
       throw new ResourceInvalidException('Payment is not valid');
     }
     if (this._total <= 0) {

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { DataSource, In, Repository } from 'typeorm';
 import { GeneralDataSource } from '../general.dataSource';
 import { StoreDataSourceDTO } from 'src-clean/common/dataSource/DTOs/storeDataSource.dto';
@@ -23,9 +22,11 @@ import { ProductEntity } from './entities/product.entity';
 import { NotificationDataSourceDTO } from 'src-clean/common/dataSource/DTOs/notificationDataSource.dto';
 import { NotificationEntity } from './entities/notification.entity';
 import { CustomerEntity } from './entities/customer.entity';
+import { TotemEntity } from './entities/totem.entity';
 
 export class PostgresGeneralDataSource implements GeneralDataSource {
   private storeRepository: Repository<StoreEntity>;
+  private totemRepository: Repository<TotemEntity>; // Assuming totems are stored in the same table as stores
   private orderRepository: Repository<OrderEntity>;
   private orderItemRepository: Repository<OrderItemEntity>;
   private paymentRepository: Repository<PaymentEntity>;
@@ -36,6 +37,7 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
 
   constructor(private dataSource: DataSource) {
     this.storeRepository = this.dataSource.getRepository(StoreEntity);
+    this.totemRepository = this.dataSource.getRepository(TotemEntity);
     this.orderRepository = this.dataSource.getRepository(OrderEntity);
     this.orderItemRepository = this.dataSource.getRepository(OrderItemEntity);
     this.paymentRepository = this.dataSource.getRepository(PaymentEntity);
@@ -183,23 +185,103 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
       updatedAt: costumer.updatedAt?.toISOString(),
     };
   }
-  findCustomerByCpf(cpf: string): Promise<CustomerDataSourceDTO | null> {
-    throw new Error('Method not implemented.');
+  async findCustomerByCpf(cpf: string): Promise<CustomerDataSourceDTO | null> {
+    const costumer = await this.customerRepository.findOne({
+      where: { cpf: cpf },
+    });
+    if (!costumer) return null;
+    return {
+      id: costumer.id,
+      cpf: costumer.cpf,
+      name: costumer.name,
+      email: costumer.email,
+      createdAt: costumer.createdAt?.toString(),
+      updatedAt: costumer.updatedAt?.toString(),
+    };
   }
-  findCustomerByEmail(email: string): Promise<CustomerDataSourceDTO | null> {
-    throw new Error('Method not implemented.');
+  async findCustomerByEmail(
+    email: string,
+  ): Promise<CustomerDataSourceDTO | null> {
+    const costumer = await this.customerRepository.findOne({
+      where: { email: email },
+    });
+    if (!costumer) return null;
+    return {
+      id: costumer.id,
+      cpf: costumer.cpf,
+      name: costumer.name,
+      email: costumer.email,
+      createdAt: costumer.createdAt?.toString(),
+      updatedAt: costumer.updatedAt?.toString(),
+    };
   }
-  findAllCustomers(
+  async findAllCustomers(
     paginatedParams: PaginatedDataSourceParamsDTO,
     filters: FindAllCustomersDataSourceFiltersDTO,
   ): Promise<PaginatedDataSourceResponseDTO<CustomerDataSourceDTO>> {
-    throw new Error('Method not implemented.');
+    if (!paginatedParams.page) paginatedParams.page = 1;
+    if (!paginatedParams.limit) paginatedParams.limit = 10;
+
+    const params: {
+      where: Record<string, unknown>;
+    } = {
+      where: {},
+    };
+
+    if (filters.cpf) {
+      params.where = { cpf: filters.cpf };
+    }
+
+    if (filters.name) {
+      params.where = { ...params.where, name: filters.name };
+    }
+
+    if (filters.email) {
+      params.where = { ...params.where, email: filters.email };
+    }
+
+    const costumers = await this.customerRepository.findAndCount({
+      skip: (paginatedParams.page - 1) * paginatedParams.limit,
+      take: paginatedParams.limit,
+      where: params.where,
+      order: { name: 'ASC' },
+    });
+
+    if (!costumers || costumers[0].length === 0) {
+      return {
+        data: [],
+        total: 0,
+        page: paginatedParams.page,
+        limit: paginatedParams.limit,
+        totalPages: 0,
+      };
+    }
+    const costumersDTO = costumers[0].map((customer) => ({
+      id: customer.id,
+      cpf: customer.cpf,
+      name: customer.name,
+      email: customer.email,
+      createdAt: customer.createdAt.toString(),
+      updatedAt: customer.updatedAt.toString(),
+    }));
+
+    return {
+      data: costumersDTO,
+      total: costumersDTO.length,
+      page: paginatedParams.page,
+      limit: paginatedParams.limit,
+      totalPages: 0,
+    };
   }
-  saveCustomer(customer: CustomerDataSourceDTO): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-  deleteCustomer(id: string): Promise<void> {
-    throw new Error('Method not implemented.');
+  async saveCustomer(customer: CustomerDataSourceDTO): Promise<void> {
+    await this.customerRepository.save({
+      id: customer.id,
+      cpf: customer.cpf,
+      name: customer.name,
+      email: customer.email,
+      createdAt: new Date(customer.createdAt),
+      updatedAt: new Date(customer.updatedAt),
+    });
   }
 
   // --------------- ORDER --------------- \\
@@ -594,6 +676,14 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
     });
 
     await this.storeRepository.save(storeEntity);
+  }
+
+  async removeTotem(totemId: string): Promise<void> {
+    const result = await this.totemRepository.delete(totemId);
+
+    if (result.affected === 0) {
+      throw new NotFoundException(`Totem id ${totemId} not found`);
+    }
   }
 
   // --------------- PAYMENT --------------- \\

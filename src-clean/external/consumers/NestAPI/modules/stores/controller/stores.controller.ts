@@ -4,6 +4,7 @@ import {
   Controller,
   Delete,
   Get,
+  Logger,
   Param,
   Post,
   Req,
@@ -18,15 +19,15 @@ import {
   ApiSecurity,
   ApiTags,
 } from '@nestjs/swagger';
-import { StoreIdDto } from './dtos/store-id.dto';
-import { BusinessException } from '../../shared/dto/business-exception.dto';
-import { CreateStoreInputDto } from './dtos/create-store.dto';
-import { ApiKeyGuard } from '../auth/guards/api-key.guard';
+import { StoreIdDto } from '.././dtos/store-id.dto';
+import { BusinessException } from '../../../shared/dto/business-exception.dto';
+import { CreateStoreInputDto } from '.././dtos/create-store.dto';
+import { ApiKeyGuard } from '../../auth/guards/api-key.guard';
 import { StoreCoreController } from 'src-clean/core/modules/store/controllers/store.controller';
-import { ResponseIdUuidDto } from '../../shared/dto/response-id-uuid.dto';
-import { StoreGuard } from '../auth/guards/store.guard';
-import { RequestFromStore } from '../auth/dtos/request.dto';
-import { ResponseStoreDto } from './dtos/response-store.dto';
+import { ResponseIdUuidDto } from '../../../shared/dto/response-id-uuid.dto';
+import { StoreGuard } from '../../auth/guards/store.guard';
+import { RequestFromStore } from '../../auth/dtos/request.dto';
+import { ResponseStoreDto } from '.././dtos/response-store.dto';
 import { DataSourceProxy } from 'src-clean/external/dataSources/dataSource.proxy';
 
 @ApiTags('Store')
@@ -35,6 +36,7 @@ import { DataSourceProxy } from 'src-clean/external/dataSources/dataSource.proxy
   version: '1',
 })
 export class StoresController {
+  private readonly logger = new Logger(StoresController.name);
   constructor(private dataSourceProxy: DataSourceProxy) {}
 
   @ApiResponse({
@@ -73,11 +75,13 @@ export class StoresController {
       });
 
       if (createStore.error) {
+        this.logger.error(`Error creating store: ${createStore.error.message}`);
         throw new BadRequestException(createStore.error.message);
       }
-
+      this.logger.log(`Store created successfully: ${createStore.value.id}`);
       return { id: createStore.value.id };
     } catch (error) {
+      this.logger.error(`Error: ${error.message}`);
       throw new BadRequestException(error.message);
     }
   }
@@ -127,9 +131,10 @@ export class StoresController {
     });
 
     if (createTotem.error) {
+      this.logger.error(`Error creating totem: ${createTotem.error.message}`);
       throw new BadRequestException(createTotem.error.message);
     }
-
+    this.logger.log(`Totem created successfully: ${createTotem.value.id}`);
     return { id: createTotem.value.id };
   }
 
@@ -165,9 +170,10 @@ export class StoresController {
     );
 
     if (deleteTotem.error) {
+      this.logger.error(`Error deleting totem: ${deleteTotem.error.message}`);
       throw new BadRequestException(deleteTotem.error.message);
     }
-
+    this.logger.log(`Totem deleted successfully: ${totemId}`);
     return;
   }
 
@@ -175,6 +181,11 @@ export class StoresController {
     status: 200,
     description: 'Store found successfully',
     type: ResponseStoreDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Store not found successfully',
+    type: BusinessException,
   })
   @ApiOperation({
     summary: 'Find Store',
@@ -190,9 +201,10 @@ export class StoresController {
     const findStore = await coreController.findStoreById(storeId);
 
     if (findStore.error) {
-      throw new BadRequestException(findStore.error.message);
+      this.logger.error(`Error finding store: ${findStore.error.message}`);
+      throw new BusinessException(findStore.error.message, 400);
     }
-
+    this.logger.log(`Store found successfully: ${findStore.value.id}`);
     return {
       id: findStore.value.id,
       name: findStore.value.name,

@@ -91,10 +91,9 @@ export class PaymentCoreController {
         value: undefined,
       };
     } catch (error) {
-      console.error(error);
       return {
         error: new UnexpectedError(
-          'Something went wrong while approving payment',
+          `Something went wrong while approving payment, ${error.message}`,
         ),
         value: undefined,
       };
@@ -134,10 +133,9 @@ export class PaymentCoreController {
         value: undefined,
       };
     } catch (error) {
-      console.error(error);
       return {
         error: new UnexpectedError(
-          'Something went wrong while canceling payment',
+          `Something went wrong while canceling payment, ${error.message}`,
         ),
         value: undefined,
       };
@@ -169,10 +167,9 @@ export class PaymentCoreController {
         value: PaymentPresenter.toDto(payment.value),
       };
     } catch (error) {
-      console.error(error);
       return {
         error: new UnexpectedError(
-          'Something went wrong while finding payment by id',
+          `Something went wrong while finding payment by id, ${error.message}`,
         ),
         value: undefined,
       };

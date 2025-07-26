@@ -4,6 +4,7 @@ import {
   Controller,
   Get,
   InternalServerErrorException,
+  Logger,
   NotFoundException,
   Param,
   Patch,
@@ -23,19 +24,19 @@ import {
   RequestFromStore,
   RequestFromStoreOrTotem,
 } from 'src/modules/auth/models/dtos/request.dto';
-import { StoreOrTotemGuard } from 'src/modules/auth/guards/store-or-totem.guard';
-import { BusinessException } from 'src/shared/dto/business-exception.dto';
 import { DataSourceProxy } from 'src-clean/external/dataSources/dataSource.proxy';
-import { PaymentResponseDto } from './dto/payment-response.dto';
-import { CreatePaymentDto } from './dto/create-payment.dto';
+import { PaymentResponseDto } from '.././dto/payment-response.dto';
+import { CreatePaymentDto } from '.././dto/create-payment.dto';
 import { PaymentCoreController } from 'src-clean/core/modules/payment/controllers/payment.controller';
 import { PaymentTypeEnum } from 'src-clean/core/modules/payment/enums/paymentType.enum';
 import { ResourceNotFoundException } from 'src-clean/common/exceptions/resourceNotFoundException';
 import { ResourceInvalidException } from 'src-clean/common/exceptions/resourceInvalidException';
-import { CreatePaymentResponseDto } from './dto/create-payment-response.dto';
-import { getPaymentPlatform } from './util/payment-platform.util';
-import { PaymentIdDto } from './dto/payment-id.dto';
-import { ExternalPaymentConsumersGuard } from '../auth/guards/external-payment-consumers.guard';
+import { CreatePaymentResponseDto } from '.././dto/create-payment-response.dto';
+import { getPaymentPlatform } from '.././util/payment-platform.util';
+import { PaymentIdDto } from '.././dto/payment-id.dto';
+import { ExternalPaymentConsumersGuard } from '../../auth/guards/external-payment-consumers.guard';
+import { BusinessException } from '../../../shared/dto/business-exception.dto';
+import { StoreOrTotemGuard } from '../../auth/guards/store-or-totem.guard';
 
 @ApiTags('Payment')
 @Controller({
@@ -43,6 +44,7 @@ import { ExternalPaymentConsumersGuard } from '../auth/guards/external-payment-c
   version: '1',
 })
 export class PaymentController {
+  private readonly logger = new Logger(PaymentController.name);
   constructor(private dataSource: DataSourceProxy) {}
 
   @ApiResponse({
@@ -62,7 +64,7 @@ export class PaymentController {
   @ApiOperation({ summary: 'Register payment' })
   @ApiBearerAuth('access-token')
   @ApiBearerAuth('totem-token')
-  @UseGuards(StoreOrTotemGuard)
+  //@UseGuards(StoreOrTotemGuard)
   @Post()
   async create(
     @Body() createPaymentDto: CreatePaymentDto,
@@ -72,11 +74,11 @@ export class PaymentController {
     const response = await coreController.initiatePayment({
       orderId: createPaymentDto.orderId,
       storeId: req.storeId,
-      // TODO: verify if we can import PaymentTypeEnum directly
       paymentType: PaymentTypeEnum.QR,
     });
 
     if (response.error) {
+      this.logger.error(`Error created payment :${response.error.message}`);
       if (response.error.code === ResourceNotFoundException.CODE) {
         throw new NotFoundException(response.error.message);
       }
@@ -89,7 +91,7 @@ export class PaymentController {
         'Something went wrong while creating the payment',
       );
     }
-
+    this.logger.log(`Payment successfully created ${response.value.id}`);
     return {
       id: response.value.id,
       orderId: response.value.orderId,
@@ -131,6 +133,9 @@ export class PaymentController {
     );
 
     if (response.error) {
+      this.logger.error(
+        `Error when retrieving payment :${response.error.message}`,
+      );
       if (response.error.code === ResourceNotFoundException.CODE) {
         throw new NotFoundException(response.error.message);
       }
@@ -139,7 +144,7 @@ export class PaymentController {
         'Something went wrong while finding the payment',
       );
     }
-
+    this.logger.log(`Payment found successfully ${response.value.id}`);
     return {
       id: response.value.id,
       orderId: response.value.orderId,
@@ -178,15 +183,19 @@ export class PaymentController {
     const coreController = new PaymentCoreController(this.dataSource);
     const approvePayment = await coreController.approvePayment(id, req.storeId);
     if (approvePayment.error) {
+      this.logger.log(
+        `Error aprove payment id ${id},  ${approvePayment.error.message}`,
+      );
       if (approvePayment.error.code === ResourceNotFoundException.CODE) {
         throw new NotFoundException(approvePayment.error.message);
       }
 
-      throw new InternalServerErrorException(
-        'Something went wrong while approving the payment',
+      throw new BusinessException(
+        `Something went wrong while approving the payment, ${approvePayment.error.message}`,
+        400,
       );
     }
-
+    this.logger.log(`Payment id ${id} aprove successfully`);
     return;
   }
 
@@ -216,15 +225,19 @@ export class PaymentController {
     const coreController = new PaymentCoreController(this.dataSource);
     const cancelPayment = await coreController.cancelPayment(id, req.storeId);
     if (cancelPayment.error) {
+      this.logger.log(
+        `Error aprove payment id ${id},  ${cancelPayment.error.message}`,
+      );
       if (cancelPayment.error.code === ResourceNotFoundException.CODE) {
         throw new NotFoundException(cancelPayment.error.message);
       }
 
-      throw new InternalServerErrorException(
-        'Something went wrong while canceling the payment',
+      throw new BusinessException(
+        `Something went wrong while canceling the payment, ${cancelPayment.error.message}`,
+        400,
       );
     }
-
+    this.logger.log(`Payment id ${id} cancelad successfully`);
     return;
   }
 }

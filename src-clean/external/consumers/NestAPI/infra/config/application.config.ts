@@ -5,4 +5,5 @@ export default () => ({
   jwtAccessTokenExpirationTime: process.env.JWT_ACCESS_TOKEN_EXPIRATION_TIME,
   jwtRefreshTokenExpirationTime: process.env.JWT_REFRESH_TOKEN_EXPIRATION_TIME,
   fakePaymentProvider: process.env.FAKE_PAYMENT_PROVIDER,
+  externalPaymentConsumerKey: process.env.FAKE_PAYMENT_KEY,
 });

@@ -56,7 +56,7 @@ export class DataSourceProxy implements DataSource {
     return this.generalDataSource.getFilteredAndSortedOrders(storeId);
   }
 
-  // Store
+  // Store/Totem
   findStoreByEmail(email: string): Promise<StoreDataSourceDTO | null> {
     return this.generalDataSource.findStoreByEmail(email);
   }
@@ -76,6 +76,9 @@ export class DataSourceProxy implements DataSource {
     accessToken: string,
   ): Promise<StoreDataSourceDTO | null> {
     return this.generalDataSource.findStoreByTotemAccessToken(accessToken);
+  }
+  removeTotem(totemId: string): Promise<void> {
+    return this.generalDataSource.removeTotem(totemId);
   }
 
   // Product/Category
@@ -139,9 +142,6 @@ export class DataSourceProxy implements DataSource {
   }
   saveCustomer(customer: CustomerDataSourceDTO): Promise<void> {
     return this.generalDataSource.saveCustomer(customer);
-  }
-  deleteCustomer(id: string): Promise<void> {
-    return this.generalDataSource.deleteCustomer(id);
   }
 
   // Notification

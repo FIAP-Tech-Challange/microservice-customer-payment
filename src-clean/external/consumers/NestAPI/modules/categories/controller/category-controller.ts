@@ -9,10 +9,10 @@ import {
   NotFoundException,
   Delete,
   ParseUUIDPipe,
-  BadRequestException,
   InternalServerErrorException,
+  Logger,
 } from '@nestjs/common';
-import { CreateProductDto } from './dto/create-product.dto';
+import { CreateProductDto } from '.././dto/create-product.dto';
 import {
   ApiTags,
   ApiOperation,
@@ -26,8 +26,8 @@ import { RequestFromStore } from 'src/modules/auth/models/dtos/request.dto';
 import {
   CategoryResponseDto,
   ProductResponseDto,
-} from './dto/category-response.dto';
-import { BusinessException } from '../../shared/dto/business-exception.dto';
+} from '.././dto/category-response.dto';
+import { BusinessException } from '../../../shared/dto/business-exception.dto';
 import { DataSourceProxy } from 'src-clean/external/dataSources/dataSource.proxy';
 import { ProductCoreController } from 'src-clean/core/modules/product/controllers/product.controller';
 import { ResourceNotFoundException } from 'src-clean/common/exceptions/resourceNotFoundException';
@@ -38,6 +38,7 @@ import { ResourceNotFoundException } from 'src-clean/common/exceptions/resourceN
   version: '1',
 })
 export class CategoryController {
+  private readonly logger = new Logger(CategoryController.name);
   constructor(private dataSource: DataSourceProxy) {}
 
   @ApiResponse({
@@ -67,9 +68,12 @@ export class CategoryController {
     const findCategories =
       await coreController.findAllCategoriesByStoreId(storeId);
     if (findCategories.error) {
+      this.logger.error(
+        `Error retrieving categories for store ${storeId}: ${findCategories.error.message}`,
+      );
       throw new NotFoundException(findCategories.error.message);
     }
-
+    this.logger.log(`Successfully retrieved categories for store ${storeId}`);
     return findCategories.value.map((category) => ({
       id: category.id,
       name: category.name,
@@ -107,9 +111,14 @@ export class CategoryController {
     const category = await coreController.findCategoryById(id, storeId);
 
     if (category.error) {
-      throw new NotFoundException(category.error.message);
+      this.logger.error(
+        `Error retrieving category with ID ${id} for store ${storeId} : ${category.error.message}`,
+      );
+      throw new BusinessException(category.error.message, 404);
     }
-
+    this.logger.log(
+      `Successfully retrieved category with ID ${id} for store ${storeId}.`,
+    );
     return {
       id: category.value.id,
       name: category.value.name,
@@ -163,9 +172,14 @@ export class CategoryController {
     });
 
     if (category.error) {
-      throw new BadRequestException(category.error.message);
+      this.logger.error(
+        `Error creating category for store ${storeId}: ${category.error.message}`,
+      );
+      throw new BusinessException(category.error.message, 400);
     }
-
+    this.logger.log(
+      `Successfully created category for store ${storeId} with ID ${category.value.id}.`,
+    );
     return {
       id: category.value.id,
       name: category.value.name,
@@ -231,12 +245,17 @@ export class CategoryController {
         },
       });
       if (product.error) {
+        this.logger.error(
+          `Error creating product in category ${categoryId} for store ${storeId}: ${product.error.message}`,
+        );
         if (product.error.code === ResourceNotFoundException.CODE) {
-          throw new NotFoundException(product.error.message);
+          throw new BusinessException(product.error.message, 400);
         }
-        throw new BadRequestException(product.error.message);
+        throw new BusinessException(product.error.message, 400);
       }
-
+      this.logger.log(
+        `Successfully created product in category ${categoryId} for store ${req.storeId}.`,
+      );
       return {
         id: product.value.id,
         name: product.value.name,
@@ -246,7 +265,9 @@ export class CategoryController {
         imageUrl: product.value.imageUrl,
       };
     } catch (error) {
-      console.error(error);
+      this.logger.error(
+        `Error creating product in category ${categoryId} for store ${req.storeId}: ${error.message}`,
+      );
       throw new InternalServerErrorException(
         'An error occurred while creating the product. Please try again later.',
       );
@@ -296,14 +317,20 @@ export class CategoryController {
       );
 
       if (response.error) {
+        this.logger.error(
+          `Error deleting product with ID ${productId} : ${response.error.message}`,
+        );
         if (response.error.code === ResourceNotFoundException.CODE) {
-          throw new NotFoundException(response.error.message);
+          throw new BusinessException(response.error.message, 404);
         }
 
-        throw new BadRequestException(response.error.message);
+        throw new BusinessException(response.error.message, 400);
       }
+      this.logger.log(`Successfully deleted product with ID ${productId}.`);
     } catch (error) {
-      console.error(error);
+      this.logger.error(
+        `Error deleting product with ID ${productId}: ${error.message}`,
+      );
       throw new InternalServerErrorException(
         'An error occurred while deleting the product. Please try again later.',
       );

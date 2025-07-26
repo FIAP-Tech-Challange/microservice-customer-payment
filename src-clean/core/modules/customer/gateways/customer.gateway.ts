@@ -88,9 +88,4 @@ export class CustomerGateway {
 
     return { error: undefined, value: undefined };
   }
-
-  async deleteCustomer(customer: Customer): Promise<CoreResponse<undefined>> {
-    await this.dataSource.deleteCustomer(customer.id);
-    return { error: undefined, value: undefined };
-  }
 }

@@ -12,7 +12,6 @@ export class PaymentGateway {
   ): Promise<CoreResponse<Payment | null>> {
     const dto = await this.dataSource.findPaymentById(paymentId);
     if (!dto) return { error: undefined, value: null };
-
     const entity = PaymentMapper.toEntity(dto);
     if (entity.error) return { error: entity.error, value: undefined };
 
@@ -25,12 +24,11 @@ export class PaymentGateway {
     const { externalId, paymentPlatform, qrCode } =
       await this.dataSource.createPaymentExternal(externalDTO);
 
-    const platform = PaymentPlatformEnum[
-      paymentPlatform
-    ] as PaymentPlatformEnum;
-
-    payment.associateExternal(externalId, platform, qrCode);
-
+    payment.associateExternal(
+      externalId,
+      paymentPlatform as PaymentPlatformEnum,
+      qrCode,
+    );
     return {
       error: undefined,
       value: payment,

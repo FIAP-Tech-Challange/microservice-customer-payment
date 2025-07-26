@@ -26,11 +26,11 @@ export class FindPaymentByIdUseCase {
         value: undefined,
       };
 
-    if (payment.value.storeId !== storeId)
+    /*if (payment.value.storeId !== storeId)
       return {
-        error: new ResourceNotFoundException('Payment not found'),
+        error: new ResourceNotFoundException('Order not found in your store'),
         value: undefined,
-      };
+      };*/
 
     return { error: undefined, value: payment.value };
   }

@@ -1,6 +1,7 @@
 import { CoreResponse } from 'src-clean/common/DTOs/coreResponse';
 import { FindStoreByIdUseCase } from './findStoreById.useCase';
 import { StoreGateway } from '../gateways/store.gateway';
+import { UnexpectedError } from 'src-clean/common/exceptions/unexpectedError';
 
 export class DeleteTotemUseCase {
   constructor(
@@ -16,9 +17,16 @@ export class DeleteTotemUseCase {
     if (removeTotem.error)
       return { error: removeTotem.error, value: undefined };
 
-    const saveStore = await this.storeGateway.saveStore(store.value);
-    if (saveStore.error) return { error: saveStore.error, value: undefined };
-
-    return { error: undefined, value: undefined };
+    try {
+      await this.storeGateway.removeTotem(totemId);
+      return { error: undefined, value: undefined };
+    } catch (error) {
+      return {
+        error: new UnexpectedError(
+          `Something went wrong while deleting the totem ${error.message}`,
+        ),
+        value: undefined,
+      };
+    }
   }
 }
