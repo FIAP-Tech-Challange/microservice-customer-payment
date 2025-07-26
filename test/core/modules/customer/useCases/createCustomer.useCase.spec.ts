@@ -1,13 +1,15 @@
-import { CreateCustomerUseCase } from 'src-clean/core/modules/customer/useCases/createCustomer.useCase';
-import { CustomerGateway } from 'src-clean/core/modules/customer/gateways/customer.gateway';
-import { Customer } from 'src-clean/core/modules/customer/entities/customer.entity';
-import { CPF } from 'src-clean/core/common/valueObjects/cpf.vo';
-import { Email } from 'src-clean/core/common/valueObjects/email.vo';
-import { ResourceConflictException } from 'src-clean/common/exceptions/resourceConflictException';
-import { CreateCustomerInputDTO } from 'src-clean/core/modules/customer/DTOs/createCustomerInput.dto';
+import { CreateCustomerUseCase } from 'src/core/modules/customer/useCases/createCustomer.useCase';
+import { CustomerGateway } from 'src/core/modules/customer/gateways/customer.gateway';
+import { Customer } from 'src/core/modules/customer/entities/customer.entity';
+import { CPF } from 'src/core/common/valueObjects/cpf.vo';
+import { Email } from 'src/core/common/valueObjects/email.vo';
+import { ResourceConflictException } from 'src/common/exceptions/resourceConflictException';
+import { CreateCustomerInputDTO } from 'src/core/modules/customer/DTOs/createCustomerInput.dto';
+import { SendNotificationUseCase } from 'src/core/modules/notification/useCases/sendNotification.useCase';
 
 describe('CreateCustomerUseCase', () => {
   let mockCustomerGateway: Partial<CustomerGateway>;
+  let mockSendNotificationUseCase: Partial<SendNotificationUseCase>;
   let createCustomerUseCase: CreateCustomerUseCase;
 
   beforeEach(() => {
@@ -17,8 +19,13 @@ describe('CreateCustomerUseCase', () => {
       saveCustomer: jest.fn(),
     };
 
+    mockSendNotificationUseCase = {
+      execute: jest.fn().mockResolvedValue({ error: undefined, value: {} }),
+    };
+
     createCustomerUseCase = new CreateCustomerUseCase(
       mockCustomerGateway as CustomerGateway,
+      mockSendNotificationUseCase as SendNotificationUseCase,
     );
   });
 
@@ -29,7 +36,6 @@ describe('CreateCustomerUseCase', () => {
       email: 'test@example.com',
     };
 
-    // Mock que não encontra cliente existente
     (mockCustomerGateway.findCustomerByCpf as jest.Mock).mockResolvedValue({
       error: undefined,
       value: undefined,
@@ -39,7 +45,6 @@ describe('CreateCustomerUseCase', () => {
       value: undefined,
     });
 
-    // Mock que salva o cliente com sucesso
     (mockCustomerGateway.saveCustomer as jest.Mock).mockImplementation(
       (customer: Customer) => ({
         error: undefined,
@@ -99,7 +104,6 @@ describe('CreateCustomerUseCase', () => {
       email: email!,
     });
 
-    // Mock que encontra cliente existente com mesmo CPF
     (mockCustomerGateway.findCustomerByCpf as jest.Mock).mockResolvedValue({
       error: undefined,
       value: existingCustomer,
@@ -130,13 +134,11 @@ describe('CreateCustomerUseCase', () => {
       email: email!,
     });
 
-    // Mock que não encontra cliente com mesmo CPF
     (mockCustomerGateway.findCustomerByCpf as jest.Mock).mockResolvedValue({
       error: undefined,
       value: undefined,
     });
 
-    // Mock que encontra cliente existente com mesmo email
     (mockCustomerGateway.findCustomerByEmail as jest.Mock).mockResolvedValue({
       error: undefined,
       value: existingCustomer,
@@ -160,7 +162,6 @@ describe('CreateCustomerUseCase', () => {
       email: 'test@example.com',
     };
 
-    // Mock que retorna erro ao buscar por CPF
     (mockCustomerGateway.findCustomerByCpf as jest.Mock).mockResolvedValue({
       error: new Error('Database error'),
       value: undefined,
@@ -182,7 +183,6 @@ describe('CreateCustomerUseCase', () => {
       email: 'test@example.com',
     };
 
-    // Mock que não encontra cliente existente
     (mockCustomerGateway.findCustomerByCpf as jest.Mock).mockResolvedValue({
       error: undefined,
       value: undefined,
@@ -192,7 +192,6 @@ describe('CreateCustomerUseCase', () => {
       value: undefined,
     });
 
-    // Mock que retorna erro ao salvar
     (mockCustomerGateway.saveCustomer as jest.Mock).mockResolvedValue({
       error: new Error('Save error'),
       value: undefined,
