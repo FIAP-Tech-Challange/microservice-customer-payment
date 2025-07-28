@@ -11,4 +11,5 @@ export interface PaymentDTO {
   platform: PaymentPlatformEnum;
   status: PaymentStatusEnum;
   paymentType: PaymentTypeEnum;
+  storeId: string;
 }

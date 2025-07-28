@@ -22,11 +22,9 @@ import { ProductEntity } from './entities/product.entity';
 import { NotificationDataSourceDTO } from 'src/common/dataSource/DTOs/notificationDataSource.dto';
 import { NotificationEntity } from './entities/notification.entity';
 import { CustomerEntity } from './entities/customer.entity';
-import { TotemEntity } from './entities/totem.entity';
 
 export class PostgresGeneralDataSource implements GeneralDataSource {
   private storeRepository: Repository<StoreEntity>;
-  private totemRepository: Repository<TotemEntity>; // Assuming totems are stored in the same table as stores
   private orderRepository: Repository<OrderEntity>;
   private orderItemRepository: Repository<OrderItemEntity>;
   private paymentRepository: Repository<PaymentEntity>;
@@ -37,7 +35,6 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
 
   constructor(private dataSource: DataSource) {
     this.storeRepository = this.dataSource.getRepository(StoreEntity);
-    this.totemRepository = this.dataSource.getRepository(TotemEntity);
     this.orderRepository = this.dataSource.getRepository(OrderEntity);
     this.orderItemRepository = this.dataSource.getRepository(OrderItemEntity);
     this.paymentRepository = this.dataSource.getRepository(PaymentEntity);
@@ -678,14 +675,6 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
     await this.storeRepository.save(storeEntity);
   }
 
-  async removeTotem(totemId: string): Promise<void> {
-    const result = await this.totemRepository.delete(totemId);
-
-    if (result.affected === 0) {
-      throw new NotFoundException(`Totem id ${totemId} not found`);
-    }
-  }
-
   // --------------- PAYMENT --------------- \\
   async savePayment(paymentDTO: PaymentDataSourceDTO): Promise<void> {
     const paymentEntity = this.paymentRepository.create({
@@ -701,6 +690,29 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
       created_at: new Date(paymentDTO.created_at),
     });
     await this.paymentRepository.save(paymentEntity);
+  }
+
+  async findPaymentByOrderId(
+    orderId: string,
+  ): Promise<PaymentDataSourceDTO | null> {
+    const payment = await this.paymentRepository.findOne({
+      where: { order_id: orderId },
+    });
+
+    if (!payment) return null;
+
+    return {
+      id: payment.id,
+      order_id: payment.order_id,
+      store_id: payment.store_id,
+      external_id: payment.external_id,
+      total: payment.total,
+      status: payment.status,
+      payment_type: payment.payment_type,
+      platform: payment.plataform,
+      qr_code: payment.qr_code ?? undefined,
+      created_at: payment.created_at.toISOString(),
+    };
   }
 
   async findPaymentById(

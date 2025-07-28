@@ -28,7 +28,7 @@ export class StoreGuard implements CanActivate {
       const payload: StoreTokenInterface = await this.jwtService.verifyAsync(
         token,
         {
-          secret: this.configService.get<string>('JWT_SECRET'),
+          secret: this.configService.get<string>('jwtSecret'),
         },
       );
 

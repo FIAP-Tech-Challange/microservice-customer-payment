@@ -4,7 +4,7 @@ import { CoreException } from 'src/common/exceptions/coreException';
 import { FindOrderByIdUseCase } from './findOrderById.useCase';
 import { ResourceNotFoundException } from 'src/common/exceptions/resourceNotFoundException';
 
-export class setOrderToCanceledUseCase {
+export class SetOrderToCanceledUseCase {
   constructor(
     private orderGateway: OrderGateway,
     private findOrderByIdUseCase: FindOrderByIdUseCase,
@@ -14,13 +14,9 @@ export class setOrderToCanceledUseCase {
     const { error: orderError, value: order } =
       await this.findOrderByIdUseCase.execute(orderId);
 
-    if (orderError)
-      return {
-        error: orderError as ResourceNotFoundException,
-        value: undefined,
-      };
+    if (orderError) return { error: orderError, value: undefined };
 
-    if (!order || order.storeId !== storeId) {
+    if (order.storeId !== storeId) {
       return {
         error: new ResourceNotFoundException(
           'Order not found or does not belong to the store',
