@@ -32,12 +32,6 @@ cp env-example .env
 
 Ajuste as variáveis conforme necessário no arquivo `.env` criado.
 
-#### Variáveis importantes:
-
-- **FAKE_PAYMENT_PROVIDER**: Controla o provedor de pagamento utilizado
-  - `S`: Utiliza um provedor de pagamento simulado (fake)
-  - `N`: Utiliza a API do MercadoPago para processar pagamentos reais
-
 ### 2. Inicie os containers com Docker Compose
 
 ```bash

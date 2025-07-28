@@ -7,6 +7,17 @@ import { PaymentPlatformEnum } from '../enums/paymentPlatform.enum';
 export class PaymentGateway {
   constructor(private dataSource: DataSource) {}
 
+  async findPaymentByOrderId(
+    orderId: string,
+  ): Promise<CoreResponse<Payment | null>> {
+    const dto = await this.dataSource.findPaymentByOrderId(orderId);
+    if (!dto) return { error: undefined, value: null };
+    const entity = PaymentMapper.toEntity(dto);
+    if (entity.error) return { error: entity.error, value: undefined };
+
+    return { error: undefined, value: entity.value };
+  }
+
   async findPaymentById(
     paymentId: string,
   ): Promise<CoreResponse<Payment | null>> {
@@ -33,16 +44,6 @@ export class PaymentGateway {
       error: undefined,
       value: payment,
     };
-  }
-
-  async rejectPaymentOnExternal(payment: Payment): Promise<CoreResponse<void>> {
-    await this.dataSource.rejectPaymentExternal(payment.externalId!);
-    return { error: undefined, value: undefined };
-  }
-
-  async approvePaymentExternal(payment: Payment): Promise<CoreResponse<void>> {
-    await this.dataSource.approvePaymentExternal(payment.externalId!);
-    return { error: undefined, value: undefined };
   }
 
   async save(payment: Payment): Promise<CoreResponse<void>> {

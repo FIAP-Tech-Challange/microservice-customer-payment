@@ -170,40 +170,6 @@ export class OrderController {
 
   @ApiResponse({
     status: 200,
-    description: 'order status successfully updated to Received',
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'Order status has not been updated',
-    type: BusinessException,
-  })
-  @ApiParam({
-    name: 'id',
-    description: 'Order ID',
-    type: String,
-    required: true,
-  })
-  @ApiOperation({ summary: 'Update status order by orderId for received' })
-  @ApiBearerAuth('access-token')
-  @UseGuards(StoreGuard)
-  @Patch(':id/received')
-  async updateStatusForReceived(
-    @Param('id') id: string,
-    @Request() req: RequestFromStore,
-  ): Promise<void> {
-    const { error: err } = await new OrderCoreController(
-      this.dataSource,
-    ).setOrderToReceived(id, req.storeId);
-
-    if (err) {
-      this.logger.error(`Failed to update order status: ${err.message}`);
-      throw new BusinessException(err.message, 400);
-    }
-    this.logger.log(`Order ${id} updated to status RECEIVED successfully`);
-  }
-
-  @ApiResponse({
-    status: 200,
     description: 'order status successfully updated to in progress',
   })
   @ApiResponse({
@@ -327,9 +293,12 @@ export class OrderController {
     @Param('id') id: string,
     @Request() req: RequestFromStore,
   ): Promise<void> {
-    const { error: err } = await new OrderCoreController(
-      this.dataSource,
-    ).setOrderToCanceled(id, req.storeId);
+    const coreController = new OrderCoreController(this.dataSource);
+
+    const { error: err } = await coreController.setOrderToCanceled(
+      id,
+      req.storeId,
+    );
 
     if (err) {
       this.logger.error(`Failed to update order status: ${err.message}`);

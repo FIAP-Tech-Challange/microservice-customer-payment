@@ -34,10 +34,7 @@ import { PaymentIdDto } from '.././dto/payment-id.dto';
 import { ExternalPaymentConsumersGuard } from '../../auth/guards/external-payment-consumers.guard';
 import { BusinessException } from '../../../shared/dto/business-exception.dto';
 import { StoreOrTotemGuard } from '../../auth/guards/store-or-totem.guard';
-import {
-  RequestFromStore,
-  RequestFromStoreOrTotem,
-} from '../../auth/dtos/request.dto';
+import { RequestFromStoreOrTotem } from '../../auth/dtos/request.dto';
 
 @ApiTags('Payment')
 @Controller({
@@ -128,10 +125,7 @@ export class PaymentController {
     @Request() req: RequestFromStoreOrTotem,
   ): Promise<PaymentResponseDto> {
     const coreController = new PaymentCoreController(this.dataSource);
-    const response = await coreController.findPaymentById(
-      params.id,
-      req.storeId,
-    );
+    const response = await coreController.findPaymentById(params.id);
 
     if (response.error) {
       this.logger.error(
@@ -145,6 +139,16 @@ export class PaymentController {
         'Something went wrong while finding the payment',
       );
     }
+
+    if (response.value.storeId !== req.storeId) {
+      this.logger.error(
+        `Payment with id ${params.id} not found for store ${req.storeId}`,
+      );
+      throw new NotFoundException(
+        `Payment with id ${params.id} not found for store ${req.storeId}`,
+      );
+    }
+
     this.logger.log(`Payment found successfully ${response.value.id}`);
     return {
       id: response.value.id,
@@ -177,15 +181,12 @@ export class PaymentController {
   @ApiBearerAuth('external-payment-consumer-key')
   @UseGuards(ExternalPaymentConsumersGuard)
   @Patch(':id/approve')
-  async approvePayment(
-    @Param('id') id: string,
-    @Request() req: RequestFromStore,
-  ): Promise<void> {
+  async approvePaymentHook(@Param('id') id: string): Promise<void> {
     const coreController = new PaymentCoreController(this.dataSource);
-    const approvePayment = await coreController.approvePayment(id, req.storeId);
+    const approvePayment = await coreController.approvePayment(id);
     if (approvePayment.error) {
       this.logger.log(
-        `Error aprove payment id ${id},  ${approvePayment.error.message}`,
+        `Error approve payment id ${id},  ${approvePayment.error.message}`,
       );
       if (approvePayment.error.code === ResourceNotFoundException.CODE) {
         throw new NotFoundException(approvePayment.error.message);
@@ -196,7 +197,7 @@ export class PaymentController {
         400,
       );
     }
-    this.logger.log(`Payment id ${id} aprove successfully`);
+    this.logger.log(`Payment id ${id} approve successfully`);
     return;
   }
 
@@ -219,15 +220,13 @@ export class PaymentController {
   @ApiBearerAuth('external-payment-consumer-key')
   @UseGuards(ExternalPaymentConsumersGuard)
   @Patch(':id/cancel')
-  async cancelPayment(
-    @Param('id') id: string,
-    @Request() req: RequestFromStore,
-  ): Promise<void> {
+  async cancelPaymentHook(@Param('id') id: string): Promise<void> {
     const coreController = new PaymentCoreController(this.dataSource);
-    const cancelPayment = await coreController.cancelPayment(id, req.storeId);
+    const cancelPayment = await coreController.cancelPayment(id);
+
     if (cancelPayment.error) {
       this.logger.log(
-        `Error aprove payment id ${id},  ${cancelPayment.error.message}`,
+        `Error canceling payment id ${id},  ${cancelPayment.error.message}`,
       );
       if (cancelPayment.error.code === ResourceNotFoundException.CODE) {
         throw new NotFoundException(cancelPayment.error.message);
