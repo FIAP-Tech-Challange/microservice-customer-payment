@@ -10,6 +10,7 @@ import { DataSourceProxy } from 'src/external/dataSources/dataSource.proxy';
 import { GeneralDataSource } from 'src/external/dataSources/general/general.dataSource';
 import { FakePaymentDataSource } from 'src/external/dataSources/payment/fake/fakePaymentDataSource';
 import { NotificationDataSource } from 'src/external/dataSources/notification/notification.dataSource';
+import { createMockGeneralDataSource } from '../../../mock/generalDataSource.mock';
 
 describe('CreateStoreWithDefaultCategoriesUseCase', () => {
   let storeGateway: StoreGateway;
@@ -23,35 +24,7 @@ describe('CreateStoreWithDefaultCategoriesUseCase', () => {
   let mockGeneralDataSource: jest.Mocked<GeneralDataSource>;
 
   beforeEach(() => {
-    mockGeneralDataSource = {
-      findStoreByEmail: jest.fn(),
-      findStoreByCnpj: jest.fn(),
-      findStoreByName: jest.fn(),
-      findStoreById: jest.fn(),
-      saveStore: jest.fn(),
-      findStoreByTotemAccessToken: jest.fn(),
-      findAllCategoriesByStoreId: jest.fn(),
-      saveCategory: jest.fn(),
-      findCategoryById: jest.fn(),
-      findCategoryByNameAndStoreId: jest.fn(),
-      findProductsById: jest.fn(),
-      savePayment: jest.fn(),
-      findPaymentById: jest.fn(),
-      findCustomerById: jest.fn(),
-      findCustomerByCpf: jest.fn(),
-      findCustomerByEmail: jest.fn(),
-      findAllCustomers: jest.fn(),
-      saveCustomer: jest.fn(),
-      deleteCustomer: jest.fn(),
-      saveOrder: jest.fn(),
-      deleteOrder: jest.fn(),
-      deleteOrderItem: jest.fn(),
-      getAllOrders: jest.fn(),
-      findOrderById: jest.fn(),
-      findByOrderItemId: jest.fn(),
-      getFilteredAndSortedOrders: jest.fn(),
-      saveNotification: jest.fn(),
-    };
+    mockGeneralDataSource = createMockGeneralDataSource();
 
     const mockNotificationDataSource: jest.Mocked<NotificationDataSource> = {
       sendSMSNotification: jest.fn(),
