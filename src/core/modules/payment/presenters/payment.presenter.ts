@@ -13,6 +13,7 @@ export class PaymentPresenter {
       qrCode: payment.qrCode!,
       platform: payment.platform!,
       paymentType: payment.paymentType,
+      storeId: payment.storeId,
     };
   }
 

@@ -21,7 +21,6 @@ export interface GeneralDataSource {
   findStoreByTotemAccessToken(
     accessToken: string,
   ): Promise<StoreDataSourceDTO | null>;
-  removeTotem(totemId: string): Promise<void>;
 
   // Product/Category
   findAllCategoriesByStoreId(storeId: string): Promise<CategoryDataSourceDTO[]>;
@@ -36,6 +35,7 @@ export interface GeneralDataSource {
   // Payment
   savePayment(paymentDTO: PaymentDataSourceDTO): Promise<void>;
   findPaymentById(paymentId: string): Promise<PaymentDataSourceDTO | null>;
+  findPaymentByOrderId(orderId: string): Promise<PaymentDataSourceDTO | null>;
 
   // Customer
   findCustomerById(id: string): Promise<CustomerDataSourceDTO | null>;

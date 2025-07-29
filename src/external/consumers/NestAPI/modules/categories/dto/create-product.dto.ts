@@ -4,6 +4,7 @@ import {
   IsNumber,
   IsUrl,
   IsPositive,
+  IsOptional,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -50,5 +51,6 @@ export class CreateProductDto {
     required: false,
   })
   @IsUrl()
+  @IsOptional()
   image_url?: string;
 }

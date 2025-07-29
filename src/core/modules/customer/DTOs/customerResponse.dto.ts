@@ -3,6 +3,4 @@ export interface CustomerResponseDTO {
   cpf: string;
   name: string;
   email: string;
-  createdAt: Date;
-  updatedAt: Date;
 }

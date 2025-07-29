@@ -268,6 +268,11 @@ export class CategoryController {
       this.logger.error(
         `Error creating product in category ${categoryId} for store ${req.storeId}: ${error.message}`,
       );
+
+      if (error instanceof BusinessException) {
+        throw error;
+      }
+
       throw new InternalServerErrorException(
         'An error occurred while creating the product. Please try again later.',
       );
