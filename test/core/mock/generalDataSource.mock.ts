@@ -16,7 +16,6 @@ export function createMockGeneralDataSource(): jest.Mocked<GeneralDataSource> {
     findStoreById: jest.fn(),
     saveStore: jest.fn(),
     findStoreByTotemAccessToken: jest.fn(),
-    removeTotem: jest.fn(),
 
     // Product/Category methods
     findAllCategoriesByStoreId: jest.fn(),
@@ -28,6 +27,7 @@ export function createMockGeneralDataSource(): jest.Mocked<GeneralDataSource> {
     // Payment methods
     savePayment: jest.fn(),
     findPaymentById: jest.fn(),
+    findPaymentByOrderId: jest.fn(),
 
     // Customer methods
     findCustomerById: jest.fn(),
