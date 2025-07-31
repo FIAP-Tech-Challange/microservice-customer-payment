@@ -1,0 +1,29 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: tech-challenge
+
+resources:
+  - namespace.yaml
+  - secrets.yaml
+  - deployment.yaml
+  - service.yaml
+  - hpa.yaml
+
+images:
+  - name: localhost:32000/tech-challenge
+    newTag: latest
+
+labels:
+  - includeSelectors: true
+    pairs:
+      app.kubernetes.io/name: tech-challenge
+      app.kubernetes.io/version: "1.0.0"
+      app.kubernetes.io/component: backend
+      app.kubernetes.io/part-of: tech-challenge-system
+
+configMapGenerator: []
+
+secretGenerator: []
+
+patches: []
