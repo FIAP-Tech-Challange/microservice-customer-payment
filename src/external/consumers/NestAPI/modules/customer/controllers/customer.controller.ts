@@ -1,8 +1,8 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Get,
+  InternalServerErrorException,
   Logger,
   Param,
   ParseUUIDPipe,
@@ -29,7 +29,6 @@ import { DataSourceProxy } from 'src/external/dataSources/dataSource.proxy';
 import { CustomerCoreController } from 'src/core/modules/customer/controllers/customer.controller';
 import { CustomerRequestParamsDto } from '../dtos/customer-request-params.dto';
 import { CustomerPaginationDto } from '../dtos/customer-pagination.dto';
-import { CpfPipe } from 'src/core/common/pipes/cpf.pipe';
 import { StoreOrTotemGuard } from '../../auth/guards/store-or-totem.guard';
 
 @ApiTags('Customer')
@@ -65,27 +64,28 @@ export class CustomerController {
   @UseGuards(StoreGuard)
   @Post()
   async create(@Body() dto: CreateCustomerDto): Promise<CustomerIdDto> {
-    try {
-      const coreController = new CustomerCoreController(this.dataSourceProxy);
-      const createCustomer = await coreController.createCustomer({
+    const coreController = new CustomerCoreController(this.dataSourceProxy);
+    const createCustomer = await coreController
+      .createCustomer({
         name: dto.name,
         email: dto.email,
         cpf: dto.cpf,
+      })
+      .catch((error) => {
+        this.logger.error(`Error in create customer: ${error.message}`);
+        throw new InternalServerErrorException(error.message);
       });
-      if (createCustomer.error) {
-        this.logger.error(
-          `Error creating customer: ${createCustomer.error.message}`,
-        );
-        throw new BusinessException(createCustomer.error.message, 400);
-      }
-      this.logger.log(
-        `Customer created successfully: ${createCustomer.value.id}`,
+
+    if (createCustomer.error) {
+      this.logger.error(
+        `Error creating customer: ${createCustomer.error.message}`,
       );
-      return { id: createCustomer.value.id };
-    } catch (error) {
-      this.logger.error(`Error in create customer: ${error.message}`);
-      throw new BadRequestException(error.message);
+      throw new BusinessException(createCustomer.error.message, 400);
     }
+    this.logger.log(
+      `Customer created successfully: ${createCustomer.value.id}`,
+    );
+    return { id: createCustomer.value.id };
   }
 
   @ApiResponse({
@@ -157,7 +157,7 @@ export class CustomerController {
     @Query() params: CustomerRequestParamsDto,
   ): Promise<CustomerPaginationDto> {
     const coreController = new CustomerCoreController(this.dataSourceProxy);
-    const { error, value: constumers } =
+    const { error, value: customers } =
       await coreController.findAllCustomersPaginated({
         page: params.page ?? 1,
         size: params.limit ?? 10,
@@ -170,13 +170,13 @@ export class CustomerController {
       this.logger.error(`Error finding all customers: ${error.message}`);
       throw new BusinessException(error.message, 404);
     }
-    this.logger.log(`Customers found successfully: ${constumers.data.length}`);
+    this.logger.log(`Customers found successfully: ${customers.data.length}`);
     return {
-      page: constumers.page,
-      limit: constumers.limit,
-      total: constumers.total,
-      totalPages: constumers.totalPages,
-      data: constumers.data,
+      page: customers.page,
+      limit: customers.limit,
+      total: customers.total,
+      totalPages: customers.totalPages,
+      data: customers.data,
     };
   }
 
@@ -205,13 +205,11 @@ export class CustomerController {
   @ApiOperation({ summary: 'Find a customer by CPF' })
   @ApiBearerAuth('access-token')
   @ApiBearerAuth('totem-token')
-  //@UseGuards(StoreOrTotemGuard)
+  @UseGuards(StoreOrTotemGuard)
   @Get('cpf/:cpf')
-  async findByCpf(
-    @Param('cpf', CpfPipe) cpf: string,
-  ): Promise<CustomerResponseDto> {
+  async findByCpf(@Param('cpf') cpf: string): Promise<CustomerResponseDto> {
     const coreController = new CustomerCoreController(this.dataSourceProxy);
-    const { error, value: costumer } =
+    const { error, value: customer } =
       await coreController.findCustomerByCPF(cpf);
     if (error) {
       this.logger.error(
@@ -219,7 +217,7 @@ export class CustomerController {
       );
       throw new BusinessException(error.message, 404);
     }
-    this.logger.log(`Customer found successfully: ${costumer.id}`);
-    return costumer;
+    this.logger.log(`Customer found successfully: ${customer.id}`);
+    return customer;
   }
 }

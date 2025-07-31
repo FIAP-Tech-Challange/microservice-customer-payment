@@ -30,20 +30,4 @@ export class FakePaymentDataSource implements PaymentDataSource {
           : null,
     });
   }
-  rejectPaymentExternal(externalId: string): Promise<void> {
-    if (!this.payments.has(externalId)) {
-      throw new Error(`Payment with external ID ${externalId} not found.`);
-    }
-
-    this.payments.delete(externalId);
-    return Promise.resolve();
-  }
-  approvePaymentExternal(externalId: string): Promise<void> {
-    if (!this.payments.has(externalId)) {
-      throw new Error(`Payment with external ID ${externalId} not found.`);
-    }
-
-    // Simulate approval logic
-    return Promise.resolve();
-  }
 }

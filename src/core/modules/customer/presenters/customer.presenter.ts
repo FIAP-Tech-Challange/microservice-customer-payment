@@ -10,8 +10,6 @@ export class CustomerPresenter {
       cpf: customer.cpf.format(),
       name: customer.name,
       email: customer.email.toString(),
-      createdAt: customer.createdAt,
-      updatedAt: customer.updatedAt,
     };
   }
 

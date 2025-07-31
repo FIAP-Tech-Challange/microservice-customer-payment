@@ -23,7 +23,6 @@ export interface DataSource {
   findStoreByTotemAccessToken(
     accessToken: string,
   ): Promise<StoreDataSourceDTO | null>;
-  removeTotem(totemId: string): Promise<void>;
 
   // Product/Category
   findAllCategoriesByStoreId(storeId: string): Promise<CategoryDataSourceDTO[]>;
@@ -38,11 +37,10 @@ export interface DataSource {
   // Payment
   savePayment(paymentDTO: PaymentDataSourceDTO): Promise<void>;
   findPaymentById(paymentId: string): Promise<PaymentDataSourceDTO | null>;
+  findPaymentByOrderId(orderId: string): Promise<PaymentDataSourceDTO | null>;
   createPaymentExternal(
     paymentDTO: PaymentExternalDataSourceDTO,
   ): Promise<PaymentCreateExternalDataSourceResponseDTO>;
-  rejectPaymentExternal(externalId: string): Promise<void>;
-  approvePaymentExternal(externalId: string): Promise<void>;
 
   // Customer
   findCustomerById(id: string): Promise<CustomerDataSourceDTO | null>;

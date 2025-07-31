@@ -77,9 +77,6 @@ export class DataSourceProxy implements DataSource {
   ): Promise<StoreDataSourceDTO | null> {
     return this.generalDataSource.findStoreByTotemAccessToken(accessToken);
   }
-  removeTotem(totemId: string): Promise<void> {
-    return this.generalDataSource.removeTotem(totemId);
-  }
 
   // Product/Category
   findAllCategoriesByStoreId(
@@ -109,11 +106,8 @@ export class DataSourceProxy implements DataSource {
   findPaymentById(paymentId: string): Promise<PaymentDataSourceDTO | null> {
     return this.generalDataSource.findPaymentById(paymentId);
   }
-  rejectPaymentExternal(externalId: string): Promise<void> {
-    return this.paymentDataSource.rejectPaymentExternal(externalId);
-  }
-  approvePaymentExternal(externalId: string): Promise<void> {
-    return this.paymentDataSource.approvePaymentExternal(externalId);
+  findPaymentByOrderId(orderId: string): Promise<PaymentDataSourceDTO | null> {
+    return this.generalDataSource.findPaymentByOrderId(orderId);
   }
   savePayment(paymentDTO: PaymentDataSourceDTO): Promise<void> {
     return this.generalDataSource.savePayment(paymentDTO);

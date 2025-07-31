@@ -17,6 +17,7 @@ export class TotemEntity {
 
   @ManyToOne(() => StoreEntity, (store) => store.totems, {
     onDelete: 'CASCADE',
+    orphanedRowAction: 'delete',
   })
   @JoinColumn({ name: 'store_id' })
   store: StoreEntity;

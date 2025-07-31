@@ -11,10 +11,9 @@ import { DeleteOrderUseCase } from '../useCases/deleteOrder.useCase';
 import { DeleteOrderItemUseCase } from '../useCases/deleteOrderItem.useCase';
 import { getAllOrdersUseCase } from '../useCases/getAllOrders.useCase';
 import { getFilteredAndSortedOrdersUseCase } from '../useCases/getFilteredAndSortedOrders.useCase';
-import { setOrderToCanceledUseCase } from '../useCases/setOrderToCanceled.useCase';
+import { SetOrderToCanceledUseCase } from '../useCases/setOrderToCanceled.useCase';
 import { setOrderToFinishedUseCase } from '../useCases/setOrderToFinished.useCase';
 import { setOrderToReadyUseCase } from '../useCases/setOrderToReady.useCase';
-import { setOrderToReceivedUseCase } from '../useCases/setOrderToReceived.useCase';
 import { setOrderToInProgressUseCase } from '../useCases/setOrderToInProgress.useCase';
 import { OrderPaginationDto } from 'src/external/consumers/NestAPI/modules/order/dtos/order-pagination.dto';
 import { OrderSortedListDto } from 'src/external/consumers/NestAPI/modules/order/dtos/order-sorted-list.dto';
@@ -229,7 +228,7 @@ export class OrderCoreController {
     try {
       const gateway = new OrderGateway(this.dataSource);
       const findOrderUseCase = new FindOrderByIdUseCase(gateway);
-      const useCase = new setOrderToCanceledUseCase(gateway, findOrderUseCase);
+      const useCase = new SetOrderToCanceledUseCase(gateway, findOrderUseCase);
 
       const { error } = await useCase.execute(orderId, storeId);
 
@@ -294,32 +293,6 @@ export class OrderCoreController {
       return {
         error: new UnexpectedError(
           `Something went wrong while setting order to ready.. ${error}`,
-        ),
-        value: undefined,
-      };
-    }
-  }
-
-  async setOrderToReceived(
-    orderId: string,
-    storeId: string,
-  ): Promise<CoreResponse<void>> {
-    try {
-      const gateway = new OrderGateway(this.dataSource);
-      const findOrderUseCase = new FindOrderByIdUseCase(gateway);
-      const useCase = new setOrderToReceivedUseCase(gateway, findOrderUseCase);
-
-      const { error } = await useCase.execute(orderId, storeId);
-
-      if (error) {
-        return { error: error, value: undefined };
-      }
-
-      return { error: undefined, value: undefined };
-    } catch (error) {
-      return {
-        error: new UnexpectedError(
-          `Something went wrong while setting order to received.. ${error}`,
         ),
         value: undefined,
       };
