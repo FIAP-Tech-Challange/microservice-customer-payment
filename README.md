@@ -481,13 +481,6 @@ DB_DATABASE=tech_challenge
 
 # JWT
 JWT_SECRET=your-secret-key
-
-# Mercado Pago (não há integração por enquanto)
-MERCADO_PAGO_ACCESS_TOKEN=your-token
-MERCADO_PAGO_WEBHOOK_SECRET=your-webhook-secret
-
-# Sistema de Pagamento
-FAKE_PAYMENT_PROVIDER=S  # S=Fake, N=Real (por enquanto temos somente a fake)
 ```
 
 #### **Portas e Endpoints:**
