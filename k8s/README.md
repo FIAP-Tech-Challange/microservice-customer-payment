@@ -227,29 +227,6 @@ microk8s kubectl rollout restart deployment/tech-challenge-app-deployment -n tec
 microk8s kubectl rollout restart deployment/postgres-deployment -n tech-challenge
 ```
 
-### **Configuração do Sistema de Pagamentos**
-
-#### **Alternar entre Pagamento Fake e Real:**
-```bash
-# 1. Editar secrets.yaml
-# Para FAKE (desenvolvimento/testes):
-FAKE_PAYMENT_PROVIDER: Uw==  # base64 de "S"
-
-# Para REAL (produção):
-FAKE_PAYMENT_PROVIDER: Tg==  # base64 de "N"
-
-# 2. Aplicar mudanças
-microk8s kubectl apply -f secrets.yaml
-
-#### **Atualizar Credenciais do Mercado Pago:**
-```bash
-# 1. Codificar novos valores em base64
-echo "SEU_NOVO_ACCESS_TOKEN" | base64
-
-# 2. Atualizar secrets.yaml com os novos valores
-# 3. Aplicar e restart (comandos acima)
-```
-
 #### **Configuração dos Secrets**
 
 Para modificar configurações nos secrets:
