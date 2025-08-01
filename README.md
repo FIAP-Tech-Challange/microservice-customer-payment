@@ -13,7 +13,7 @@ Sistema de autoatendimento para lanchonetes desenvolvido com **Clean Architectur
 - **👥 Clientes**: Cadastro opcional com CPF para identificação
 - **📦 Produtos e Categorias**: Catálogo organizado por categorias
 - **🛒 Pedidos**: Fluxo completo do pedido com rastreamento de status
-- **💳 Pagamentos**: Integração com Mercado Pago e simulador fake
+- **💳 Pagamentos**: Simulador fake de pagamentos
 - **📊 Dashboard**: Acompanhamento de pedidos em tempo real
 - **☁️ Deploy Kubernetes**: Infraestrutura escalável e resiliente
 
@@ -27,7 +27,7 @@ A solução foi projetada seguindo os princípios de **Clean Architecture** para
 
 - **Autoatendimento**: Sistema para pedidos sem necessidade de atendente
 - **Gestão de Filas**: Controle inteligente de pedidos por status e prioridade
-- **Pagamentos Seguros**: Integração com Mercado Pago e fallback simulado
+- **Pagamentos Seguros**: Integração e fallback simulado
 - **Escalabilidade**: Suporte a múltiplas lojas e totens
 - **Rastreabilidade**: Acompanhamento completo do ciclo do pedido
 
@@ -37,7 +37,7 @@ A solução foi projetada seguindo os princípios de **Clean Architecture** para
 graph TD
     A[Load Balancer] --> B[NestJS App - Pods 2-8]
     B --> C[PostgreSQL]
-    B --> D[Mercado Pago API]
+    B --> D[Fake Pagamento API]
     E[Horizontal Pod Autoscaler] --> B
     F[Metrics Server] --> E
     G[Kubernetes Cluster] --> A
@@ -58,7 +58,7 @@ graph TD
 - **Backend**: NestJS + TypeScript + Clean Architecture
 - **Banco de Dados**: PostgreSQL com TypeORM
 - **Container**: Docker + Kubernetes
-- **Pagamentos**: Mercado Pago API + Simulador Fake
+- **Pagamentos**: Simulador Fake
 - **Testes**: Jest + Supertest
 - **Documentação**: Swagger/OpenAPI
 
@@ -482,12 +482,12 @@ DB_DATABASE=tech_challenge
 # JWT
 JWT_SECRET=your-secret-key
 
-# Mercado Pago
+# Mercado Pago (não há integração por enquanto)
 MERCADO_PAGO_ACCESS_TOKEN=your-token
 MERCADO_PAGO_WEBHOOK_SECRET=your-webhook-secret
 
 # Sistema de Pagamento
-FAKE_PAYMENT_PROVIDER=S  # S=Fake, N=Real
+FAKE_PAYMENT_PROVIDER=S  # S=Fake, N=Real (por enquanto temos somente a fake)
 ```
 
 #### **Portas e Endpoints:**
