@@ -210,31 +210,6 @@ spec:
             secretKeyRef:
               name: tech-challenge-secrets
               key: JWT_REFRESH_TOKEN_EXPIRATION_TIME
-        - name: PAID_MARKET_BASE_URL
-          valueFrom:
-            secretKeyRef:
-              name: tech-challenge-secrets
-              key: PAID_MARKET_BASE_URL
-        - name: PAID_MARKET_ACCESS_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: tech-challenge-secrets
-              key: PAID_MARKET_ACCESS_TOKEN
-        - name: PAID_MARKET_USER_ID
-          valueFrom:
-            secretKeyRef:
-              name: tech-challenge-secrets
-              key: PAID_MARKET_USER_ID
-        - name: PAID_MARKET_CHECKOUT
-          valueFrom:
-            secretKeyRef:
-              name: tech-challenge-secrets
-              key: PAID_MARKET_CHECKOUT
-        - name: FAKE_PAYMENT_PROVIDER
-          valueFrom:
-            secretKeyRef:
-              name: tech-challenge-secrets
-              key: FAKE_PAYMENT_PROVIDER
         resources:
           requests:
             memory: "128Mi"

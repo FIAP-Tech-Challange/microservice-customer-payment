@@ -241,13 +241,6 @@ FAKE_PAYMENT_PROVIDER: Tg==  # base64 de "N"
 # 2. Aplicar mudanças
 microk8s kubectl apply -f secrets.yaml
 
-# 3. Restart obrigatório para carregar nova configuração
-microk8s kubectl rollout restart deployment/tech-challenge-app-deployment -n tech-challenge
-
-# 4. Verificar aplicação da mudança
-microk8s kubectl rollout status deployment/tech-challenge-app-deployment -n tech-challenge
-```
-
 #### **Atualizar Credenciais do Mercado Pago:**
 ```bash
 # 1. Codificar novos valores em base64
