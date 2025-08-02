@@ -29,7 +29,6 @@ Contém todas as configurações sensíveis codificadas em base64:
 - Credenciais do PostgreSQL (usuário, senha, database)
 - URL de conexão com o banco
 - Chaves JWT para autenticação
-- Configurações do Mercado Pago (webhook, access token)
 - Porta da aplicação
 
 #### **deployment.yaml**
