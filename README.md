@@ -445,8 +445,7 @@ strategy:
 
 ### 📹 Vídeo Demonstrativo
 
-**🔗 Link do Vídeo Estrutura**: [https://www.youtube.com](TODO)
-**🔗 Link do Vídeo Kubernetes**: [https://www.youtube.com](TODO)
+**🔗 Link do Vídeo**: [https://www.youtube.com/watch?v=AiEWQPJ_DV4]
 
 **📋 Conteúdo Demonstrado:**
 
