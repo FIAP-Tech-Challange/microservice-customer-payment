@@ -9,6 +9,8 @@ import { CategoryEntity } from './entities/category.entity';
 import { ProductEntity } from './entities/product.entity';
 import { NotificationEntity } from './entities/notification.entity';
 import { PaymentEntity } from './entities/payment.entity';
+import * as fs from 'fs';
+import * as path from 'path';
 
 const dataSourceOptions: DataSourceOptions = {
   type: 'postgres',
@@ -30,6 +32,13 @@ const dataSourceOptions: DataSourceOptions = {
   ],
   migrations: [__dirname + '/migrations/*.{js,ts}'],
   synchronize: false,
+  ssl: {
+    ca: fs
+      .readFileSync(
+        path.join(process.cwd(), 'certs', 'rds-combined-ca-bundle.pem'),
+      )
+      .toString(),
+  },
 };
 
 const dataSource = new DataSource(dataSourceOptions);
