@@ -8,6 +8,8 @@ import { CategoryEntity } from './entities/category.entity';
 import { ProductEntity } from './entities/product.entity';
 import { PaymentEntity } from './entities/payment.entity';
 import { NotificationEntity } from './entities/notification.entity';
+import * as fs from 'fs';
+import * as path from 'path';
 
 export interface PostgresConfig {
   host: string;
@@ -39,6 +41,13 @@ export class PostgresDataSourceConfig {
       ],
       synchronize: false,
       logging: false,
+      ssl: {
+        ca: fs
+          .readFileSync(
+            path.join(process.cwd(), 'certs', 'rds-combined-ca-bundle.pem'),
+          )
+          .toString(),
+      },
     });
   }
 }

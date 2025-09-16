@@ -2,6 +2,20 @@
 
 set -e
 
+CERTS_DIR="/app/certs"
+CERT_FILE="$CERTS_DIR/rds-combined-ca-bundle.pem"
+
+# 🔽 Baixar certificado RDS
+echo "📥 Baixando certificado RDS CA bundle..."
+mkdir -p "$CERTS_DIR"
+curl -s https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem -o "$CERT_FILE"
+
+if [ ! -s "$CERT_FILE" ]; then
+  echo "❌ Falha ao baixar certificado RDS."
+  exit 1
+fi
+echo "✅ Certificado RDS salvo em $CERT_FILE"
+
 echo "🔄 Aguardando o PostgreSQL iniciar..."
 until PGPASSWORD=$DB_PG_PASSWORD psql -h "$DB_PG_HOST" -U "$DB_PG_USER" -d "$DB_PG_NAME" -c '\q'; do
   echo "🔄 PostgreSQL indisponível - esperando..."

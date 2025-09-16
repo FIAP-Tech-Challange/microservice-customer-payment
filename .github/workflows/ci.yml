@@ -15,6 +15,7 @@ jobs:
       - name: Set up environment file from secrets
         run: |
           cat <<EOF > .env
+          DB_PG_HOST=${{ secrets.DB_PG_HOST }}
           DB_PG_USER=${{ secrets.DB_PG_USER }}
           DB_PG_PASSWORD=${{ secrets.DB_PG_PASSWORD }}
           DB_PG_NAME=${{ secrets.DB_PG_NAME }}

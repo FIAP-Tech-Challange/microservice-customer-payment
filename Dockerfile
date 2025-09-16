@@ -12,7 +12,7 @@ FROM node:24-alpine
 
 WORKDIR /app
 
-RUN apk update && apk add --no-cache postgresql-client
+RUN apk update && apk add --no-cache postgresql-client curl
 
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/node_modules ./node_modules

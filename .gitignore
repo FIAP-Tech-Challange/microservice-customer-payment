@@ -3,6 +3,7 @@
 /node_modules
 /build
 /rest-client
+certs/rds-combined-ca-bundle.pem
 
 # Logs
 logs
