@@ -5,11 +5,7 @@ import applicationConfig from './infra/config/application.config';
 import databaseConfig from './infra/config/database.config';
 import { AuthModule } from './modules/auth/auth.module';
 import { DataSourceModule } from './shared/data-source.module';
-import { StoresModule } from './modules/stores/stores.module';
-import { OrderModule } from './modules/order/order.module';
 import { CustomerModule } from './modules/customer/customer.module';
-import { CategoryModule } from './modules/categories/category.module';
-import { PaymentModule } from './modules/payment/payment.module';
 
 @Module({
   imports: [
@@ -20,11 +16,7 @@ import { PaymentModule } from './modules/payment/payment.module';
     DataSourceModule,
     HealthModule,
     AuthModule,
-    StoresModule,
-    OrderModule,
     CustomerModule,
-    CategoryModule,
-    PaymentModule,
   ],
   controllers: [],
   providers: [],

@@ -1,6 +1,22 @@
 version: '3.8'
 
 services:
+  postgres:
+    image: postgres:15
+    container_name: 'postgres'
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${DB_PG_USER}
+      POSTGRES_PASSWORD: ${DB_PG_PASSWORD}
+      POSTGRES_DB: ${DB_PG_NAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
   app:
     build: .
     container_name: app
@@ -14,3 +30,14 @@ services:
       DB_PG_USER: ${DB_PG_USER}
       DB_PG_PASSWORD: ${DB_PG_PASSWORD}
       DB_PG_NAME: ${DB_PG_NAME}
+    depends_on:
+      - postgres
+    networks:
+      - app-network
+
+volumes:
+  postgres_data:
+
+networks:
+  app-network:
+    driver: bridge

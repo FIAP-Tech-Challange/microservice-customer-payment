@@ -22,14 +22,13 @@ import {
 } from '@nestjs/swagger';
 import { CustomerIdDto } from '../dtos/customer-id.dto';
 import { BusinessException } from '../../../shared/dto/business-exception.dto';
-import { StoreGuard } from '../../auth/guards/store.guard';
 import { CreateCustomerDto } from '../dtos/create-customer.dto';
 import { CustomerResponseDto } from '../dtos/response-customer.dto';
 import { DataSourceProxy } from 'src/external/dataSources/dataSource.proxy';
 import { CustomerCoreController } from 'src/core/modules/customer/controllers/customer.controller';
 import { CustomerRequestParamsDto } from '../dtos/customer-request-params.dto';
 import { CustomerPaginationDto } from '../dtos/customer-pagination.dto';
-import { StoreOrTotemGuard } from '../../auth/guards/store-or-totem.guard';
+import { ApiKeyGuard } from '../../auth/guards/api-key.guard';
 
 @ApiTags('Customer')
 @Controller({
@@ -60,8 +59,8 @@ export class CustomerController {
     type: CreateCustomerDto,
   })
   @ApiOperation({ summary: 'Register your customer' })
-  @ApiBearerAuth('access-token')
-  @UseGuards(StoreGuard)
+  @ApiBearerAuth('api-key')
+  @UseGuards(ApiKeyGuard)
   @Post()
   async create(@Body() dto: CreateCustomerDto): Promise<CustomerIdDto> {
     const coreController = new CustomerCoreController(this.dataSourceProxy);
@@ -102,8 +101,8 @@ export class CustomerController {
     summary: 'Find Customer',
     description: 'Retrieves the customer based on the customerId.',
   })
-  @ApiBearerAuth('access-token')
-  @UseGuards(StoreGuard)
+  @ApiBearerAuth('api-key')
+  @UseGuards(ApiKeyGuard)
   @Get(':id')
   async findById(
     @Req() req,
@@ -149,9 +148,8 @@ export class CustomerController {
     type: Number,
   })
   @ApiOperation({ summary: 'List all customers' })
-  @ApiBearerAuth('access-token')
-  @ApiBearerAuth('totem-token')
-  @UseGuards(StoreOrTotemGuard)
+  @ApiBearerAuth('api-key')
+  @UseGuards(ApiKeyGuard)
   @Get()
   async findAll(
     @Query() params: CustomerRequestParamsDto,
@@ -203,9 +201,8 @@ export class CustomerController {
     example: '12609871677',
   })
   @ApiOperation({ summary: 'Find a customer by CPF' })
-  @ApiBearerAuth('access-token')
-  @ApiBearerAuth('totem-token')
-  @UseGuards(StoreOrTotemGuard)
+  @ApiBearerAuth('api-key')
+  @UseGuards(ApiKeyGuard)
   @Get('cpf/:cpf')
   async findByCpf(@Param('cpf') cpf: string): Promise<CustomerResponseDto> {
     const coreController = new CustomerCoreController(this.dataSourceProxy);
