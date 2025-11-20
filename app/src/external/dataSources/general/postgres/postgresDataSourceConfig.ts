@@ -1,7 +1,7 @@
 import { DataSource } from 'typeorm';
 import { CustomerEntity } from './entities/customer.entity';
-//import * as fs from 'fs';
-//import * as path from 'path';
+import * as fs from 'fs';
+import * as path from 'path';
 
 export interface PostgresConfig {
   host: string;
@@ -25,13 +25,13 @@ export class PostgresDataSourceConfig {
       ],
       synchronize: false,
       logging: false,
-      /*ssl: {
+      ssl: {
         ca: fs
           .readFileSync(
             path.join(process.cwd(), 'certs', 'rds-combined-ca-bundle.pem'),
           )
           .toString(),
-      },*/
+      },
     });
   }
 }

@@ -1,8 +1,8 @@
 import 'dotenv/config';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { CustomerEntity } from './entities/customer.entity';
-//import * as fs from 'fs';
-//import * as path from 'path';
+import * as fs from 'fs';
+import * as path from 'path';
 
 const dataSourceOptions: DataSourceOptions = {
   type: 'postgres',
@@ -16,13 +16,13 @@ const dataSourceOptions: DataSourceOptions = {
   ],
   migrations: [__dirname + '/migrations/*.{js,ts}'],
   synchronize: false,
-  /*ssl: {
+  ssl: {
     ca: fs
       .readFileSync(
         path.join(process.cwd(), 'certs', 'rds-combined-ca-bundle.pem'),
       )
       .toString(),
-  },*/
+  },
 };
 
 const dataSource = new DataSource(dataSourceOptions);
