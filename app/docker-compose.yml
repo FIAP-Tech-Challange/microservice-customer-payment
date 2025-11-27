@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: app
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      DB_PG_HOST: ${DB_PG_HOST}
+      DB_PG_PORT:  ${DB_PG_PORT}
+      DB_PG_USER: ${DB_PG_USER}
+      DB_PG_PASSWORD: ${DB_PG_PASSWORD}
+      DB_PG_NAME: ${DB_PG_NAME}

@@ -1,0 +1,14 @@
+# Database Configuration
+DB_PG_HOST='localhost'
+DB_PG_PORT='5432'
+DB_PG_USER='postgres'
+DB_PG_PASSWORD='postgres'
+DB_PG_NAME='postgres'
+DB_PG_LOGGING=true
+# Application Configuration
+NODE_ENV=development
+API_KEY=tech_challenge_secret_key
+PAYMENT_EXTERNAL_API_WEB_HOOK_KEY='PAYMENT_EXTERNAL_API_WEB_HOOK_KEY'
+JWT_SECRET=your_jwt_secret_key_here
+JWT_ACCESS_TOKEN_EXPIRATION_TIME=1h
+JWT_REFRESH_TOKEN_EXPIRATION_TIME=86400
