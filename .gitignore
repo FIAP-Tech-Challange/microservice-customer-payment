@@ -6,10 +6,11 @@
 certs/rds-combined-ca-bundle.pem
 
 *.tfvars
-infra/database/.terraform/
+.terraform/
 *.tfstate
 *.tfstate.backup
-infra/database/.terraform.lock.hcl
+.terraform.lock.hcl
+tfplan
 
 # Logs
 logs

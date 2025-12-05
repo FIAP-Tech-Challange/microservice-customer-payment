@@ -1,0 +1,168 @@
+name: 🚀 Deploy Infra & App
+
+on:
+  push:
+    branches:
+      - develop
+    paths:
+      - 'app/**'
+      - 'infra/ecs/**' 
+      - 'terraform/**'
+      - '.github/workflows/app.yml'
+
+jobs:
+  build:
+    name: 🐳 Build & Push Image
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.tags.outputs.version }}
+      terraform_bucket: ${{ steps.bootstrap.outputs.bucket_name }}
+    
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🔑 Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }} 
+          aws-region: us-east-1
+
+      - name: 🪣 Bootstrap Terraform State Bucket
+        id: bootstrap
+        run: |
+          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+          BUCKET_NAME="terraform-state-${ACCOUNT_ID}"
+          REGION="us-east-1"
+          
+          echo "Verifying bucket: $BUCKET_NAME"
+          if aws s3api head-bucket --bucket "$BUCKET_NAME" 2>/dev/null; then
+            echo "Bucket exists."
+          else
+            echo "Creating bucket..."
+            aws s3api create-bucket --bucket "$BUCKET_NAME" --region "$REGION"
+          fi
+          
+          # Exporta para outputs do Job
+          echo "bucket_name=$BUCKET_NAME" >> $GITHUB_OUTPUT
+
+
+      - name: 📎 Fetch DB Parameters (Build Args)
+        id: ssm-params
+        run: |
+          PARAMS=$(aws ssm get-parameters --names "/main/rds_endpoint" "/main/db_username" "/main/db_password" --with-decryption --query "Parameters[].{Name:Name,Value:Value}" --output json)
+          
+          # Tratamento de erro caso parametros não existam
+          if [ "$PARAMS" == "[]" ]; then
+            echo "❌ Erro: Parâmetros não encontrados no SSM"
+            exit 1
+          fi
+
+          echo "DB_PG_HOST=$(echo $PARAMS | jq -r '.[] | select(.Name=="/main/rds_endpoint") | .Value')" >> $GITHUB_ENV
+          echo "DB_PG_USER=$(echo $PARAMS | jq -r '.[] | select(.Name=="/main/db_username") | .Value')" >> $GITHUB_ENV
+          DB_PASS=$(echo $PARAMS | jq -r '.[] | select(.Name=="/main/db_password") | .Value')
+          echo "DB_PG_PASSWORD=$DB_PASS" >> $GITHUB_ENV
+          echo "::add-mask::$DB_PASS"
+
+      - name: 🔓 Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: 🏷️ Define Tags
+        id: tags
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPO: ${{ secrets.REPOSITORY_ECR_NAME }}
+          COMMIT_HASH: ${{ github.sha }}
+        run: |
+          # Cria tags para Docker e para saída
+          IMAGE_URI="$ECR_REGISTRY/$ECR_REPO"
+          TAGS="$IMAGE_URI:$COMMIT_HASH"
+          
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            TAGS="$TAGS,$IMAGE_URI:latest"
+          fi
+          
+          echo "tags=$TAGS" >> $GITHUB_OUTPUT
+          echo "version=$COMMIT_HASH" >> $GITHUB_OUTPUT
+
+      - name: 🏗️ Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🐳 Build and Push
+        id: docker-build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ steps.tags.outputs.tags }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            DB_PG_HOST=${{ env.DB_PG_HOST }}
+            DB_PG_USER=${{ env.DB_PG_USER }}
+            DB_PG_PASSWORD=${{ env.DB_PG_PASSWORD }}
+            DB_PG_NAME=${{ secrets.DB_PG_NAME }}
+            DB_PG_PORT=${{ secrets.DB_PG_PORT }}
+            API_KEY=${{ secrets.API_KEY }}
+
+  deploy:
+    name: ☁️ Deploy Terraform
+    needs: build
+    runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        working-directory: ./terraform
+    
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🔑 Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: us-east-1
+
+      - name: 📎 Fetch DB Parameters (Runtime)
+        run: |
+          PARAMS=$(aws ssm get-parameters --names "/main/rds_endpoint" "/main/db_username" "/main/db_password" --with-decryption --query "Parameters[].{Name:Name,Value:Value}" --output json)
+
+          echo "DB_PG_HOST=$(echo $PARAMS | jq -r '.[] | select(.Name=="/main/rds_endpoint") | .Value')" >> $GITHUB_ENV
+          echo "DB_PG_USER=$(echo $PARAMS | jq -r '.[] | select(.Name=="/main/db_username") | .Value')" >> $GITHUB_ENV
+          DB_PASS=$(echo $PARAMS | jq -r '.[] | select(.Name=="/main/db_password") | .Value')
+          echo "DB_PG_PASSWORD=$DB_PASS" >> $GITHUB_ENV
+          echo "::add-mask::$DB_PASS"
+
+      - name: 🛠️ Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.0
+
+      - name: 🔄 Terraform Init
+        run: |
+          echo "🔧 Inicializando Terraform com Bucket: ${{ needs.build.outputs.terraform_bucket }}"
+          terraform init \
+            -backend-config="bucket=${{ needs.build.outputs.terraform_bucket }}" \
+            -backend-config="key=terraform.tfstate" \
+            -backend-config="region=us-east-1"
+
+      - name: 🚀 Terraform Apply
+        env:
+          TF_VAR_ecr_repository_name: ${{ secrets.REPOSITORY_ECR_NAME }}
+          TF_VAR_api_key: ${{ secrets.API_KEY }}
+          TF_VAR_db_pg_name: ${{ secrets.DB_PG_NAME }}
+          TF_VAR_db_pg_port: ${{ secrets.DB_PG_PORT }}          
+          TF_VAR_image_tag: ${{ needs.build.outputs.image_tag }}
+
+          TF_VAR_db_pg_host: ${{ env.DB_PG_HOST }}
+          TF_VAR_db_pg_username: ${{ env.DB_PG_USER }} 
+          TF_VAR_db_pg_password: ${{ env.DB_PG_PASSWORD }}
+        run: |
+          terraform apply -auto-approve -no-color
