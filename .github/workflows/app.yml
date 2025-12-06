@@ -153,8 +153,9 @@ jobs:
             -backend-config="key=terraform.tfstate" \
             -backend-config="region=us-east-1"
 
-      - name: 🚀 Terraform Apply
+      - name: 🚀 Terraform Workflow (Validate -> Plan -> Apply)
         env:
+          TF_VAR_project_name: ${{ secrets.PROJECT_NAME }}
           TF_VAR_ecr_repository_name: ${{ secrets.REPOSITORY_ECR_NAME }}
           TF_VAR_api_key: ${{ secrets.API_KEY }}
           TF_VAR_db_pg_name: ${{ secrets.DB_PG_NAME }}
@@ -165,4 +166,13 @@ jobs:
           TF_VAR_db_pg_username: ${{ env.DB_PG_USER }} 
           TF_VAR_db_pg_password: ${{ env.DB_PG_PASSWORD }}
         run: |
-          terraform apply -auto-approve -no-color
+          echo "🔎 Validando sintaxe do Terraform..."
+          terraform validate -no-color
+
+          echo "📋 Gerando Plano de Execução (Dry-Run)..."
+          # O -out=tfplan salva o plano num arquivo para garantir que o apply execute EXATAMENTE isso
+          terraform plan -out=tfplan -no-color
+
+          echo "🚀 Aplicando Infraestrutura..."
+          # Aplica o arquivo gerado no passo anterior
+          terraform apply -auto-approve -no-color tfplan
