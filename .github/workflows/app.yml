@@ -95,8 +95,8 @@ jobs:
         id: docker-build
         uses: docker/build-push-action@v5
         with:
-          context: .
-          file: ./Dockerfile
+          context: ./app
+          file: ./app/Dockerfile
           push: true
           tags: ${{ steps.tags.outputs.tags }}
           cache-from: type=gha
@@ -116,7 +116,7 @@ jobs:
     
     defaults:
       run:
-        working-directory: ./terraform
+        working-directory: ./infra/ecs
     
     steps:
       - name: 📥 Checkout Code
