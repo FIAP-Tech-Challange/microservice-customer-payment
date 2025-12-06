@@ -4,14 +4,10 @@ on:
   pull_request:
     branches:
       - main
-      - qa
-      - develop
+    paths:
+      - 'infra/database/**' 
+      - '.github/workflows/database.yml'
 
-  push:
-    branches:
-      - main
-      - qa
-      - develop
 
 jobs:
   terraform:
