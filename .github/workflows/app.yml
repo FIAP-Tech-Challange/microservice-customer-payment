@@ -3,12 +3,19 @@ name: 🚀 Deploy Infra & App
 on:
   push:
     branches:
-      - develop
+      - develop # alterar em prod para main
     paths:
       - 'app/**'
       - 'infra/ecs/**' 
       - 'terraform/**'
       - '.github/workflows/app.yml'
+  pull_request:
+    branches:
+      - develop # alterar em prod para main
+    paths:
+      - 'app/**'
+      - 'infra/ecs/**'
+      - 'terraform/**'
 
 jobs:
   build:
@@ -21,6 +28,13 @@ jobs:
     steps:
       - name: 📥 Checkout Code
         uses: actions/checkout@v4
+
+      - name: 🛡️ Verify Build Secrets
+        run: |
+          if [[ -z "${{ secrets.AWS_ACCESS_KEY_ID }}" ]]; then echo "❌ Erro: AWS_ACCESS_KEY_ID está vazio."; exit 1; fi
+          if [[ -z "${{ secrets.AWS_SECRET_ACCESS_KEY }}" ]]; then echo "❌ Erro: AWS_SECRET_ACCESS_KEY está vazio."; exit 1; fi
+          if [[ -z "${{ secrets.REPOSITORY_ECR_NAME }}" ]]; then echo "❌ Erro: REPOSITORY_ECR_NAME está vazio."; exit 1; fi
+          echo "✅ Todos os secrets de build estão presentes."
 
       - name: 🔑 Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -37,32 +51,36 @@ jobs:
           BUCKET_NAME="terraform-state-${ACCOUNT_ID}"
           REGION="us-east-1"
           
-          echo "Verifying bucket: $BUCKET_NAME"
           if aws s3api head-bucket --bucket "$BUCKET_NAME" 2>/dev/null; then
             echo "Bucket exists."
           else
             echo "Creating bucket..."
             aws s3api create-bucket --bucket "$BUCKET_NAME" --region "$REGION"
           fi
-          
-          # Exporta para outputs do Job
           echo "bucket_name=$BUCKET_NAME" >> $GITHUB_OUTPUT
-
 
       - name: 📎 Fetch DB Parameters (Build Args)
         id: ssm-params
         run: |
           PARAMS=$(aws ssm get-parameters --names "/main/rds_endpoint" "/main/db_username" "/main/db_password" --with-decryption --query "Parameters[].{Name:Name,Value:Value}" --output json)
           
-          # Tratamento de erro caso parametros não existam
           if [ "$PARAMS" == "[]" ]; then
             echo "❌ Erro: Parâmetros não encontrados no SSM"
             exit 1
           fi
 
-          echo "DB_PG_HOST=$(echo $PARAMS | jq -r '.[] | select(.Name=="/main/rds_endpoint") | .Value')" >> $GITHUB_ENV
-          echo "DB_PG_USER=$(echo $PARAMS | jq -r '.[] | select(.Name=="/main/db_username") | .Value')" >> $GITHUB_ENV
+          DB_HOST=$(echo $PARAMS | jq -r '.[] | select(.Name=="/main/rds_endpoint") | .Value')
+          DB_USER=$(echo $PARAMS | jq -r '.[] | select(.Name=="/main/db_username") | .Value')
           DB_PASS=$(echo $PARAMS | jq -r '.[] | select(.Name=="/main/db_password") | .Value')
+
+          # ✅ ADICIONADO: Verificação se os parâmetros do SSM vieram vazios
+          if [[ -z "$DB_HOST" ]] || [[ -z "$DB_USER" ]] || [[ -z "$DB_PASS" ]]; then
+             echo "❌ Erro: Um ou mais parâmetros do SSM retornaram vazios."
+             exit 1
+          fi
+
+          echo "DB_PG_HOST=$DB_HOST" >> $GITHUB_ENV
+          echo "DB_PG_USER=$DB_USER" >> $GITHUB_ENV
           echo "DB_PG_PASSWORD=$DB_PASS" >> $GITHUB_ENV
           echo "::add-mask::$DB_PASS"
 
@@ -77,7 +95,6 @@ jobs:
           ECR_REPO: ${{ secrets.REPOSITORY_ECR_NAME }}
           COMMIT_HASH: ${{ github.sha }}
         run: |
-          # Cria tags para Docker e para saída
           IMAGE_URI="$ECR_REGISTRY/$ECR_REPO"
           TAGS="$IMAGE_URI:$COMMIT_HASH"
           
@@ -97,7 +114,7 @@ jobs:
         with:
           context: ./app
           file: ./app/Dockerfile
-          push: true
+          push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.tags.outputs.tags }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -122,6 +139,19 @@ jobs:
       - name: 📥 Checkout Code
         uses: actions/checkout@v4
 
+      - name: 🛡️ Verify Deploy Variables
+        env:
+          VAR_PROJECT: ${{ secrets.PROJECT_NAME }}
+          VAR_REPO: ${{ secrets.REPOSITORY_ECR_NAME }}
+          VAR_API: ${{ secrets.API_KEY }}
+          VAR_DB_NAME: ${{ secrets.DB_PG_NAME }}
+        run: |
+          if [[ -z "$VAR_PROJECT" ]]; then echo "❌ PROJECT_NAME vazio"; exit 1; fi
+          if [[ -z "$VAR_REPO" ]]; then echo "❌ REPOSITORY_ECR_NAME vazio"; exit 1; fi
+          if [[ -z "$VAR_API" ]]; then echo "❌ API_KEY vazia"; exit 1; fi
+          if [[ -z "$VAR_DB_NAME" ]]; then echo "❌ DB_PG_NAME vazio"; exit 1; fi
+          echo "✅ Variáveis de ambiente verificadas."
+
       - name: 🔑 Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -134,9 +164,17 @@ jobs:
         run: |
           PARAMS=$(aws ssm get-parameters --names "/main/rds_endpoint" "/main/db_username" "/main/db_password" --with-decryption --query "Parameters[].{Name:Name,Value:Value}" --output json)
 
-          echo "DB_PG_HOST=$(echo $PARAMS | jq -r '.[] | select(.Name=="/main/rds_endpoint") | .Value')" >> $GITHUB_ENV
-          echo "DB_PG_USER=$(echo $PARAMS | jq -r '.[] | select(.Name=="/main/db_username") | .Value')" >> $GITHUB_ENV
+          DB_HOST=$(echo $PARAMS | jq -r '.[] | select(.Name=="/main/rds_endpoint") | .Value')
+          DB_USER=$(echo $PARAMS | jq -r '.[] | select(.Name=="/main/db_username") | .Value')
           DB_PASS=$(echo $PARAMS | jq -r '.[] | select(.Name=="/main/db_password") | .Value')
+
+          if [[ -z "$DB_HOST" ]] || [[ -z "$DB_USER" ]]; then
+             echo "❌ Erro Crítico: Falha ao recuperar parâmetros do SSM para o Deploy."
+             exit 1
+          fi
+
+          echo "DB_PG_HOST=$DB_HOST" >> $GITHUB_ENV
+          echo "DB_PG_USER=$DB_USER" >> $GITHUB_ENV
           echo "DB_PG_PASSWORD=$DB_PASS" >> $GITHUB_ENV
           echo "::add-mask::$DB_PASS"
 
@@ -147,13 +185,12 @@ jobs:
 
       - name: 🔄 Terraform Init
         run: |
-          echo "🔧 Inicializando Terraform com Bucket: ${{ needs.build.outputs.terraform_bucket }}"
           terraform init \
             -backend-config="bucket=${{ needs.build.outputs.terraform_bucket }}" \
             -backend-config="key=terraform.tfstate" \
             -backend-config="region=us-east-1"
 
-      - name: 🚀 Terraform Workflow (Validate -> Plan -> Apply)
+      - name: 🔎 Terraform Validate & Plan
         env:
           TF_VAR_project_name: ${{ secrets.PROJECT_NAME }}
           TF_VAR_repository_ecr_name: ${{ secrets.REPOSITORY_ECR_NAME }}
@@ -161,18 +198,19 @@ jobs:
           TF_VAR_db_pg_name: ${{ secrets.DB_PG_NAME }}
           TF_VAR_db_pg_port: ${{ secrets.DB_PG_PORT }}          
           TF_VAR_image_tag: ${{ needs.build.outputs.image_tag }}
-
           TF_VAR_db_pg_host: ${{ env.DB_PG_HOST }}
           TF_VAR_db_pg_username: ${{ env.DB_PG_USER }} 
           TF_VAR_db_pg_password: ${{ env.DB_PG_PASSWORD }}
         run: |
-          echo "🔎 Validando sintaxe do Terraform..."
+          echo "🔎 Validando sintaxe..."
           terraform validate -no-color
 
-          echo "📋 Gerando Plano de Execução (Dry-Run)..."
-          # O -out=tfplan salva o plano num arquivo para garantir que o apply execute EXATAMENTE isso
+          echo "📋 Gerando Plano (Speculative Plan)..."
           terraform plan -out=tfplan -no-color
 
+
+      - name: 🚀 Terraform Apply
+        if: github.event_name == 'push' && github.ref == 'refs/heads/develop' # alterar em prod para main
+        run: |
           echo "🚀 Aplicando Infraestrutura..."
-          # Aplica o arquivo gerado no passo anterior
           terraform apply -auto-approve -no-color tfplan
