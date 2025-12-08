@@ -6,118 +6,106 @@ on:
       - develop
     paths:
       - 'app/**'
-      - 'infra/ecs/**' 
+      - 'infra/ecs/**'
       - 'terraform/**'
       - '.github/workflows/app.yml'
 
+  push:
+    branches:
+      - develop
+    paths:
+      - 'app/**'
+      - 'infra/ecs/**'
+      - 'terraform/**'
+      - '.github/workflows/app.yml'
+
+
 jobs:
+
   build:
-    name: 🐳 Build & Push Image
+    name: 🧪 Validate & Build
     runs-on: ubuntu-latest
+
     outputs:
       image_tag: ${{ steps.tags.outputs.version }}
       terraform_bucket: ${{ steps.bootstrap.outputs.bucket_name }}
-    
+
     steps:
       - name: 📥 Checkout Code
         uses: actions/checkout@v4
 
+      - name: 🔍 Terraform Format Check
+        uses: hashicorp/setup-terraform@v3
+      - run: terraform fmt -check -recursive
+
+      - name: 🔍 Terraform Validate
+        working-directory: ./infra/ecs
+        run: |
+          terraform init -backend=false
+          terraform validate
+
+      - name: 🛑 Skip Build on PR
+        if: github.event_name == 'pull_request'
+        run: echo "Skipping deploy steps on PR..."
+
       - name: 🔑 Configure AWS Credentials
+        if: github.event_name == 'push'
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }} 
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: us-east-1
 
       - name: 🪣 Bootstrap Terraform State Bucket
+        if: github.event_name == 'push'
         id: bootstrap
         run: |
           ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
           BUCKET_NAME="terraform-state-${ACCOUNT_ID}"
           REGION="us-east-1"
-          
-          echo "Verifying bucket: $BUCKET_NAME"
-          if aws s3api head-bucket --bucket "$BUCKET_NAME" 2>/dev/null; then
-            echo "Bucket exists."
-          else
-            echo "Creating bucket..."
-            aws s3api create-bucket --bucket "$BUCKET_NAME" --region "$REGION"
-          fi
-          
-          # Exporta para outputs do Job
+
           echo "bucket_name=$BUCKET_NAME" >> $GITHUB_OUTPUT
 
-
-      - name: 📎 Fetch DB Parameters (Build Args)
-        id: ssm-params
-        run: |
-          PARAMS=$(aws ssm get-parameters --names "/main/rds_endpoint" "/main/db_username" "/main/db_password" --with-decryption --query "Parameters[].{Name:Name,Value:Value}" --output json)
-          
-          # Tratamento de erro caso parametros não existam
-          if [ "$PARAMS" == "[]" ]; then
-            echo "❌ Erro: Parâmetros não encontrados no SSM"
-            exit 1
-          fi
-
-          echo "DB_PG_HOST=$(echo $PARAMS | jq -r '.[] | select(.Name=="/main/rds_endpoint") | .Value')" >> $GITHUB_ENV
-          echo "DB_PG_USER=$(echo $PARAMS | jq -r '.[] | select(.Name=="/main/db_username") | .Value')" >> $GITHUB_ENV
-          DB_PASS=$(echo $PARAMS | jq -r '.[] | select(.Name=="/main/db_password") | .Value')
-          echo "DB_PG_PASSWORD=$DB_PASS" >> $GITHUB_ENV
-          echo "::add-mask::$DB_PASS"
-
-      - name: 🔓 Login to Amazon ECR
+      - name: 🔓 Login to ECR
+        if: github.event_name == 'push'
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: 🏷️ Define Tags
+        if: github.event_name == 'push'
         id: tags
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPO: ${{ secrets.REPOSITORY_ECR_NAME }}
           COMMIT_HASH: ${{ github.sha }}
         run: |
-          # Cria tags para Docker e para saída
           IMAGE_URI="$ECR_REGISTRY/$ECR_REPO"
           TAGS="$IMAGE_URI:$COMMIT_HASH"
-          
-          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            TAGS="$TAGS,$IMAGE_URI:latest"
-          fi
-          
+
           echo "tags=$TAGS" >> $GITHUB_OUTPUT
           echo "version=$COMMIT_HASH" >> $GITHUB_OUTPUT
 
-      - name: 🏗️ Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
       - name: 🐳 Build and Push
-        id: docker-build
+        if: github.event_name == 'push'
         uses: docker/build-push-action@v5
         with:
           context: ./app
           file: ./app/Dockerfile
           push: true
           tags: ${{ steps.tags.outputs.tags }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          build-args: |
-            DB_PG_HOST=${{ env.DB_PG_HOST }}
-            DB_PG_USER=${{ env.DB_PG_USER }}
-            DB_PG_PASSWORD=${{ env.DB_PG_PASSWORD }}
-            DB_PG_NAME=${{ secrets.DB_PG_NAME }}
-            DB_PG_PORT=${{ secrets.DB_PG_PORT }}
-            API_KEY=${{ secrets.API_KEY }}
 
   deploy:
     name: ☁️ Deploy Terraform
     needs: build
     runs-on: ubuntu-latest
-    
+
+    if: github.event_name == 'push'  # 👈 Aqui a chave do deploy
+
     defaults:
       run:
         working-directory: ./infra/ecs
-    
+
     steps:
       - name: 📥 Checkout Code
         uses: actions/checkout@v4
@@ -130,16 +118,6 @@ jobs:
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: us-east-1
 
-      - name: 📎 Fetch DB Parameters (Runtime)
-        run: |
-          PARAMS=$(aws ssm get-parameters --names "/main/rds_endpoint" "/main/db_username" "/main/db_password" --with-decryption --query "Parameters[].{Name:Name,Value:Value}" --output json)
-
-          echo "DB_PG_HOST=$(echo $PARAMS | jq -r '.[] | select(.Name=="/main/rds_endpoint") | .Value')" >> $GITHUB_ENV
-          echo "DB_PG_USER=$(echo $PARAMS | jq -r '.[] | select(.Name=="/main/db_username") | .Value')" >> $GITHUB_ENV
-          DB_PASS=$(echo $PARAMS | jq -r '.[] | select(.Name=="/main/db_password") | .Value')
-          echo "DB_PG_PASSWORD=$DB_PASS" >> $GITHUB_ENV
-          echo "::add-mask::$DB_PASS"
-
       - name: 🛠️ Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
@@ -147,32 +125,17 @@ jobs:
 
       - name: 🔄 Terraform Init
         run: |
-          echo "🔧 Inicializando Terraform com Bucket: ${{ needs.build.outputs.terraform_bucket }}"
           terraform init \
             -backend-config="bucket=${{ needs.build.outputs.terraform_bucket }}" \
             -backend-config="key=terraform.tfstate" \
             -backend-config="region=us-east-1"
 
-      - name: 🚀 Terraform Workflow (Validate -> Plan -> Apply)
+      - name: 🚀 Terraform Apply
         env:
           TF_VAR_project_name: ${{ secrets.PROJECT_NAME }}
           TF_VAR_ecr_repository_name: ${{ secrets.REPOSITORY_ECR_NAME }}
-          TF_VAR_api_key: ${{ secrets.API_KEY }}
-          TF_VAR_db_pg_name: ${{ secrets.DB_PG_NAME }}
-          TF_VAR_db_pg_port: ${{ secrets.DB_PG_PORT }}          
           TF_VAR_image_tag: ${{ needs.build.outputs.image_tag }}
-
-          TF_VAR_db_pg_host: ${{ env.DB_PG_HOST }}
-          TF_VAR_db_pg_username: ${{ env.DB_PG_USER }} 
-          TF_VAR_db_pg_password: ${{ env.DB_PG_PASSWORD }}
+          TF_VAR_api_key: ${{ secrets.API_KEY }}
         run: |
-          echo "🔎 Validando sintaxe do Terraform..."
-          terraform validate -no-color
-
-          echo "📋 Gerando Plano de Execução (Dry-Run)..."
-          # O -out=tfplan salva o plano num arquivo para garantir que o apply execute EXATAMENTE isso
-          terraform plan -out=tfplan -no-color
-
-          echo "🚀 Aplicando Infraestrutura..."
-          # Aplica o arquivo gerado no passo anterior
-          terraform apply -auto-approve -no-color tfplan
+          terraform plan -out=tfplan
+          terraform apply -auto-approve tfplan
