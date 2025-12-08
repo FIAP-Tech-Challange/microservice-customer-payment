@@ -33,16 +33,33 @@ resource "aws_ecs_cluster" "main" {
   name = "${var.project_name}-cluster"
 }
 
+data "aws_security_group" "lb_sg" {
+  name = "shared-alb-sg"
+}
+
+data "aws_lb" "shared" {
+  name = "shared-alb" 
+}
+
+data "aws_lb_listener" "http" {
+  load_balancer_arn = data.aws_lb.shared.arn
+  port              = 80
+}
+
+data "aws_iam_role" "lab_role" {
+  name = "LabRole"
+}
+
 resource "aws_security_group" "app_sg" {
   name        = "${var.project_name}-sg"
-  description = "Permite acesso na porta 3000"
+  description = "Permite acesso na porta 3000 vindo APENAS do ALB"
   vpc_id      = data.aws_vpc.default.id
 
   ingress {
-    from_port   = 3000
-    to_port     = 3000
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] 
+    from_port       = 3000
+    to_port         = 3000
+    protocol        = "tcp"
+    security_groups = [aws_security_group.lb_sg.id] 
   }
 
   egress {
@@ -53,8 +70,37 @@ resource "aws_security_group" "app_sg" {
   }
 }
 
-data "aws_iam_role" "lab_role" {
-  name = "LabRole"
+resource "aws_lb_target_group" "app_tg" {
+  name        = "${var.project_name}-tg"
+  port        = 3000
+  protocol    = "HTTP"
+  target_type = "ip"
+  vpc_id      = data.aws_vpc.default.id
+
+  health_check {
+    path                = "/docs" # Ajustar dps para health
+    interval            = 30
+    timeout             = 5
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    matcher             = "200"
+  }
+}
+
+resource "aws_lb_listener_rule" "app_rule" {
+  listener_arn = data.aws_lb_listener.http.arn
+  priority   = 100
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.app_tg.arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/customers/*"]
+    }
+  }
 }
 
 resource "aws_ecs_task_definition" "app_task" {
@@ -131,4 +177,12 @@ resource "aws_ecs_service" "app_service" {
     security_groups  = [aws_security_group.app_sg.id]
     assign_public_ip = true
   }
+
+  load_balancer {
+    target_group_arn = aws_lb_target_group.app_tg.arn
+    container_name   = "${var.project_name}-app"
+    container_port   = 3000
+  }
+
+  depends_on = [aws_lb_listener_rule.app_rule]
 }

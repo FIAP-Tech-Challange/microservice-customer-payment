@@ -1,24 +1,40 @@
-name: "Terraform CI/CD"
+name: 🛢️ Deploy Database
 
 on:
-  pull_request:
+  push:
     branches:
-      - main
+      - develop # alterar em prod para main
     paths:
       - 'infra/database/**' 
       - '.github/workflows/database.yml'
-
+  pull_request:
+    branches:
+      - develop # alterar em prod para main
+    paths:
+      - 'infra/database/**'
 
 jobs:
   terraform:
-    name: "Terraform Plan/Apply"
+    name: "🛢️ Deploy RDS Infrastructure"
     runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        working-directory: ./infra/database
 
     steps:
-      - name: Checkout
+      - name: 📥 Checkout Code
         uses: actions/checkout@v4
 
-      - name: Configure AWS Credentials
+      - name: 🛡️ Verify Secrets & Variables
+        run: |
+          if [[ -z "${{ secrets.DB_USERNAME }}" ]]; then echo "❌ Erro: Secret DB_USERNAME está vazia."; exit 1; fi
+          if [[ -z "${{ secrets.DB_PASSWORD }}" ]]; then echo "❌ Erro: Secret DB_PASSWORD está vazia."; exit 1; fi
+          if [[ -z "${{ secrets.DB_NAME }}" ]]; then echo "❌ Erro: DB_NAME está vazia."; exit 1; fi
+          if [[ -z "${{ secrets.PROJECT_NAME }}" ]]; then echo "❌ Erro: PROJECT_NAME está vazia."; exit 1; fi
+          echo "✅ Todas as variáveis obrigatórias estão presentes."
+
+      - name: 🔑 Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -26,113 +42,72 @@ jobs:
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: us-east-1
 
-      - name: Verify Local AWS CLI Installation
-        if: env.ACT == 'true'
-        run: |
-          echo "Running under act, installing AWS CLI..."
-          sudo apt-get update -y
-          sudo apt-get install -y unzip curl less
-          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-          unzip -q awscliv2.zip
-          sudo ./aws/install
-
       - name: 🔍 Verify AWS Identity
         run: |
           echo "🔐 Verificando identidade AWS..."
           aws sts get-caller-identity
           echo "✅ Credenciais AWS configuradas com sucesso!"
 
-      - name: Setup Terraform
+      - name: 🛠️ Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
-      - name: 🚀 Bootstrap Infrastructure
-        id: bootstrap
+      - name: 🧭 Determine Workspace
+        id: context
         run: |
-          echo "🔧 Executando bootstrap da infraestrutura..."
-
-          # Determinar workspace baseado na branch
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             BRANCH_NAME=${{ github.base_ref }}
           else
             BRANCH_NAME=${{ github.ref_name }}
           fi
-
+          
           case "$BRANCH_NAME" in
-            develop) WORKSPACE="dev" ;;
+            develop) WORKSPACE="main" ;; # alterar em prod para main
             main) WORKSPACE="main" ;;
             qa) WORKSPACE="qa" ;;
             *) WORKSPACE="$BRANCH_NAME" ;;
           esac
 
-          echo "🎯 Workspace detectado: $WORKSPACE"
+          echo "Target Workspace: $WORKSPACE"
+          echo "TF_WORKSPACE=$WORKSPACE" >> $GITHUB_ENV
 
-          # Dar permissão de execução aos scripts
-          chmod +x bootstrap.sh config.sh
-
-          # Executar bootstrap com workspace específico
-          ./bootstrap.sh $WORKSPACE
-
-          echo "✅ Bootstrap executado com sucesso!"
-
-      - name: 🧪 Validate Bootstrap
+      - name: 🪣 Bootstrap Infrastructure
         run: |
-          echo "🔍 Validando se bootstrap foi bem-sucedido..."
+          echo "🔧 Executando bootstrap para workspace: ${{ env.TF_WORKSPACE }}"
+          
+          chmod +x bootstrap.sh
+          ./bootstrap.sh ${{ env.TF_WORKSPACE }}
 
-          # Verificar se Terraform foi inicializado
+          echo "✅ Bootstrap finalizado."
+
+      - name: 🧪 Validate Bootstrap State
+        run: |
           if [ -d ".terraform" ]; then
-            echo "✅ Terraform inicializado"
+            echo "✅ Terraform inicializado corretamente."
           else
-            echo "❌ Terraform não foi inicializado"
+            echo "❌ Erro: Pasta .terraform não encontrada."
             exit 1
           fi
+          
+          terraform workspace select ${{ env.TF_WORKSPACE }} || terraform workspace new ${{ env.TF_WORKSPACE }}
 
-          # Verificar workspaces disponíveis
-          echo "📂 Workspaces disponíveis:"
-          terraform workspace list
-
-      - name: 🎯 Select Terraform Workspace
-        id: workspace
+      - name: ⚙️ Set Terraform Variables
         run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            BRANCH_NAME=${{ github.base_ref }}
-          else
-            BRANCH_NAME=${{ github.ref_name }}
-          fi
-
-          echo "Branch detectada: $BRANCH_NAME"
-
-          # Mapeia nomes de branch para workspaces Terraform
-          case "$BRANCH_NAME" in
-            develop) WORKSPACE="dev" ;;
-            main) WORKSPACE="main" ;;
-            qa) WORKSPACE="qa" ;;
-            *) WORKSPACE="$BRANCH_NAME" ;; # fallback
-          esac
-
-          echo "Workspace: $WORKSPACE"
-
-          # O bootstrap já criou o workspace, mas vamos garantir que estamos no correto
-          terraform workspace select "$WORKSPACE" || terraform workspace new "$WORKSPACE"
-
-      - name: Set Terraform Variables
-        run: |
-          # Nome do projeto = nome do repositório
-          REPO_NAME=$(echo "${GITHUB_REPOSITORY}" | cut -d'/' -f2)
-          echo "TF_VAR_project_name=$REPO_NAME" >> $GITHUB_ENV
-
-          # Nome de usuário do banco = secret
           echo "TF_VAR_db_username=${{ secrets.DB_USERNAME }}" >> $GITHUB_ENV
-
-          # Senha do banco = secret
           echo "TF_VAR_db_password=${{ secrets.DB_PASSWORD }}" >> $GITHUB_ENV
+          echo "TF_VAR_db_name=${{ secrets.DB_NAME }}" >> $GITHUB_ENV
+          echo "TF_VAR_project_name=${{ secrets.PROJECT_NAME }}" >> $GITHUB_ENV
 
-      - name: Terraform Validate
+      - name: 🔎 Terraform Validate
         run: terraform validate -no-color
 
-      - name: Terraform Plan
+      - name: 📋 Terraform Plan (Dry Run)
         id: plan
-        run: terraform plan -no-color -input=false
+        run: |
+          echo "Executando Plan para o ambiente: ${{ env.TF_WORKSPACE }}"
+          terraform plan -out=tfplan -input=false -no-color
 
-      - name: Terraform Apply
-        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/qa' || github.ref == 'refs/heads/develop')
-        run: terraform apply -auto-approve -input=false -no-color
+      - name: 🚀 Terraform Apply
+        if: github.event_name == 'push' && github.ref == 'refs/heads/develop' # alterar em prod para main
+        run: |
+          echo "🚀 Aplicando mudanças no ambiente: ${{ env.TF_WORKSPACE }}"
+          terraform apply -auto-approve -input=false -no-color tfplan
