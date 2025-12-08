@@ -2,7 +2,10 @@ import { Controller, Get } from '@nestjs/common';
 import { ApiExcludeController } from '@nestjs/swagger';
 
 @ApiExcludeController()
-@Controller('health')
+@Controller({
+  path: 'health',
+  version: '1',
+})
 export class HealthController {
   @Get()
   check() {

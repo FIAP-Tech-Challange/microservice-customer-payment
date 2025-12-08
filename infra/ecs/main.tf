@@ -78,7 +78,7 @@ resource "aws_lb_target_group" "app_tg" {
   vpc_id      = data.aws_vpc.default.id
 
   health_check {
-    path                = "/docs" # Ajustar dps para health
+    path                = "v1/customers/health" # Ajustar dps para health
     interval            = 30
     timeout             = 5
     healthy_threshold   = 2
@@ -98,7 +98,7 @@ resource "aws_lb_listener_rule" "app_rule" {
 
   condition {
     path_pattern {
-      values = ["/customers/*"]
+      values = ["/v1/customers","/v1/customers/*"]
     }
   }
 }

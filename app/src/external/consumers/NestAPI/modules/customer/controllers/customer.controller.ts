@@ -32,7 +32,6 @@ import { ApiKeyGuard } from '../../auth/guards/api-key.guard';
 
 @ApiTags('Customer')
 @Controller({
-  path: 'customers',
   version: '1',
 })
 export class CustomerController {
