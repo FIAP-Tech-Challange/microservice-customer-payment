@@ -46,6 +46,9 @@ async function bootstrap() {
     type: VersioningType.URI,
   });
 
+  app.setGlobalPrefix('customers')
+
+
   new SwaggerDoc().setupDocs(app);
 
   app.useGlobalPipes(
