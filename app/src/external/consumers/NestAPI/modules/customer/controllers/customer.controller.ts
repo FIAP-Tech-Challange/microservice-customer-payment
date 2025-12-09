@@ -31,9 +31,7 @@ import { CustomerPaginationDto } from '../dtos/customer-pagination.dto';
 import { ApiKeyGuard } from '../../auth/guards/api-key.guard';
 
 @ApiTags('Customer')
-@Controller({
-  version: '1',
-})
+@Controller()
 export class CustomerController {
   private readonly logger = new Logger(CustomerController.name);
   constructor(private dataSourceProxy: DataSourceProxy) {}
