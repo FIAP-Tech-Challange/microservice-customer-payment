@@ -46,21 +46,7 @@ async function bootstrap() {
     type: VersioningType.URI,
   });
 
-  app.setGlobalPrefix('customers')
-
-
   new SwaggerDoc().setupDocs(app);
-
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: true,
-      transform: true,
-      transformOptions: {
-        enableImplicitConversion: true,
-      },
-    }),
-  );
 
   await app.listen(process.env.PORT ?? 3000);
 }
