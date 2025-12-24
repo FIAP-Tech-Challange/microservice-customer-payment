@@ -137,12 +137,31 @@ resource "aws_lb_target_group" "app_tg" {
   vpc_id      = data.aws_vpc.default.id
 
   health_check {
-    path                = "/customers/health"
+    path                = "/health"
     interval            = 30
     timeout             = 5
     healthy_threshold   = 2
     unhealthy_threshold = 2
     matcher             = "200"
+  }
+}
+
+resource "aws_lb_listener_rule" "redirect_to_docs" {
+  listener_arn = aws_lb_listener.http.arn
+  priority     = 10
+
+  action {
+    type = "redirect"
+    redirect {
+      path        = "/docs"
+      status_code = "HTTP_301"
+    }
+  }
+
+  condition {
+    path_pattern {
+      values = ["/"]
+    }
   }
 }
 
@@ -157,7 +176,7 @@ resource "aws_lb_listener_rule" "app_rule" {
 
   condition {
     path_pattern {
-      values = ["/customers","/customers/*"]
+      values = ["/*"]
     }
   }
 }
