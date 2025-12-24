@@ -118,7 +118,7 @@ resource "aws_security_group" "app_sg" {
     from_port       = 3000
     to_port         = 3000
     protocol        = "tcp"
-    security_groups = [data.aws_security_group.lb_sg.id] 
+    security_groups = [aws_security_group.lb_sg.id] 
   }
 
   egress {
@@ -147,7 +147,7 @@ resource "aws_lb_target_group" "app_tg" {
 }
 
 resource "aws_lb_listener_rule" "app_rule" {
-  listener_arn = data.aws_lb_listener.http.arn
+  listener_arn = aws_lb_listener.http.arn
   priority   = 100
 
   action {
