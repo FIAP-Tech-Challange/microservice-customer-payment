@@ -39,8 +39,3 @@ variable "db_pg_name" {
   description = "Nome do banco de dados PostgreSQL."
   type        = string
 }
-
-variable "api_key" {
-  description = "Chave de API para o serviço externo."
-  type        = string
-}
