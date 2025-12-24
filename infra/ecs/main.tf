@@ -29,25 +29,84 @@ data "aws_ecr_repository" "app_repo" {
   name = var.repository_ecr_name
 }
 
+data "aws_iam_role" "lab_role" {
+  name = "LabRole"
+}
+
 resource "aws_ecs_cluster" "main" {
   name = "${var.project_name}-cluster"
 }
 
-data "aws_security_group" "lb_sg" {
-  name = "shared-alb-sg"
+resource "aws_security_group" "lb_sg" {
+  name        = "shared-alb-sg"
+  description = "Permite acesso HTTP na porta 80"
+  vpc_id      = data.aws_vpc.default.id
+
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
 
-data "aws_lb" "shared" {
-  name = "shared-alb" 
+resource "aws_lb" "shared" {
+  name               = "microservice-customer-payment"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.lb_sg.id]
+  subnets            = data.aws_subnets.default.ids
+
+  enable_deletion_protection = false
 }
 
-data "aws_lb_listener" "http" {
-  load_balancer_arn = data.aws_lb.shared.arn
-  port              = 80
+resource "aws_ssm_parameter" "lb_url" {
+  name  = "/microservice/customer-payment/lb_url"
+  type  = "String"
+  value = aws_lb.shared.dns_name
+  
+  tags = {
+    environment = "prod"
+  }
 }
 
-data "aws_iam_role" "lab_role" {
-  name = "LabRole"
+resource "aws_lb_listener" "http" {
+  load_balancer_arn = aws_lb.shared.arn
+  port              = "80"
+  protocol          = "HTTP"
+
+  default_action {
+    type = "fixed-response"
+
+    fixed_response {
+      content_type = "text/plain"
+      message_body = "404: Rota não encontrada no ALB Compartilhado"
+      status_code  = "404"
+    }
+  }
+}
+
+resource "random_password" "generated_api_key" {
+  length           = 32
+  special          = true
+  override_special = "!@#$%"
+}
+
+resource "aws_secretsmanager_secret" "api_key" {
+  name        = "microservice/customer-payment/api_key"
+  description = "Api Key internal communication"
+}
+
+resource "aws_secretsmanager_secret_version" "api_key_value" {
+  secret_id     = aws_secretsmanager_secret.api_key.id
+  secret_string = random_password.generated_api_key.result
 }
 
 resource "aws_security_group" "app_sg" {
@@ -78,7 +137,7 @@ resource "aws_lb_target_group" "app_tg" {
   vpc_id      = data.aws_vpc.default.id
 
   health_check {
-    path                = "/customers/health" # Ajustar dps para health
+    path                = "/customers/health"
     interval            = 30
     timeout             = 5
     healthy_threshold   = 2
@@ -142,7 +201,7 @@ resource "aws_ecs_task_definition" "app_task" {
       },
       {
         name  = "API_KEY"
-        value = "${var.api_key}"
+        value = "${aws_secretsmanager_secret_version.api_key_value.secret_string}"
       }
     ]
 
