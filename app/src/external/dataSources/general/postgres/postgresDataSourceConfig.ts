@@ -25,13 +25,13 @@ export class PostgresDataSourceConfig {
       ],
       synchronize: false,
       logging: false,
-      ssl: {
+      /*ssl: {
         ca: fs
           .readFileSync(
             path.join(process.cwd(), 'certs', 'rds-combined-ca-bundle.pem'),
           )
           .toString(),
-      },
+      },*/
     });
   }
 }
