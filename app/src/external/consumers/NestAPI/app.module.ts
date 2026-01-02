@@ -6,6 +6,8 @@ import databaseConfig from './infra/config/database.config';
 import { AuthModule } from './modules/auth/auth.module';
 import { DataSourceModule } from './shared/data-source.module';
 import { CustomerModule } from './modules/customer/customer.module';
+import { AwsModule } from './shared/aws.module';
+import { PaymentModule } from './modules/payment/payment.module';
 
 @Module({
   imports: [
@@ -17,6 +19,8 @@ import { CustomerModule } from './modules/customer/customer.module';
     HealthModule,
     AuthModule,
     CustomerModule,
+    AwsModule,
+    PaymentModule
   ],
   controllers: [],
   providers: [],

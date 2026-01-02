@@ -71,7 +71,7 @@ module "rds" {
 }
 
 resource "aws_ssm_parameter" "rds_endpoint" {
-  name  = "/${terraform.workspace}/rds_endpoint"
+  name  = "/${var.project_name}/${terraform.workspace}/rds_endpoint"
   type  = "String"
   value = split(":", module.rds.rds_endpoint)[0]
 
@@ -82,7 +82,7 @@ resource "aws_ssm_parameter" "rds_endpoint" {
 }
 
 resource "aws_ssm_parameter" "db_username" {
-  name  = "/${terraform.workspace}/db_username"
+  name  = "/${var.project_name}/${terraform.workspace}/db_username"
   type  = "String"
   value = var.db_username
 
@@ -93,7 +93,7 @@ resource "aws_ssm_parameter" "db_username" {
 }
 
 resource "aws_ssm_parameter" "db_password" {
-  name  = "/${terraform.workspace}/db_password"
+  name  = "/${var.project_name}/${terraform.workspace}/db_password"
   type  = "SecureString"
   value = var.db_password
 

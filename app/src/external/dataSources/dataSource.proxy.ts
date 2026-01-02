@@ -4,11 +4,17 @@ import { CustomerDataSourceDTO } from 'src/common/dataSource/DTOs/customerDataSo
 import { PaginatedDataSourceParamsDTO } from 'src/common/dataSource/DTOs/paginatedDataSourceParams.dto';
 import { FindAllCustomersDataSourceFiltersDTO } from 'src/common/dataSource/DTOs/findAllCustomersDataSourceFilters.dto';
 import { PaginatedDataSourceResponseDTO } from 'src/common/dataSource/DTOs/paginatedDataSourceResponse.dto';
+import { PaymentDataSource } from './payment/payment.dataSource';
+import { PaymentDataSourceDTO } from 'src/common/dataSource/DTOs/paymentDataSource.dto';
+import { PaymentExternalDataSourceDTO } from 'src/common/dataSource/DTOs/paymentExternalDataSource.dto';
+import { PaymentCreateExternalDataSourceResponseDTO } from 'src/common/dataSource/DTOs/paymentCreateExternalDataSourceResponse.dto';
 
 
 export class DataSourceProxy implements DataSource {
   constructor(
     private generalDataSource: GeneralDataSource,
+    private paymentDataSource: PaymentDataSource,
+
   ) {}
 
   // Customer
@@ -29,6 +35,22 @@ export class DataSourceProxy implements DataSource {
   }
   saveCustomer(customer: CustomerDataSourceDTO): Promise<void> {
     return this.generalDataSource.saveCustomer(customer);
+  }
+
+  // Payment
+  findPaymentById(paymentId: string): Promise<PaymentDataSourceDTO | null> {
+    return this.generalDataSource.findPaymentById(paymentId);
+  }
+  findPaymentByOrderId(orderId: string): Promise<PaymentDataSourceDTO | null> {
+    return this.generalDataSource.findPaymentByOrderId(orderId);
+  }
+  savePayment(paymentDTO: PaymentDataSourceDTO): Promise<void> {
+    return this.generalDataSource.savePayment(paymentDTO);
+  }
+  createPaymentExternal(
+    paymentDTO: PaymentExternalDataSourceDTO,
+  ): Promise<PaymentCreateExternalDataSourceResponseDTO> {
+    return this.paymentDataSource.createPaymentExternal(paymentDTO);
   }
 
 }

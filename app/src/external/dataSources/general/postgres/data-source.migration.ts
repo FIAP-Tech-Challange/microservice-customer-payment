@@ -16,13 +16,13 @@ const dataSourceOptions: DataSourceOptions = {
   ],
   migrations: [__dirname + '/migrations/*.{js,ts}'],
   synchronize: false,
-  ssl: {
+  /*ssl: {
     ca: fs
       .readFileSync(
         path.join(process.cwd(), 'certs', 'rds-combined-ca-bundle.pem'),
       )
       .toString(),
-  },
+  },*/
 };
 
 const dataSource = new DataSource(dataSourceOptions);
