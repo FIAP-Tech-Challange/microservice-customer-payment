@@ -8,6 +8,4 @@ export class CreatePaymentDto {
   @IsNotEmpty()
   @IsString()
   orderId: string;
-  @IsOptional()
-  totalPrice: number;
 }

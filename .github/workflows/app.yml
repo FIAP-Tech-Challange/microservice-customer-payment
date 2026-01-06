@@ -69,9 +69,9 @@ jobs:
             exit 1
           fi
 
-          DB_HOST=$(echo $PARAMS | jq -r '.[] | select(.Name=="/main/rds_endpoint") | .Value')
-          DB_USER=$(echo $PARAMS | jq -r '.[] | select(.Name=="/main/db_username") | .Value')
-          DB_PASS=$(echo $PARAMS | jq -r '.[] | select(.Name=="/main/db_password") | .Value')
+          DB_HOST=$(echo $PARAMS | jq -r '.[] | select(.Name=="/db-customer-payment/main/rds_endpoint") | .Value')
+          DB_USER=$(echo $PARAMS | jq -r '.[] | select(.Name=="/db-customer-payment/main/db_username") | .Value')
+          DB_PASS=$(echo $PARAMS | jq -r '.[] | select(.Name=="/db-customer-payment/main/db_password") | .Value')
 
           # ✅ ADICIONADO: Verificação se os parâmetros do SSM vieram vazios
           if [[ -z "$DB_HOST" ]] || [[ -z "$DB_USER" ]] || [[ -z "$DB_PASS" ]]; then
@@ -125,6 +125,12 @@ jobs:
             DB_PG_NAME=${{ secrets.DB_PG_NAME }}
             DB_PG_PORT=${{ secrets.DB_PG_PORT }}
             API_KEY=${{ secrets.API_KEY }}
+            API_KEY_ORDER_SERVICE=${{ secrets.API_KEY_ORDER_SERVICE }}
+            PARAM_URL_ORDER_SERVICE=${{ secrets.PARAM_URL_ORDER_SERVICE }}
+            JWT_ACCESS_TOKEN_EXPIRATION_TIME=${{ secrets.JWT_ACCESS_TOKEN_EXPIRATION_TIME }}
+            JWT_SECRET_NAME=${{ secrets.JWT_SECRET_NAME }}
+            NODE_ENV=production
+            EXTERNAL_PAYMENT_CONSUMER_KEY=${{ secrets.EXTERNAL_PAYMENT_CONSUMER_KEY }}
 
   deploy:
     name: ☁️ Deploy Terraform
@@ -164,9 +170,9 @@ jobs:
         run: |
           PARAMS=$(aws ssm get-parameters --names "/main/rds_endpoint" "/main/db_username" "/main/db_password" --with-decryption --query "Parameters[].{Name:Name,Value:Value}" --output json)
 
-          DB_HOST=$(echo $PARAMS | jq -r '.[] | select(.Name=="/main/rds_endpoint") | .Value')
-          DB_USER=$(echo $PARAMS | jq -r '.[] | select(.Name=="/main/db_username") | .Value')
-          DB_PASS=$(echo $PARAMS | jq -r '.[] | select(.Name=="/main/db_password") | .Value')
+          DB_HOST=$(echo $PARAMS | jq -r '.[] | select(.Name=="/db-customer-payment/main/rds_endpoint") | .Value')
+          DB_USER=$(echo $PARAMS | jq -r '.[] | select(.Name=="/db-customer-payment/main/db_username") | .Value')
+          DB_PASS=$(echo $PARAMS | jq -r '.[] | select(.Name=="/db-customer-payment/main/db_password") | .Value')
 
           if [[ -z "$DB_HOST" ]] || [[ -z "$DB_USER" ]]; then
              echo "❌ Erro Crítico: Falha ao recuperar parâmetros do SSM para o Deploy."
@@ -201,6 +207,11 @@ jobs:
           TF_VAR_db_pg_host: ${{ env.DB_PG_HOST }}
           TF_VAR_db_pg_username: ${{ env.DB_PG_USER }} 
           TF_VAR_db_pg_password: ${{ env.DB_PG_PASSWORD }}
+          TF_VAR_api_key_order_service: ${{ secrets.API_KEY_ORDER_SERVICE }}
+          TF_VAR_param_url_order_service: ${{ secrets.PARAM_URL_ORDER_SERVICE }}
+          TF_VAR_jwt_access_token_expiration_time: ${{ secrets.JWT_ACCESS_TOKEN_EXPIRATION_TIME }}
+          TF_VAR_jwt_secret_name: ${{ secrets.JWT_SECRET_NAME }}
+          TF_VAR_external_payment_consumer_key: ${{ secrets.EXTERNAL_PAYMENT_CONSUMER_KEY }}
         run: |
           echo "🔎 Validando sintaxe..."
           terraform validate -no-color
