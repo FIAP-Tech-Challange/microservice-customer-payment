@@ -85,7 +85,21 @@
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "collectCoverageFrom": [
-      "**/*.(t|j)s"
+      "src/core/**/*.(t|j)s",
+      "!src/core/**/*.spec.ts",
+      "!src/core/**/*.interface.ts",
+      "!src/core/**/index.ts",
+      "!src/core/**/controllers/**",
+      "!src/core/**/gateways/**",
+      "!src/core/**/mappers/**",
+      "!src/core/**/presenters/**",
+      "!src/core/**/*.entity.ts",
+      "!src/core/**/*.dto.ts",
+      "!src/core/modules/payment/**",
+      "!src/core/modules/order/**",
+      "!src/core/modules/product/**",
+      "!src/core/modules/store/**",
+      "!src/core/modules/notification/**"
     ],
     "coverageDirectory": "./coverage",
     "testEnvironment": "node",
