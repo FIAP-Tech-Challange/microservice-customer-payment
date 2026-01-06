@@ -62,7 +62,7 @@ jobs:
       - name: 📎 Fetch DB Parameters (Build Args)
         id: ssm-params
         run: |
-          PARAMS=$(aws ssm get-parameters --names "/main/rds_endpoint" "/main/db_username" "/main/db_password" --with-decryption --query "Parameters[].{Name:Name,Value:Value}" --output json)
+          PARAMS=$(aws ssm get-parameters --names "/db-customer-payment/main/rds_endpoint" "/db-customer-payment/main/db_username" "/db-customer-payment/main/db_password" --with-decryption --query "Parameters[].{Name:Name,Value:Value}" --output json)
           
           if [ "$PARAMS" == "[]" ]; then
             echo "❌ Erro: Parâmetros não encontrados no SSM"
@@ -168,7 +168,7 @@ jobs:
 
       - name: 📎 Fetch DB Parameters (Runtime)
         run: |
-          PARAMS=$(aws ssm get-parameters --names "/main/rds_endpoint" "/main/db_username" "/main/db_password" --with-decryption --query "Parameters[].{Name:Name,Value:Value}" --output json)
+          PARAMS=$(aws ssm get-parameters --names "/db-customer-payment/main/rds_endpoint" "/db-customer-payment/main/db_username" "/db-customer-payment/main/db_password" --with-decryption --query "Parameters[].{Name:Name,Value:Value}" --output json)
 
           DB_HOST=$(echo $PARAMS | jq -r '.[] | select(.Name=="/db-customer-payment/main/rds_endpoint") | .Value')
           DB_USER=$(echo $PARAMS | jq -r '.[] | select(.Name=="/db-customer-payment/main/db_username") | .Value')
