@@ -88,7 +88,7 @@ export class PaymentCoreController {
         orderId: dto.orderId,
         storeId: dto.storeId,
         paymentType: dto.paymentType,
-        totalPrice: Number(order.value.totalPrice),
+        totalPrice: order.value.totalPrice,
       });
       if (initiatePayment.error)
         return {
