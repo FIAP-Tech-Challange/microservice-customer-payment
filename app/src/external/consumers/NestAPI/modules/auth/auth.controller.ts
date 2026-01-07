@@ -1,8 +1,5 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
-import { SignInInputDto, SignInOutputDto } from './dtos/sign-in.dto';
-import { AuthService } from './auth.service';
+import { Controller } from '@nestjs/common';
 import {
-  ApiBody,
   ApiOperation,
   ApiResponse,
   ApiSecurity,
@@ -16,5 +13,4 @@ import { BusinessException } from 'src/external/consumers/NestAPI/shared/dto/bus
   path: 'auth',
   version: '1',
 })
-export class AuthController {
-}
+export class AuthController {}
