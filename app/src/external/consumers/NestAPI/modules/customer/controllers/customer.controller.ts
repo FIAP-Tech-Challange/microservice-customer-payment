@@ -30,6 +30,7 @@ import { CustomerRequestParamsDto } from '../dtos/customer-request-params.dto';
 import { CustomerPaginationDto } from '../dtos/customer-pagination.dto';
 import { StoreGuard } from '../../auth/guards/store.guard';
 import { OrGuard } from '../../auth/guards/or.guard';
+import { ApiKeyGuard } from '../../auth/guards/api-key.guard';
 
 @ApiTags('Customer')
 @Controller({
