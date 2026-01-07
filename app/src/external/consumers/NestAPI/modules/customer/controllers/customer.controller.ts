@@ -29,6 +29,7 @@ import { CustomerCoreController } from 'src/core/modules/customer/controllers/cu
 import { CustomerRequestParamsDto } from '../dtos/customer-request-params.dto';
 import { CustomerPaginationDto } from '../dtos/customer-pagination.dto';
 import { ApiKeyGuard } from '../../auth/guards/api-key.guard';
+import { StoreGuard } from '../../auth/guards/store.guard';
 
 @ApiTags('Customer')
 @Controller({
@@ -59,8 +60,8 @@ export class CustomerController {
     type: CreateCustomerDto,
   })
   @ApiOperation({ summary: 'Register your customer' })
-  @ApiBearerAuth('api-key')
-  @UseGuards(ApiKeyGuard)
+  @ApiBearerAuth('access-token')
+  @UseGuards(StoreGuard)
   @Post()
   async create(@Body() dto: CreateCustomerDto): Promise<CustomerIdDto> {
     const coreController = new CustomerCoreController(this.dataSourceProxy);
@@ -101,8 +102,8 @@ export class CustomerController {
     summary: 'Find Customer',
     description: 'Retrieves the customer based on the customerId.',
   })
-  @ApiBearerAuth('api-key')
-  @UseGuards(ApiKeyGuard)
+  @ApiBearerAuth('access-token')
+  @UseGuards(StoreGuard)
   @Get(':id')
   async findById(
     @Req() req,
@@ -148,8 +149,8 @@ export class CustomerController {
     type: Number,
   })
   @ApiOperation({ summary: 'List all customers' })
-  @ApiBearerAuth('api-key')
-  @UseGuards(ApiKeyGuard)
+  @ApiBearerAuth('access-token')
+  @UseGuards(StoreGuard)
   @Get()
   async findAll(
     @Query() params: CustomerRequestParamsDto,
@@ -201,8 +202,8 @@ export class CustomerController {
     example: '12609871677',
   })
   @ApiOperation({ summary: 'Find a customer by CPF' })
-  @ApiBearerAuth('api-key')
-  @UseGuards(ApiKeyGuard)
+  @ApiBearerAuth('access-token')
+  @UseGuards(StoreGuard)
   @Get('cpf/:cpf')
   async findByCpf(@Param('cpf') cpf: string): Promise<CustomerResponseDto> {
     const coreController = new CustomerCoreController(this.dataSourceProxy);

@@ -20,17 +20,17 @@ export class OrderHttpGateway {
 
   async findById(orderId: string): Promise<CoreResponse<OrderDTO | null>> {
     return this.handleRequest(
-      () => this.client.get<OrderDTO>(`/order/${orderId}`),
+      () => this.client.get<OrderDTO>(`/orders/${orderId}`),
       { returnNullOn404: true }
     );
   }
 
   async setToReceived(orderId: string): Promise<CoreResponse<void>> {
-    return this.handleRequest(() => this.client.patch(`/order/${orderId}/received`));
+    return this.handleRequest(() => this.client.patch(`/orders/${orderId}`, { status: 'RECEIVED' }));
   }
   
   async setToCanceled(orderId: string): Promise<CoreResponse<void>> {
-    return this.handleRequest(() => this.client.patch(`/order/${orderId}/canceled`));
+    return this.handleRequest(() => this.client.patch(`/orders/${orderId}`, { status: 'CANCELED' }));
   }
 
   private async handleRequest<T>(
