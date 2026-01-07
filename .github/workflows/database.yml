@@ -68,14 +68,14 @@ jobs:
           esac
 
           echo "Target Workspace: $WORKSPACE"
-          echo "TF_WORKSPACE=$WORKSPACE" >> $GITHUB_ENV
+          echo "TARGET_WORKSPACE=$WORKSPACE" >> $GITHUB_ENV
 
       - name: 🪣 Bootstrap Infrastructure
         run: |
-          echo "🔧 Executando bootstrap para workspace: ${{ env.TF_WORKSPACE }}"
+          echo "🔧 Executando bootstrap para workspace: ${{ env.TARGET_WORKSPACE }}"
           
           chmod +x bootstrap.sh
-          ./bootstrap.sh ${{ env.TF_WORKSPACE }}
+          ./bootstrap.sh ${{ env.TARGET_WORKSPACE }}
 
           echo "✅ Bootstrap finalizado."
 
@@ -87,8 +87,12 @@ jobs:
             echo "❌ Erro: Pasta .terraform não encontrada."
             exit 1
           fi
-          
-          terraform workspace select ${{ env.TF_WORKSPACE }} || terraform workspace new ${{ env.TF_WORKSPACE }}
+
+          echo "🔄 Configurando Workspace: ${{ env.TARGET_WORKSPACE }}"
+
+          terraform workspace select ${{ env.TARGET_WORKSPACE }} || terraform workspace new ${{ env.TARGET_WORKSPACE }}
+
+          echo "TF_WORKSPACE=${{ env.TARGET_WORKSPACE }}" >> $GITHUB_ENV
 
       - name: ⚙️ Set Terraform Variables
         run: |
