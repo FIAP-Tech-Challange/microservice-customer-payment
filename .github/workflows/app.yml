@@ -7,6 +7,14 @@ on:
       - completed
     branches:
       - main
+  push:
+    branches:
+      - main
+    paths:
+      - 'app/**'
+      - 'infra/ecs/**'
+      - 'terraform/**'
+      - '.github/workflows/app.yml'
   workflow_dispatch:
 
 jobs:
