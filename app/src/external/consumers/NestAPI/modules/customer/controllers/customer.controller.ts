@@ -29,6 +29,7 @@ import { CustomerCoreController } from 'src/core/modules/customer/controllers/cu
 import { CustomerRequestParamsDto } from '../dtos/customer-request-params.dto';
 import { CustomerPaginationDto } from '../dtos/customer-pagination.dto';
 import { StoreGuard } from '../../auth/guards/store.guard';
+import { OrGuard } from '../../auth/guards/or.guard';
 
 @ApiTags('Customer')
 @Controller({
@@ -102,7 +103,7 @@ export class CustomerController {
     description: 'Retrieves the customer based on the customerId.',
   })
   @ApiBearerAuth('access-token')
-  @UseGuards(StoreGuard)
+  @UseGuards(OrGuard(ApiKeyGuard, StoreGuard))
   @Get(':id')
   async findById(
     @Req() req,
