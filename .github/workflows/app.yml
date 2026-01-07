@@ -11,10 +11,10 @@ on:
     branches:
       - main
     paths:
-      - 'app/**'
-      - 'infra/ecs/**'
-      - 'terraform/**'
-      - '.github/workflows/app.yml'
+      - "app/**"
+      - "infra/ecs/**"
+      - "terraform/**"
+      - ".github/workflows/app.yml"
   workflow_dispatch:
 
 jobs:
