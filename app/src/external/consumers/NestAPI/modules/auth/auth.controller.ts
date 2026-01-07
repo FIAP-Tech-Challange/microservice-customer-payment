@@ -1,12 +1,5 @@
 import { Controller } from '@nestjs/common';
-import {
-  ApiOperation,
-  ApiResponse,
-  ApiSecurity,
-  ApiTags,
-} from '@nestjs/swagger';
-import { ApiKeyGuard } from './guards/api-key.guard';
-import { BusinessException } from 'src/external/consumers/NestAPI/shared/dto/business-exception.dto';
+import { ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Auth')
 @Controller({

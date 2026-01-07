@@ -28,7 +28,6 @@ import { DataSourceProxy } from 'src/external/dataSources/dataSource.proxy';
 import { CustomerCoreController } from 'src/core/modules/customer/controllers/customer.controller';
 import { CustomerRequestParamsDto } from '../dtos/customer-request-params.dto';
 import { CustomerPaginationDto } from '../dtos/customer-pagination.dto';
-import { ApiKeyGuard } from '../../auth/guards/api-key.guard';
 import { StoreGuard } from '../../auth/guards/store.guard';
 
 @ApiTags('Customer')

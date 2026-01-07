@@ -43,7 +43,7 @@ export class OrderHttpGateway {
   private async handleRequest<T>(
     request: () => Promise<{ data: T }>,
     options: { returnNullOn404?: boolean } = {},
-  ): Promise<CoreResponse<T | any>> {
+  ): Promise<CoreResponse<T | null>> {
     try {
       const response = await request();
       return { error: undefined, value: response.data };

@@ -9,12 +9,10 @@ import { PaymentDataSourceDTO } from 'src/common/dataSource/DTOs/paymentDataSour
 import { PaymentExternalDataSourceDTO } from 'src/common/dataSource/DTOs/paymentExternalDataSource.dto';
 import { PaymentCreateExternalDataSourceResponseDTO } from 'src/common/dataSource/DTOs/paymentCreateExternalDataSourceResponse.dto';
 
-
 export class DataSourceProxy implements DataSource {
   constructor(
     private generalDataSource: GeneralDataSource,
     private paymentDataSource: PaymentDataSource,
-
   ) {}
 
   // Customer
@@ -52,5 +50,4 @@ export class DataSourceProxy implements DataSource {
   ): Promise<PaymentCreateExternalDataSourceResponseDTO> {
     return this.paymentDataSource.createPaymentExternal(paymentDTO);
   }
-
 }

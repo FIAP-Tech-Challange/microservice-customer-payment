@@ -3,15 +3,10 @@ import { InitiatePaymentInputDTO } from '../DTOs/initiatePaymentInput.dto';
 import { Payment } from '../entities/payment.entity';
 import { PaymentGateway } from '../gateways/payment.gateway';
 
-
 export class InitiatePaymentUseCase {
-  constructor(
-    private paymentGateway: PaymentGateway,
-
-  ) {}
+  constructor(private paymentGateway: PaymentGateway) {}
 
   async execute(dto: InitiatePaymentInputDTO): Promise<CoreResponse<Payment>> {
-
     const createPayment = Payment.create({
       orderId: dto.orderId,
       total: dto.totalPrice || 0,

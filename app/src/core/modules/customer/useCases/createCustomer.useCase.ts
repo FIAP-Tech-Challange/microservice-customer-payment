@@ -7,9 +7,7 @@ import { CPF } from 'src/core/common/valueObjects/cpf.vo';
 import { Email } from 'src/core/common/valueObjects/email.vo';
 
 export class CreateCustomerUseCase {
-  constructor(
-    private customerGateway: CustomerGateway,
-  ) {}
+  constructor(private customerGateway: CustomerGateway) {}
 
   async execute(dto: CreateCustomerInputDTO): Promise<CoreResponse<Customer>> {
     const cpf = CPF.create(dto.cpf);
