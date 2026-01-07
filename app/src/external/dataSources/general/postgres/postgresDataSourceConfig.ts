@@ -10,6 +10,7 @@ export interface PostgresConfig {
   username: string;
   password: string;
   database: string;
+  nodeEnv?: string;
 }
 
 export class PostgresDataSourceConfig {
@@ -27,13 +28,13 @@ export class PostgresDataSourceConfig {
       ],
       synchronize: false,
       logging: false,
-      /*ssl: {
+      ssl: config.nodeEnv === 'development' ? false : {
         ca: fs
           .readFileSync(
             path.join(process.cwd(), 'certs', 'rds-combined-ca-bundle.pem'),
           )
           .toString(),
-      },*/
+      },
     });
   }
 }
