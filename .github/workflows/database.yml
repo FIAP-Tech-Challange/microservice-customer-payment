@@ -3,13 +3,17 @@ name: 🛢️ Deploy Database
 on:
   push:
     branches:
-      - develop # alterar em prod para main
+      - develop 
+      - qa
+      - main
     paths:
       - 'infra/database/**' 
       - '.github/workflows/database.yml'
   pull_request:
     branches:
-      - develop # alterar em prod para main
+      - develop 
+      - qa
+      - main
     paths:
       - 'infra/database/**'
 
@@ -111,7 +115,8 @@ jobs:
           terraform plan -out=tfplan -input=false -no-color
 
       - name: 🚀 Terraform Apply
-        if: github.event_name == 'push' && github.ref == 'refs/heads/develop' # alterar em prod para main
+        if: |
+           github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/qa')
         run: |
           echo "🚀 Aplicando mudanças no ambiente: ${{ env.TF_WORKSPACE }}"
           terraform apply -auto-approve -input=false -no-color tfplan
