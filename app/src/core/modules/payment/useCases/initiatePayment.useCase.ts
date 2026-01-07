@@ -14,7 +14,7 @@ export class InitiatePaymentUseCase {
 
     const createPayment = Payment.create({
       orderId: dto.orderId,
-      total: dto.totalPrice, /* ver forma para consumir o order e pegar os dados de valores */ 
+      total: dto.totalPrice || 0,
       storeId: dto.storeId,
       paymentType: dto.paymentType,
     });

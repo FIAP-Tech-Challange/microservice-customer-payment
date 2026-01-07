@@ -221,6 +221,30 @@ resource "aws_ecs_task_definition" "app_task" {
       {
         name  = "API_KEY"
         value = "${aws_secretsmanager_secret_version.api_key_value.secret_string}"
+      },
+      {
+        name  = "API_KEY_ORDER_SERVICE"
+        value = "${var.api_key_order_service}"
+      },
+      {
+        name  = "PARAM_URL_ORDER_SERVICE"
+        value = "${var.param_url_order_service}"
+      },
+      {
+        name  = "JWT_ACCESS_TOKEN_EXPIRATION_TIME"
+        value = "${var.jwt_access_token_expiration_time}"
+      },
+      {
+        name  = "JWT_SECRET_NAME"
+        value = "${var.jwt_secret_name}"
+      },
+      {
+        name  = "NODE_ENV"
+        value = "production"
+      },
+      {
+        name  = "EXTERNAL_PAYMENT_CONSUMER_KEY"
+        value = "${var.external_payment_consumer_key}"
       }
     ]
 

@@ -32,11 +32,12 @@ import { CreatePaymentResponseDto } from '.././dto/create-payment-response.dto';
 import { getPaymentPlatform } from '.././util/payment-platform.util';
 import { PaymentIdDto } from '.././dto/payment-id.dto';
 import { BusinessException } from '../../../shared/dto/business-exception.dto';
-//import { StoreOrTotemGuard } from '../../auth/guards/store-or-totem.guard';
-import { RequestFromStoreOrTotem } from '../../auth/dtos/request.dto';
 import { AwsSecretManagerService } from '../../../shared/services/secret-manager.service';
 import { AwsParameterStoreService } from '../../../shared/services/parameter-store.service';
 import { ConfigService } from '@nestjs/config';
+import { StoreGuard } from '../../auth/guards/store.guard';
+import { StoreTokenInterface } from '../../auth/dtos/token.dto';
+import { ExternalPaymentConsumersGuard } from '../../auth/guards/external-payment-consumers.guard';
 
 @ApiTags('Payment')
 @Controller({
@@ -67,19 +68,17 @@ export class PaymentController {
   })
   @ApiOperation({ summary: 'Register payment' })
   @ApiBearerAuth('access-token')
-  @ApiBearerAuth('totem-token')
-  //@UseGuards(StoreOrTotemGuard)
+  @UseGuards(StoreGuard)
   @Post()
   async create(
     @Body() createPaymentDto: CreatePaymentDto,
-    @Request() req: RequestFromStoreOrTotem,
+    @Request() req: StoreTokenInterface,
   ): Promise<CreatePaymentResponseDto> {
     const coreController = new PaymentCoreController(this.dataSource, this.configService, this.secretManager, this.parameterStore);
     const response = await coreController.initiatePayment({
       orderId: createPaymentDto.orderId,
       storeId: req.storeId,
       paymentType: PaymentTypeEnum.QR,
-      totalPrice: 0
     });
 
     if (response.error) {
@@ -124,14 +123,13 @@ export class PaymentController {
   })
   @ApiOperation({ summary: 'Find Payment' })
   @ApiBearerAuth('access-token')
-  @ApiBearerAuth('totem-token')
-  //@UseGuards(StoreOrTotemGuard)
+  @UseGuards(StoreGuard)
   @Get(':id')
   async findById(
     @Param() params: PaymentIdDto,
-    @Request() req: RequestFromStoreOrTotem,
+    @Request() req: StoreTokenInterface,
   ): Promise<PaymentResponseDto> {
-    const coreController = new PaymentCoreController(this.dataSource);
+    const coreController = new PaymentCoreController(this.dataSource, this.configService, this.secretManager, this.parameterStore);
     const response = await coreController.findPaymentById(params.id);
 
     if (response.error) {
@@ -186,10 +184,10 @@ export class PaymentController {
   })
   @ApiOperation({ summary: 'Approve Payment' })
   @ApiBearerAuth('external-payment-consumer-key')
-  //@UseGuards(ExternalPaymentConsumersGuard)
+  @UseGuards(ExternalPaymentConsumersGuard)
   @Patch(':id/approve')
   async approvePaymentHook(@Param('id') id: string): Promise<void> {
-    const coreController = new PaymentCoreController(this.dataSource);
+    const coreController = new PaymentCoreController(this.dataSource, this.configService, this.secretManager, this.parameterStore);
     const approvePayment = await coreController.approvePayment(id);
     if (approvePayment.error) {
       this.logger.log(
@@ -225,10 +223,10 @@ export class PaymentController {
   })
   @ApiOperation({ summary: 'Cancel Payment' })
   @ApiBearerAuth('external-payment-consumer-key')
-  //@UseGuards(ExternalPaymentConsumersGuard)
+  @UseGuards(ExternalPaymentConsumersGuard)
   @Patch(':id/cancel')
   async cancelPaymentHook(@Param('id') id: string): Promise<void> {
-    const coreController = new PaymentCoreController(this.dataSource);
+    const coreController = new PaymentCoreController(this.dataSource, this.configService, this.secretManager, this.parameterStore);
     const cancelPayment = await coreController.cancelPayment(id);
 
     if (cancelPayment.error) {
