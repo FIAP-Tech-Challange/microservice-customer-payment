@@ -20,6 +20,24 @@ export class SwaggerDoc {
         },
         'api-key',
       )
+      .addApiKey(
+        {
+          type: 'apiKey',
+          name: 'x-external-payment-consumer-key',
+          in: 'header',
+        },
+        'x-external-payment-consumer-key',
+      )
+      .addBearerAuth(
+        {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          name: 'Authorization',
+          in: 'header',
+        },
+        'access-token',
+      )
       .build();
 
     const document = SwaggerModule.createDocument(app, config);

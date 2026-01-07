@@ -3,13 +3,17 @@ name: 🛢️ Deploy Database
 on:
   push:
     branches:
-      - develop # alterar em prod para main
+      - develop 
+      - qa
+      - main
     paths:
       - 'infra/database/**' 
       - '.github/workflows/database.yml'
   pull_request:
     branches:
-      - develop # alterar em prod para main
+      - develop 
+      - qa
+      - main
     paths:
       - 'infra/database/**'
 
@@ -30,8 +34,8 @@ jobs:
         run: |
           if [[ -z "${{ secrets.DB_USERNAME }}" ]]; then echo "❌ Erro: Secret DB_USERNAME está vazia."; exit 1; fi
           if [[ -z "${{ secrets.DB_PASSWORD }}" ]]; then echo "❌ Erro: Secret DB_PASSWORD está vazia."; exit 1; fi
-          if [[ -z "${{ secrets.DB_NAME }}" ]]; then echo "❌ Erro: DB_NAME está vazia."; exit 1; fi
-          if [[ -z "${{ secrets.PROJECT_NAME }}" ]]; then echo "❌ Erro: PROJECT_NAME está vazia."; exit 1; fi
+          if [[ -z "${{ secrets.DB_PG_NAME }}" ]]; then echo "❌ Erro: DB_PG_NAME está vazia."; exit 1; fi
+          if [[ -z "${{ secrets.PROJECT_NAME_DATABASE }}" ]]; then echo "❌ Erro: PROJECT_NAME_DATABASE está vazia."; exit 1; fi
           echo "✅ Todas as variáveis obrigatórias estão presentes."
 
       - name: 🔑 Configure AWS Credentials
@@ -61,21 +65,21 @@ jobs:
           fi
           
           case "$BRANCH_NAME" in
-            develop) WORKSPACE="main" ;; # alterar em prod para main
+            develop) WORKSPACE="dev" ;; # alterar em prod para main
             main) WORKSPACE="main" ;;
             qa) WORKSPACE="qa" ;;
             *) WORKSPACE="$BRANCH_NAME" ;;
           esac
 
           echo "Target Workspace: $WORKSPACE"
-          echo "TF_WORKSPACE=$WORKSPACE" >> $GITHUB_ENV
+          echo "TARGET_WORKSPACE=$WORKSPACE" >> $GITHUB_ENV
 
       - name: 🪣 Bootstrap Infrastructure
         run: |
-          echo "🔧 Executando bootstrap para workspace: ${{ env.TF_WORKSPACE }}"
+          echo "🔧 Executando bootstrap para workspace: ${{ env.TARGET_WORKSPACE }}"
           
           chmod +x bootstrap.sh
-          ./bootstrap.sh ${{ env.TF_WORKSPACE }}
+          ./bootstrap.sh ${{ env.TARGET_WORKSPACE }}
 
           echo "✅ Bootstrap finalizado."
 
@@ -87,15 +91,19 @@ jobs:
             echo "❌ Erro: Pasta .terraform não encontrada."
             exit 1
           fi
-          
-          terraform workspace select ${{ env.TF_WORKSPACE }} || terraform workspace new ${{ env.TF_WORKSPACE }}
+
+          echo "🔄 Configurando Workspace: ${{ env.TARGET_WORKSPACE }}"
+
+          terraform workspace select ${{ env.TARGET_WORKSPACE }} || terraform workspace new ${{ env.TARGET_WORKSPACE }}
+
+          echo "TF_WORKSPACE=${{ env.TARGET_WORKSPACE }}" >> $GITHUB_ENV
 
       - name: ⚙️ Set Terraform Variables
         run: |
           echo "TF_VAR_db_username=${{ secrets.DB_USERNAME }}" >> $GITHUB_ENV
           echo "TF_VAR_db_password=${{ secrets.DB_PASSWORD }}" >> $GITHUB_ENV
-          echo "TF_VAR_db_name=${{ secrets.DB_NAME }}" >> $GITHUB_ENV
-          echo "TF_VAR_project_name=${{ secrets.PROJECT_NAME }}" >> $GITHUB_ENV
+          echo "TF_VAR_db_name=${{ secrets.DB_PG_NAME }}" >> $GITHUB_ENV
+          echo "TF_VAR_project_name=${{ secrets.PROJECT_NAME_DATABASE }}" >> $GITHUB_ENV
 
       - name: 🔎 Terraform Validate
         run: terraform validate -no-color
@@ -107,7 +115,8 @@ jobs:
           terraform plan -out=tfplan -input=false -no-color
 
       - name: 🚀 Terraform Apply
-        if: github.event_name == 'push' && github.ref == 'refs/heads/develop' # alterar em prod para main
+        if: |
+           github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/qa')
         run: |
           echo "🚀 Aplicando mudanças no ambiente: ${{ env.TF_WORKSPACE }}"
           terraform apply -auto-approve -input=false -no-color tfplan

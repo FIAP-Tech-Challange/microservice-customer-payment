@@ -1,5 +1,6 @@
 import { DataSource } from 'typeorm';
 import { CustomerEntity } from './entities/customer.entity';
+import { PaymentEntity } from './entities/payment.entity';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -9,6 +10,7 @@ export interface PostgresConfig {
   username: string;
   password: string;
   database: string;
+  nodeEnv?: string;
 }
 
 export class PostgresDataSourceConfig {
@@ -22,16 +24,17 @@ export class PostgresDataSourceConfig {
       database: config.database,
       entities: [
         CustomerEntity,
+        PaymentEntity,
       ],
       synchronize: false,
       logging: false,
-      /*ssl: {
+      ssl: config.nodeEnv === 'development' ? false : {
         ca: fs
           .readFileSync(
             path.join(process.cwd(), 'certs', 'rds-combined-ca-bundle.pem'),
           )
           .toString(),
-      },*/
+      },
     });
   }
 }
