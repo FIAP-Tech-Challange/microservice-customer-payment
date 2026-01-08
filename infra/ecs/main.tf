@@ -6,7 +6,7 @@ terraform {
     }
   }
 
-  backend "s3" {} 
+  backend "s3" {}
 }
 
 provider "aws" {
@@ -71,7 +71,7 @@ resource "aws_ssm_parameter" "lb_url" {
   name  = "/microservice/customer-payment/lb_url"
   type  = "String"
   value = aws_lb.shared.dns_name
-  
+
   tags = {
     environment = "prod"
   }
@@ -118,7 +118,7 @@ resource "aws_security_group" "app_sg" {
     from_port       = 3000
     to_port         = 3000
     protocol        = "tcp"
-    security_groups = [aws_security_group.lb_sg.id] 
+    security_groups = [aws_security_group.lb_sg.id]
   }
 
   egress {
@@ -167,7 +167,7 @@ resource "aws_lb_listener_rule" "redirect_to_docs" {
 
 resource "aws_lb_listener_rule" "app_rule" {
   listener_arn = aws_lb_listener.http.arn
-  priority   = 100
+  priority     = 100
 
   action {
     type             = "forward"
@@ -205,13 +205,13 @@ resource "aws_ecs_task_definition" "app_task" {
         value = "${var.db_pg_port}"
       },
       {
-        name  = "DB_PG_USER"
-        value = "${var.db_pg_username}",
+        name      = "DB_PG_USER"
+        value     = "${var.db_pg_username}",
         sensitive = true
       },
       {
-        name  = "DB_PG_PASSWORD"
-        value = "${var.db_pg_password}" 
+        name      = "DB_PG_PASSWORD"
+        value     = "${var.db_pg_password}"
         sensitive = true
       },
       {
@@ -223,12 +223,12 @@ resource "aws_ecs_task_definition" "app_task" {
         value = "${aws_secretsmanager_secret_version.api_key_value.secret_string}"
       },
       {
-        name  = "API_KEY_ORDER_SERVICE"
-        value = "${var.api_key_order_service}"
+        name  = "API_KEY_NAME_ORDER"
+        value = "${var.api_key_name_order}"
       },
       {
-        name  = "PARAM_URL_ORDER_SERVICE"
-        value = "${var.param_url_order_service}"
+        name  = "ORDER_SERVICE_BASE_URL_PARAM"
+        value = "${var.order_service_base_url_param}"
       },
       {
         name  = "JWT_ACCESS_TOKEN_EXPIRATION_TIME"
@@ -253,12 +253,12 @@ resource "aws_ecs_task_definition" "app_task" {
       hostPort      = 3000
     }]
     logConfiguration = {
-        logDriver = "awslogs"
-        options = {
-            "awslogs-group"         = "/ecs/${var.project_name}-app"
-            "awslogs-region"        = "us-east-1"
-            "awslogs-stream-prefix" = "ecs"
-        }
+      logDriver = "awslogs"
+      options = {
+        "awslogs-group"         = "/ecs/${var.project_name}-app"
+        "awslogs-region"        = "us-east-1"
+        "awslogs-stream-prefix" = "ecs"
+      }
     }
   }])
 }
@@ -275,7 +275,7 @@ resource "aws_ecs_service" "app_service" {
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets          = data.aws_subnets.default.ids  
+    subnets          = data.aws_subnets.default.ids
     security_groups  = [aws_security_group.app_sg.id]
     assign_public_ip = true
   }
