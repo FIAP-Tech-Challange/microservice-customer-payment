@@ -145,8 +145,8 @@ jobs:
             DB_PG_PASSWORD=${{ env.DB_PG_PASSWORD }}
             DB_PG_NAME=${{ secrets.DB_PG_NAME }}
             DB_PG_PORT=${{ secrets.DB_PG_PORT }}
-            API_KEY_ORDER_SERVICE=${{ secrets.API_KEY_ORDER_SERVICE }}
-            PARAM_URL_ORDER_SERVICE=${{ secrets.PARAM_URL_ORDER_SERVICE }}
+            API_KEY_NAME_ORDER=${{ secrets.API_KEY_NAME_ORDER }}
+            ORDER_SERVICE_BASE_URL_PARAM=${{ secrets.ORDER_SERVICE_BASE_URL_PARAM }}
             JWT_ACCESS_TOKEN_EXPIRATION_TIME=${{ secrets.JWT_ACCESS_TOKEN_EXPIRATION_TIME }}
             JWT_SECRET_NAME=${{ secrets.JWT_SECRET_NAME }}
             NODE_ENV=production
@@ -224,8 +224,8 @@ jobs:
           TF_VAR_db_pg_host: ${{ env.DB_PG_HOST }}
           TF_VAR_db_pg_username: ${{ env.DB_PG_USER }}
           TF_VAR_db_pg_password: ${{ env.DB_PG_PASSWORD }}
-          TF_VAR_api_key_order_service: ${{ secrets.API_KEY_ORDER_SERVICE }}
-          TF_VAR_param_url_order_service: ${{ secrets.PARAM_URL_ORDER_SERVICE }}
+          TF_VAR_api_key_name_order: ${{ secrets.API_KEY_NAME_ORDER }}
+          TF_VAR_order_service_base_url_param: ${{ secrets.ORDER_SERVICE_BASE_URL_PARAM }}
           TF_VAR_jwt_access_token_expiration_time: ${{ secrets.JWT_ACCESS_TOKEN_EXPIRATION_TIME }}
           TF_VAR_jwt_secret_name: ${{ secrets.JWT_SECRET_NAME }}
           TF_VAR_external_payment_consumer_key: ${{ secrets.EXTERNAL_PAYMENT_CONSUMER_KEY }}
