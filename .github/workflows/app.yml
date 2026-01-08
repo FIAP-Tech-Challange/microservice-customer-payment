@@ -10,6 +10,7 @@ on:
   push:
     branches:
       - main
+      - main
     paths:
       - "app/**"
       - "infra/ecs/**"
@@ -90,6 +91,9 @@ jobs:
             exit 1
           fi
 
+          DB_HOST=$(echo $PARAMS | jq -r '.[] | select(.Name=="/db-customer-payment/main/rds_endpoint") | .Value')
+          DB_USER=$(echo $PARAMS | jq -r '.[] | select(.Name=="/db-customer-payment/main/db_username") | .Value')
+          DB_PASS=$(echo $PARAMS | jq -r '.[] | select(.Name=="/db-customer-payment/main/db_password") | .Value')
           DB_HOST=$(echo $PARAMS | jq -r '.[] | select(.Name=="/db-customer-payment/main/rds_endpoint") | .Value')
           DB_USER=$(echo $PARAMS | jq -r '.[] | select(.Name=="/db-customer-payment/main/db_username") | .Value')
           DB_PASS=$(echo $PARAMS | jq -r '.[] | select(.Name=="/db-customer-payment/main/db_password") | .Value')
@@ -187,7 +191,11 @@ jobs:
       - name: 📎 Fetch DB Parameters (Runtime)
         run: |
           PARAMS=$(aws ssm get-parameters --names "/db-customer-payment/main/rds_endpoint" "/db-customer-payment/main/db_username" "/db-customer-payment/main/db_password" --with-decryption --query "Parameters[].{Name:Name,Value:Value}" --output json)
+          PARAMS=$(aws ssm get-parameters --names "/db-customer-payment/main/rds_endpoint" "/db-customer-payment/main/db_username" "/db-customer-payment/main/db_password" --with-decryption --query "Parameters[].{Name:Name,Value:Value}" --output json)
 
+          DB_HOST=$(echo $PARAMS | jq -r '.[] | select(.Name=="/db-customer-payment/main/rds_endpoint") | .Value')
+          DB_USER=$(echo $PARAMS | jq -r '.[] | select(.Name=="/db-customer-payment/main/db_username") | .Value')
+          DB_PASS=$(echo $PARAMS | jq -r '.[] | select(.Name=="/db-customer-payment/main/db_password") | .Value')
           DB_HOST=$(echo $PARAMS | jq -r '.[] | select(.Name=="/db-customer-payment/main/rds_endpoint") | .Value')
           DB_USER=$(echo $PARAMS | jq -r '.[] | select(.Name=="/db-customer-payment/main/db_username") | .Value')
           DB_PASS=$(echo $PARAMS | jq -r '.[] | select(.Name=="/db-customer-payment/main/db_password") | .Value')
@@ -237,6 +245,7 @@ jobs:
           terraform plan -out=tfplan -no-color
 
       - name: 🚀 Terraform Apply
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           echo "🚀 Aplicando Infraestrutura..."
