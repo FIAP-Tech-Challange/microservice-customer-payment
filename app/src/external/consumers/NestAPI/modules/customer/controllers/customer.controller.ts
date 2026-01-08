@@ -28,8 +28,9 @@ import { DataSourceProxy } from 'src/external/dataSources/dataSource.proxy';
 import { CustomerCoreController } from 'src/core/modules/customer/controllers/customer.controller';
 import { CustomerRequestParamsDto } from '../dtos/customer-request-params.dto';
 import { CustomerPaginationDto } from '../dtos/customer-pagination.dto';
-import { ApiKeyGuard } from '../../auth/guards/api-key.guard';
 import { StoreGuard } from '../../auth/guards/store.guard';
+import { OrGuard } from '../../auth/guards/or.guard';
+import { ApiKeyGuard } from '../../auth/guards/api-key.guard';
 
 @ApiTags('Customer')
 @Controller({
@@ -103,7 +104,7 @@ export class CustomerController {
     description: 'Retrieves the customer based on the customerId.',
   })
   @ApiBearerAuth('access-token')
-  @UseGuards(StoreGuard)
+  @UseGuards(OrGuard(ApiKeyGuard, StoreGuard))
   @Get(':id')
   async findById(
     @Req() req,

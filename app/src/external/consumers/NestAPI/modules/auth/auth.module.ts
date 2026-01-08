@@ -4,14 +4,8 @@ import { ApiKeyGuard } from './guards/api-key.guard';
 
 @Global()
 @Module({
-  imports: [
-  ],
-  providers: [
-    AuthService,
-    ApiKeyGuard,
-  ],
-  exports: [
-    ApiKeyGuard,
-  ],
+  imports: [],
+  providers: [AuthService, ApiKeyGuard],
+  exports: [ApiKeyGuard],
 })
 export class AuthModule {}

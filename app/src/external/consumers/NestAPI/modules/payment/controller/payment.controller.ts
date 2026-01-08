@@ -38,6 +38,9 @@ import { ConfigService } from '@nestjs/config';
 import { StoreGuard } from '../../auth/guards/store.guard';
 import { StoreTokenInterface } from '../../auth/dtos/token.dto';
 import { ExternalPaymentConsumersGuard } from '../../auth/guards/external-payment-consumers.guard';
+import { StoreGuard } from '../../auth/guards/store.guard';
+import { StoreTokenInterface } from '../../auth/dtos/token.dto';
+import { ExternalPaymentConsumersGuard } from '../../auth/guards/external-payment-consumers.guard';
 
 @ApiTags('Payment')
 @Controller({
@@ -46,10 +49,11 @@ import { ExternalPaymentConsumersGuard } from '../../auth/guards/external-paymen
 })
 export class PaymentController {
   private readonly logger = new Logger(PaymentController.name);
-  constructor(private dataSource: DataSourceProxy,
+  constructor(
+    private dataSource: DataSourceProxy,
     private secretManager: AwsSecretManagerService,
     private parameterStore: AwsParameterStoreService,
-    private configService: ConfigService
+    private configService: ConfigService,
   ) {}
 
   @ApiResponse({
@@ -69,12 +73,19 @@ export class PaymentController {
   @ApiOperation({ summary: 'Register payment' })
   @ApiBearerAuth('access-token')
   @UseGuards(StoreGuard)
+  @UseGuards(StoreGuard)
   @Post()
   async create(
     @Body() createPaymentDto: CreatePaymentDto,
     @Request() req: StoreTokenInterface,
+    @Request() req: StoreTokenInterface,
   ): Promise<CreatePaymentResponseDto> {
-    const coreController = new PaymentCoreController(this.dataSource, this.configService, this.secretManager, this.parameterStore);
+    const coreController = new PaymentCoreController(
+      this.dataSource,
+      this.configService,
+      this.secretManager,
+      this.parameterStore,
+    );
     const response = await coreController.initiatePayment({
       orderId: createPaymentDto.orderId,
       storeId: req.storeId,
@@ -124,12 +135,19 @@ export class PaymentController {
   @ApiOperation({ summary: 'Find Payment' })
   @ApiBearerAuth('access-token')
   @UseGuards(StoreGuard)
+  @UseGuards(StoreGuard)
   @Get(':id')
   async findById(
     @Param() params: PaymentIdDto,
     @Request() req: StoreTokenInterface,
+    @Request() req: StoreTokenInterface,
   ): Promise<PaymentResponseDto> {
-    const coreController = new PaymentCoreController(this.dataSource, this.configService, this.secretManager, this.parameterStore);
+    const coreController = new PaymentCoreController(
+      this.dataSource,
+      this.configService,
+      this.secretManager,
+      this.parameterStore,
+    );
     const response = await coreController.findPaymentById(params.id);
 
     if (response.error) {
@@ -185,9 +203,15 @@ export class PaymentController {
   @ApiOperation({ summary: 'Approve Payment' })
   @ApiBearerAuth('external-payment-consumer-key')
   @UseGuards(ExternalPaymentConsumersGuard)
+  @UseGuards(ExternalPaymentConsumersGuard)
   @Patch(':id/approve')
   async approvePaymentHook(@Param('id') id: string): Promise<void> {
-    const coreController = new PaymentCoreController(this.dataSource, this.configService, this.secretManager, this.parameterStore);
+    const coreController = new PaymentCoreController(
+      this.dataSource,
+      this.configService,
+      this.secretManager,
+      this.parameterStore,
+    );
     const approvePayment = await coreController.approvePayment(id);
     if (approvePayment.error) {
       this.logger.log(
@@ -224,9 +248,15 @@ export class PaymentController {
   @ApiOperation({ summary: 'Cancel Payment' })
   @ApiBearerAuth('external-payment-consumer-key')
   @UseGuards(ExternalPaymentConsumersGuard)
+  @UseGuards(ExternalPaymentConsumersGuard)
   @Patch(':id/cancel')
   async cancelPaymentHook(@Param('id') id: string): Promise<void> {
-    const coreController = new PaymentCoreController(this.dataSource, this.configService, this.secretManager, this.parameterStore);
+    const coreController = new PaymentCoreController(
+      this.dataSource,
+      this.configService,
+      this.secretManager,
+      this.parameterStore,
+    );
     const cancelPayment = await coreController.cancelPayment(id);
 
     if (cancelPayment.error) {

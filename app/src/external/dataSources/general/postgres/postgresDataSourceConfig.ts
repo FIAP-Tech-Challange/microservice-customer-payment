@@ -1,6 +1,7 @@
 import { DataSource } from 'typeorm';
 import { CustomerEntity } from './entities/customer.entity';
 import { PaymentEntity } from './entities/payment.entity';
+import { PaymentEntity } from './entities/payment.entity';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -10,6 +11,7 @@ export interface PostgresConfig {
   username: string;
   password: string;
   database: string;
+  nodeEnv?: string;
   nodeEnv?: string;
 }
 
@@ -22,19 +24,23 @@ export class PostgresDataSourceConfig {
       username: config.username,
       password: config.password,
       database: config.database,
-      entities: [
-        CustomerEntity,
-        PaymentEntity,
-      ],
+      entities: [CustomerEntity, PaymentEntity],
       synchronize: false,
       logging: false,
-      ssl: config.nodeEnv === 'development' ? false : {
-        ca: fs
-          .readFileSync(
-            path.join(process.cwd(), 'certs', 'rds-combined-ca-bundle.pem'),
-          )
-          .toString(),
-      },
+      ssl:
+        config.nodeEnv === 'development'
+          ? false
+          : {
+              ca: fs
+                .readFileSync(
+                  path.join(
+                    process.cwd(),
+                    'certs',
+                    'rds-combined-ca-bundle.pem',
+                  ),
+                )
+                .toString(),
+            },
     });
   }
 }

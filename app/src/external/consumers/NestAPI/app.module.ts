@@ -20,7 +20,7 @@ import { PaymentModule } from './modules/payment/payment.module';
     AuthModule,
     CustomerModule,
     AwsModule,
-    PaymentModule
+    PaymentModule,
   ],
   controllers: [],
   providers: [],
