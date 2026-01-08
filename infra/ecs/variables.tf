@@ -6,7 +6,7 @@ variable "repository_ecr_name" {
 variable "project_name" {
   description = "O nome do projeto."
   type        = string
-  default    = "microservice-customer-payment"
+  default     = "microservice-customer-payment"
 }
 
 variable "image_tag" {
@@ -41,12 +41,12 @@ variable "db_pg_name" {
   type        = string
 }
 
-variable "api_key_order_service" {
+variable "api_key_name_order" {
   description = "Nome do segredo da API Key do serviço de pedidos."
   type        = string
 }
 
-variable "param_url_order_service" {
+variable "order_service_base_url_param" {
   description = "Local da url do serviço de pedidos."
   type        = string
 }

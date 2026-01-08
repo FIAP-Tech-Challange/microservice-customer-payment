@@ -1,4 +1,4 @@
-import { DataSource, In, Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { GeneralDataSource } from '../general.dataSource';
 import { CustomerDataSourceDTO } from 'src/common/dataSource/DTOs/customerDataSource.dto';
 import { FindAllCustomersDataSourceFiltersDTO } from 'src/common/dataSource/DTOs/findAllCustomersDataSourceFilters.dto';
@@ -11,7 +11,6 @@ import { PaymentDataSourceDTO } from 'src/common/dataSource/DTOs/paymentDataSour
 export class PostgresGeneralDataSource implements GeneralDataSource {
   private customerRepository: Repository<CustomerEntity>;
   private paymentRepository: Repository<PaymentEntity>;
-
 
   constructor(private dataSource: DataSource) {
     this.customerRepository = this.dataSource.getRepository(CustomerEntity);
@@ -194,5 +193,4 @@ export class PostgresGeneralDataSource implements GeneralDataSource {
       created_at: payment.created_at.toISOString(),
     };
   }
-
 }

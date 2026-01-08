@@ -1,0 +1,85 @@
+name: 🔍 CI - Tests and Quality
+
+on:
+  pull_request:
+    branches:
+      - develop
+      - main
+    paths:
+      - "app/**"
+  push:
+    branches:
+      - develop
+      - main
+    paths:
+      - "app/**"
+
+jobs:
+  test:
+    name: 🧪 Run Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./app
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: "npm"
+          cache-dependency-path: ./app/package-lock.json
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🔍 Run ESLint
+        run: npm run lint
+
+      - name: 🧪 Run tests with coverage
+        run: npm run test:cov
+
+      - name: 📊 Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: ./app/coverage/
+          retention-days: 1
+
+  sonarqube:
+    name: 📊 SonarQube Analysis
+    needs: test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./app
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: "npm"
+          cache-dependency-path: ./app/package-lock.json
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🧪 Generate coverage
+        run: npm run test:cov
+
+      - name: 🔍 SonarQube Scan
+        uses: sonarsource/sonarqube-scan-action@v6
+        with:
+          projectBaseDir: ./app
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: https://sonarcloud.io

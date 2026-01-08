@@ -19,10 +19,10 @@ import { UnauthorizedException } from '@nestjs/common';
 export class PaymentCoreController {
   private baseURL: string;
   private expectedApiKey: string;
-  private configService: ConfigService
-  private secretManager: AwsSecretManagerService
-  private parameterStore: AwsParameterStoreService
-  private initialized = false
+  private configService: ConfigService;
+  private secretManager: AwsSecretManagerService;
+  private parameterStore: AwsParameterStoreService;
+  private initialized = false;
 
   constructor(
     private dataSource: DataSource,
@@ -43,7 +43,8 @@ export class PaymentCoreController {
   }
 
   private async initConfigs() {
-    const apiKeySecretName = this.configService.get<string>('apiKeyNameOrder') || '';
+    const apiKeySecretName =
+      this.configService.get<string>('apiKeyNameOrder') || '';
 
     if (!apiKeySecretName) {
       throw new UnauthorizedException('API key secret name is not configured');
@@ -73,11 +74,12 @@ export class PaymentCoreController {
     try {
       await this.ensureInitialized();
       const paymentGateway = new PaymentGateway(this.dataSource);
-      const orderGateway = new OrderHttpGateway(this.baseURL, this.expectedApiKey);
-
-      const initiatePaymentUseCase = new InitiatePaymentUseCase(
-        paymentGateway,
+      const orderGateway = new OrderHttpGateway(
+        this.baseURL,
+        this.expectedApiKey,
       );
+
+      const initiatePaymentUseCase = new InitiatePaymentUseCase(paymentGateway);
 
       const order = await orderGateway.findById(dto.orderId);
       if (order.error || !order.value) {
@@ -95,8 +97,8 @@ export class PaymentCoreController {
           error: initiatePayment.error,
           value: undefined,
         };
-      
-      orderGateway.setToReceived(dto.orderId);
+
+      await orderGateway.setToReceived(dto.orderId);
 
       return {
         error: undefined,
@@ -119,15 +121,17 @@ export class PaymentCoreController {
     try {
       await this.ensureInitialized();
       const paymentGateway = new PaymentGateway(this.dataSource);
-      const orderGateway = new OrderHttpGateway(this.baseURL, this.expectedApiKey);
+      const orderGateway = new OrderHttpGateway(
+        this.baseURL,
+        this.expectedApiKey,
+      );
 
       const findPaymentByIdUseCase = new FindPaymentByIdUseCase(paymentGateway);
-      
+
       const approvePaymentUseCase = new ApprovePaymentUseCase(
         paymentGateway,
         findPaymentByIdUseCase,
       );
-
 
       const approvePayment = await approvePaymentUseCase.execute(paymentId);
       if (approvePayment.error)
@@ -136,8 +140,7 @@ export class PaymentCoreController {
           value: undefined,
         };
 
-      orderGateway.setToReceived(approvePayment.value.orderId);
-
+      await orderGateway.setToReceived(approvePayment.value.orderId);
 
       return {
         error: undefined,
@@ -157,7 +160,10 @@ export class PaymentCoreController {
     try {
       await this.ensureInitialized();
       const paymentGateway = new PaymentGateway(this.dataSource);
-      const orderGateway = new OrderHttpGateway(this.baseURL, this.expectedApiKey);
+      const orderGateway = new OrderHttpGateway(
+        this.baseURL,
+        this.expectedApiKey,
+      );
 
       const findPaymentByIdUseCase = new FindPaymentByIdUseCase(paymentGateway);
 
@@ -172,8 +178,8 @@ export class PaymentCoreController {
           error: cancelPayment.error,
           value: undefined,
         };
-      
-      orderGateway.setToCanceled(cancelPayment.value.orderId);
+
+      await orderGateway.setToCanceled(cancelPayment.value.orderId);
 
       return {
         error: undefined,

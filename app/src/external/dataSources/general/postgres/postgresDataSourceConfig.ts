@@ -22,19 +22,23 @@ export class PostgresDataSourceConfig {
       username: config.username,
       password: config.password,
       database: config.database,
-      entities: [
-        CustomerEntity,
-        PaymentEntity,
-      ],
+      entities: [CustomerEntity, PaymentEntity],
       synchronize: false,
       logging: false,
-      ssl: config.nodeEnv === 'development' ? false : {
-        ca: fs
-          .readFileSync(
-            path.join(process.cwd(), 'certs', 'rds-combined-ca-bundle.pem'),
-          )
-          .toString(),
-      },
+      ssl:
+        config.nodeEnv === 'development'
+          ? false
+          : {
+              ca: fs
+                .readFileSync(
+                  path.join(
+                    process.cwd(),
+                    'certs',
+                    'rds-combined-ca-bundle.pem',
+                  ),
+                )
+                .toString(),
+            },
     });
   }
 }
