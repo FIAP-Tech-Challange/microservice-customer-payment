@@ -29,15 +29,23 @@ export class OrderHttpGateway {
   }
 
   async setToReceived(orderId: string): Promise<CoreResponse<void>> {
-    return this.handleRequest(() =>
+    const result = await this.handleRequest(() =>
       this.client.patch(`/orders/${orderId}`, { status: 'RECEIVED' }),
     );
+    if (result.error) {
+      return { error: result.error, value: undefined };
+    }
+    return { error: undefined, value: undefined };
   }
 
   async setToCanceled(orderId: string): Promise<CoreResponse<void>> {
-    return this.handleRequest(() =>
+    const result = await this.handleRequest(() =>
       this.client.patch(`/orders/${orderId}`, { status: 'CANCELED' }),
     );
+    if (result.error) {
+      return { error: result.error, value: undefined };
+    }
+    return { error: undefined, value: undefined };
   }
 
   private async handleRequest<T>(
