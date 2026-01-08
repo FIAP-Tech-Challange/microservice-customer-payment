@@ -1,4 +1,4 @@
-# Tech Challenge - Sistema de Autoatendimento
+# Tech Challenge - MicroServiço Cliente e Pagamento
 
 [![NestJS CI Build, Test, and Healthcheck](https://github.com/davidasteixeira/tech-challenge/actions/workflows/ci.yml/badge.svg)](https://github.com/davidasteixeira/tech-challenge/actions/workflows/ci.yml)
 

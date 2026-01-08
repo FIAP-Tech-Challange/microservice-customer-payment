@@ -11,10 +11,7 @@ import { FakePaymentDataSource } from 'src/external/dataSources/payment/fake/fak
       useFactory: async () => {
         const generalDataSource = await createPostgresGeneralDataSource();
         const paymentDataSource = new FakePaymentDataSource();
-        return new DataSourceProxy(
-          generalDataSource,
-          paymentDataSource,
-        );
+        return new DataSourceProxy(generalDataSource, paymentDataSource);
       },
     },
   ],

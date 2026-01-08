@@ -1,4 +1,3 @@
-
 import { CustomerDataSourceDTO } from 'src/common/dataSource/DTOs/customerDataSource.dto';
 import { FindAllCustomersDataSourceFiltersDTO } from 'src/common/dataSource/DTOs/findAllCustomersDataSourceFilters.dto';
 import { PaginatedDataSourceParamsDTO } from 'src/common/dataSource/DTOs/paginatedDataSourceParams.dto';
@@ -6,7 +5,6 @@ import { PaginatedDataSourceResponseDTO } from 'src/common/dataSource/DTOs/pagin
 import { PaymentDataSourceDTO } from 'src/common/dataSource/DTOs/paymentDataSource.dto';
 
 export interface GeneralDataSource {
-
   // Customer
   findCustomerById(id: string): Promise<CustomerDataSourceDTO | null>;
   findCustomerByCpf(cpf: string): Promise<CustomerDataSourceDTO | null>;

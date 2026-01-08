@@ -22,9 +22,7 @@ export class CustomerCoreController {
     try {
       const gateway = new CustomerGateway(this.dataSource);
 
-      const useCase = new CreateCustomerUseCase(
-        gateway,
-      );
+      const useCase = new CreateCustomerUseCase(gateway);
 
       const { error: err, value: customer } = await useCase.execute(dto);
 
