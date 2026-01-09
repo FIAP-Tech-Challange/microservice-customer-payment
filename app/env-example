@@ -8,7 +8,7 @@ DB_PG_LOGGING=true
 
 # Application Configuration
 NODE_ENV=development
-API_KEY=tech_challenge_secret_key
+API_KEY_SECRET_NAME=tech_challenge_secret_key
 API_KEY_NAME_ORDER=order-api-key
 ORDER_SERVICE_BASE_URL_PARAM=order-base-url
 EXTERNAL_PAYMENT_CONSUMER_KEY=payment-key
