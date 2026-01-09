@@ -18,6 +18,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
 
       - name: Confirm Quality Gate
         run: |
@@ -35,6 +37,8 @@ jobs:
     steps:
       - name: 📥 Checkout Code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
 
       - name: 🛡️ Verify Build Secrets
         run: |
@@ -101,12 +105,12 @@ jobs:
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPO: ${{ secrets.REPOSITORY_ECR_NAME }}
-          COMMIT_HASH: ${{ github.sha }}
+          COMMIT_HASH: ${{ github.event.workflow_run.head_sha }}
         run: |
           IMAGE_URI="$ECR_REGISTRY/$ECR_REPO"
           TAGS="$IMAGE_URI:$COMMIT_HASH"
 
-          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+          if [[ "${{ github.event.workflow_run.head_branch }}" == "main" ]]; then
             TAGS="$TAGS,$IMAGE_URI:latest"
           fi
 
@@ -139,6 +143,8 @@ jobs:
     steps:
       - name: 📥 Checkout Code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
 
       - name: 🛡️ Verify Deploy Variables
         env:
@@ -214,13 +220,13 @@ jobs:
           terraform plan -out=tfplan -no-color
 
       - name: 🚀 Terraform Apply
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
         run: |
           echo "🚀 Aplicando Infraestrutura..."
           terraform apply -auto-approve -no-color tfplan
 
       - name: 🌐 Fetch Load Balancer URL
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
         run: |
           LB_URL=$(aws ssm get-parameter --name "/microservice/customer-payment/lb_url" --query "Parameter.Value" --output text)
           if [[ -z "$LB_URL" ]]; then
@@ -231,7 +237,7 @@ jobs:
           echo "✅ Load Balancer URL recuperada: $LB_URL"
 
       - name: 🦍 Configure Kong via decK
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
         run: |
           KONG_ADMIN_URL=$(aws ssm get-parameter --name "/kong/admin-url" --query "Parameter.Value" --output text)
           if [[ -z "$KONG_ADMIN_URL" ]]; then
