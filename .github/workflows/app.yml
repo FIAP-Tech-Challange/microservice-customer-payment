@@ -124,8 +124,8 @@ jobs:
           file: ./app/Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.tags.outputs.tags }}
-            cache-from: type=gha
-            cache-to: type=gha,mode=max
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
   deploy:
     name: ☁️ Deploy Terraform
