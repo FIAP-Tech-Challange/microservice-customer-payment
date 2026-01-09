@@ -10,7 +10,6 @@ on:
   push:
     branches:
       - main
-      - main
     paths:
       - "app/**"
       - "infra/ecs/**"
@@ -246,7 +245,34 @@ jobs:
 
       - name: 🚀 Terraform Apply
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           echo "🚀 Aplicando Infraestrutura..."
           terraform apply -auto-approve -no-color tfplan
+
+      - name: 🌐 Fetch Load Balancer URL
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          LB_URL=$(aws ssm get-parameter --name "/microservice/customer-payment/lb_url" --query "Parameter.Value" --output text)
+          if [[ -z "$LB_URL" ]]; then
+            echo "❌ Erro: URL the Load Balancer not found in SSM."
+            exit 1
+          fi
+          echo "LB_URL=$LB_URL" >> $GITHUB_ENV
+          echo "✅ Load Balancer URL recuperada: $LB_URL"
+
+      - name: 🦍 Configure Kong via decK
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          KONG_ADMIN_URL=$(aws ssm get-parameter --name "/kong/admin-url" --query "Parameter.Value" --output text)
+          if [[ -z "$KONG_ADMIN_URL" ]]; then
+            echo "❌ Error: Kong Admin URL not found in SSM (/kong/admin-url)."
+            exit 1
+          fi
+          echo "✅ Kong Admin URL recuperada."
+
+          sed -i "s|PLACEHOLDER_LB_URL|${{ env.LB_URL }}|g" kong.yaml
+          
+          docker run --rm \
+            -v $(pwd):/data \
+            -e DECK_KONG_ADDR=$KONG_ADMIN_URL \
+            kong/deck:latest sync -s /data/kong.yaml --select-tag customer-payment

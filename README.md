@@ -1,317 +1,222 @@
-# Tech Challenge - MicroServiço Cliente e Pagamento
+# Microservice Customer-Payment
 
-[![NestJS CI Build, Test, and Healthcheck](https://github.com/davidasteixeira/tech-challenge/actions/workflows/ci.yml/badge.svg)](https://github.com/davidasteixeira/tech-challenge/actions/workflows/ci.yml)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=fiap-tech-challange_microservice-customer-payment&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=fiap-tech-challange_microservice-customer-payment)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=fiap-tech-challange_microservice-customer-payment&metric=coverage)](https://sonarcloud.io/summary/new_code?id=fiap-tech-challange_microservice-customer-payment)
 
 ## 📋 Visão Geral
 
-Sistema de autoatendimento para lanchonetes desenvolvido com **Clean Architecture** e **NestJS**. A solução permite o gerenciamento completo do fluxo de pedidos através de totens de autoatendimento, desde a seleção de produtos até o pagamento e acompanhamento do status do pedido.
+Microserviço responsável pela **gestão de clientes** e **processamento de pagamentos** construído com **Clean Architecture** e **NestJS**. Este serviço faz parte da arquitetura de microserviços do Tech Challenge e gerencia toda a lógica de domínio relacionada a clientes e processamento de pagamentos.
 
-### 🚀 Principais Funcionalidades
+## 🚀 Funcionalidades
 
-- **🏪 Gestão de Lojas**: Cadastro e autenticação de estabelecimentos
-- **🖥️ Totens de Autoatendimento**: Gerenciamento de pontos de venda
-- **👥 Clientes**: Cadastro opcional com CPF para identificação
-- **📦 Produtos e Categorias**: Catálogo organizado por categorias
-- **🛒 Pedidos**: Fluxo completo do pedido com rastreamento de status
-- **💳 Pagamentos**: Simulador fake de pagamentos
-- **📊 Dashboard**: Acompanhamento de pedidos em tempo real
-- **☁️ Deploy Kubernetes**: Infraestrutura escalável e resiliente
+### 👥 Gestão de Clientes
 
-## 🏗️ Arquitetura do Sistema
+- Cadastro de clientes com CPF, nome, email e telefone
+- Identificação de clientes por CPF ou ID
+- Validação através de Value Objects (CPF, Email)
+- Listagem paginada de clientes
 
-### Desenho da Arquitetura
+### 💳 Gestão de Pagamentos
 
-A solução foi projetada seguindo os princípios de **Clean Architecture** para atender aos seguintes requisitos:
+- Criação de transações de pagamento
+- Rastreamento de status de pagamento (pendente, aprovado, cancelado)
+- Suporte a webhooks para gateways de pagamento externos
+- Consulta de pagamento por ID
 
-#### 📋 Requisitos de Negócio
+## 📊 Métricas de Qualidade
 
-- **Autoatendimento**: Sistema para pedidos sem necessidade de atendente
-- **Gestão de Filas**: Controle inteligente de pedidos por status e prioridade
-- **Pagamentos Seguros**: Integração e fallback simulado
-- **Escalabilidade**: Suporte a múltiplas lojas e totens
-- **Rastreabilidade**: Acompanhamento completo do ciclo do pedido
+- **Cobertura**: 88.14% (131 testes, 10 suites)
+- **Qualidade**: Integrado com SonarCloud
+- **CI/CD**: Pipeline automatizado com GitHub Actions
+- **Arquitetura**: Clean Architecture com domínios isolados
 
-#### ⚙️ Requisitos de Infraestrutura
+## 🏗️ Arquitetura
+
+### Stack Tecnológico
+
+- **Framework**: NestJS 10+ com TypeScript 5.9.3
+- **Arquitetura**: Clean Architecture (Hexagonal)
+- **Banco de Dados**: PostgreSQL com TypeORM
+- **Container**: Docker
+- **Orquestração**: AWS ECS / Terraform
+- **Testes**: Jest (88.14% de cobertura)
+- **Qualidade**: SonarCloud + ESLint
+- **CI/CD**: GitHub Actions
+- **API Gateway**: Kong Gateway (infraestrutura separada)
+
+### Diagrama de Arquitetura
 
 ```mermaid
 graph TD
-    A[Load Balancer] --> B[NestJS App - Pods 2-8]
-    B --> C[PostgreSQL]
-    B --> D[Fake Pagamento API]
-    E[Horizontal Pod Autoscaler] --> B
-    F[Metrics Server] --> E
-    G[Kubernetes Cluster] --> A
-    H[Persistent Volume] --> C
+    A[API Gateway/Kong] --> B[Customer-Payment Service]
+    B --> C[PostgreSQL RDS]
+    B --> D[External Payment Gateway]
+    E[ECS/Kubernetes] --> B
+    F[Auto Scaling] --> E
+    G[Load Balancer] --> A
 ```
 
-**Componentes da Infraestrutura:**
+**Componentes de Infraestrutura:**
 
-- **Kubernetes**: Orquestração de containers (MicroK8s/AKS/EKS/GKE)
-- **Auto Scaling**: HPA configurado para 2-8 pods baseado em CPU/Memória
-- **Load Balancer**: Distribuição de carga entre pods
-- **Persistent Storage**: Volume persistente para PostgreSQL
-- **Health Checks**: Monitoramento contínuo da aplicação
-- **CI/CD**: Pipeline automatizado com GitHub Actions
+- **Orquestração de Containers**: AWS ECS com Fargate
+- **Banco de Dados**: PostgreSQL (RDS)
+- **Auto Scaling**: Baseado em CPU/Memória
+- **Load Balancer**: Application Load Balancer (ALB)
+- **API Gateway**: Kong Gateway para roteamento
+- **CI/CD**: GitHub Actions com deployment automatizado
+- **Monitoramento**: SonarCloud + CloudWatch
 
-### 🔧 Stack Tecnológica
+### Separação de Domínios
 
-- **Backend**: NestJS + TypeScript + Clean Architecture
-- **Banco de Dados**: PostgreSQL com TypeORM
-- **Container**: Docker + Kubernetes
-- **Pagamentos**: Simulador Fake
-- **Testes**: Jest + Supertest
-- **Documentação**: Swagger/OpenAPI
+#### 👥 Domínio de Clientes
+
+- Cadastro e identificação de clientes
+- Validação de dados (CPF, Email, Telefone) usando Value Objects
+- Consultas por CPF, ID ou listagem paginada
+- Rastreamento de histórico de operações
+
+#### 💳 Domínio de Pagamentos
+
+- Processamento de transações de pagamento
+- Estados: Pendente, Aprovado, Cancelado
+- Integração via webhook com gateways externos
+- Rastreamento de status em tempo real
 
 ## 📚 Documentação da API
 
-### 🔗 Swagger Documentation
-
-A documentação completa da API está disponível através do Swagger:
-
-**🌐 URL Local**: [http://localhost:3000/docs](http://localhost:3000/docs)
-
-**📄 Collection JSON**: [swagger-docs.json](./swagger-docs.json)
-
-### 🔑 Endpoints Principais
-
-#### 🏪 **Autenticação e Lojas**
+### 👥 Endpoints de Clientes
 
 ```http
-POST /v1/auth/login           # Login da loja
-POST /v1/stores               # Cadastro de nova loja
-GET  /v1/stores               # Dados da loja autenticada
-POST /v1/stores/totems        # Criar totem
-DELETE /v1/stores/totems/{id} # Remover totem
+POST   /v1/customers            # Criar cliente
+GET    /v1/customers            # Listar clientes (paginado)
+GET    /v1/customers/{id}       # Buscar por ID
+GET    /v1/customers/cpf/{cpf}  # Buscar por CPF
 ```
 
-#### 👥 **Clientes**
+**Exemplo de Requisição (POST /v1/customers)**:
+
+```json
+{
+  "cpf": "12345678900",
+  "name": "João Silva",
+  "email": "joao@example.com",
+  "phone": "11999999999"
+}
+```
+
+### 💳 Endpoints de Pagamento
 
 ```http
-POST /v1/customers            # Cadastrar cliente
-GET  /v1/customers            # Listar clientes (paginado)
-GET  /v1/customers/{id}       # Buscar por ID
-GET  /v1/customers/cpf/{cpf}  # Buscar por CPF
+POST   /v1/payment              # Criar pagamento
+GET    /v1/payment/{id}         # Buscar pagamento
+PATCH  /v1/payment/{id}/approve # Aprovar pagamento (webhook)
+PATCH  /v1/payment/{id}/cancel  # Cancelar pagamento (webhook)
 ```
 
-#### 📦 **Produtos e Categorias**
+**Exemplo de Requisição (POST /v1/payment)**:
 
-```http
-GET  /v1/categories           # Listar categorias
-POST /v1/categories           # Criar categoria
-POST /v1/categories/{id}/products    # Criar produto
-DELETE /v1/categories/{catId}/products/{prodId} # Remover produto
+```json
+{
+  "orderId": "uuid-order-id",
+  "amount": 45.9,
+  "paymentMethod": "credit_card"
+}
 ```
 
-#### 🛒 **Pedidos**
+**Estados de Pagamento**:
 
-```http
-POST /v1/order                # Criar pedido
-GET  /v1/order/all            # Listar pedidos (paginado)
-GET  /v1/order/sorted-list    # Lista ordenada por status
-GET  /v1/order/{id}           # Buscar pedido
-PATCH /v1/order/{id}/prepare  # Marcar como "Em Preparo"
-PATCH /v1/order/{id}/ready    # Marcar como "Pronto"
-PATCH /v1/order/{id}/finished # Marcar como "Finalizado"
-```
-
-#### 💳 **Pagamentos**
-
-```http
-POST /v1/payment              # Criar pagamento
-GET  /v1/payment/{id}         # Consultar pagamento
-PATCH /v1/payment/{id}/approve # Aprovar pagamento (webhook)
-PATCH /v1/payment/{id}/cancel  # Cancelar pagamento (webhook)
-```
+- `pending`: Aguardando confirmação
+- `approved`: Pagamento confirmado
+- `cancelled`: Pagamento cancelado
 
 ### 🔐 Autenticação
 
-A API utiliza múltiplos esquemas de autenticação:
+Endpoints de webhook requerem autenticação via:
 
-- **`access-token`**: JWT Bearer para lojas autenticadas
-- **`totem-token`**: Token específico para totems
-- **`api-key`**: Chave de API para endpoints públicos
-- **`external-payment-consumer-key`**: Chave para webhooks de pagamento
+- **`external-payment-consumer-key`**: Chave de API para webhooks de pagamento externos
 
-## 🚀 Guia Completo de Execução
+Endpoints de gerenciamento podem requerer JWT conforme integração do API Gateway.
 
-### 📋 Pré-requisitos
+## 🚀 Primeiros Passos
 
-- **Docker** (v20+) e **Docker Compose** (v2+)
-- **Node.js** (v18+) para desenvolvimento local
-- **Kubernetes** (MicroK8s/Kind/AKS/EKS/GKE) para deploy em produção
+### Pré-requisitos
 
-### 🐳 Execução Local com Docker
+- **Docker** (v20+) e **Docker Compose**
+- **Node.js** (v20-22) para desenvolvimento local
+- **PostgreSQL** (v14+)
 
-#### 1. **Configuração do Ambiente**
+### Execução Local com Docker
+
+#### 1. Configuração do Ambiente
 
 ```bash
-# Clone o repositório
-git clone https://github.com/davidasteixeira/tech-challenge.git
-cd tech-challenge
+# Navegar para a pasta app
+cd microservice-customer/app
 
-# Configure as variáveis de ambiente
+# Configurar variáveis de ambiente
 cp env-example .env
-# Ajuste as variáveis no arquivo .env conforme necessário
+# Ajustar variáveis no arquivo .env conforme necessário
 ```
 
-Ajuste as variáveis conforme necessário no arquivo `.env` criado.
-
-#### 2. **Inicialização dos Serviços**
+**Principais Variáveis de Ambiente:**
 
 ```bash
-# Inicie todos os serviços
+# Banco de Dados
+DB_HOST=localhost
+DB_PORT=5432
+DB_USERNAME=postgres
+DB_PASSWORD=postgres
+DB_DATABASE=customer_payment
+
+# Aplicação
+PORT=3000
+NODE_ENV=development
+
+# Gateway de Pagamento (opcional para local)
+PAYMENT_GATEWAY_URL=http://localhost:3001
+PAYMENT_GATEWAY_API_KEY=your-key
+```
+
+#### 2. Inicialização dos Serviços
+
+```bash
+# Iniciar todos os serviços (app + banco de dados)
 docker-compose up -d
 
-# Verifique os logs
-docker-compose logs -f
+# Verificar logs
+docker-compose logs -f app
 
-# Verifique o status dos containers
+# Verificar status dos containers
 docker-compose ps
 ```
 
-#### 3. **Acesso à Aplicação**
+#### 3. Acesso à Aplicação
 
 - **API**: [http://localhost:3000](http://localhost:3000)
-- **Swagger**: [http://localhost:3000/docs](http://localhost:3000/docs)
 - **Health Check**: [http://localhost:3000/health](http://localhost:3000/health)
 
-### ☸️ Deploy Kubernetes
-
-Para deploy completo em Kubernetes, consulte a documentação específica:
-
-**📖 [Documentação Kubernetes](./k8s/README.md)**
-
-A documentação do Kubernetes inclui:
-
-- Configuração de todos os artefatos (Namespace, Secrets, Deployments, Services, HPA)
-- Scripts de automação para deploy e limpeza
-- Guia de troubleshooting e monitoramento
-- Configuração de testes de carga com K6
-
-### 🔄 Ordem de Execução das APIs
-
-#### **Fluxo Básico de Operação:**
-
-1. **📝 Cadastro da Loja**
-
-```bash
-POST /v1/stores
-# Cadastrar dados da loja (CNPJ, email, senha, etc.)
-```
-
-2. **🔑 Autenticação**
-
-```bash
-POST /v1/auth/login
-# Fazer login para obter o access_token JWT
-```
-
-3. **🖥️ Configuração de Totems**
-
-```bash
-POST /v1/stores/totems
-# Criar totems de autoatendimento
-```
-
-4. **📦 Configuração do Catálogo**
-
-```bash
-POST /v1/categories        # Criar categorias
-POST /v1/categories/{id}/products  # Adicionar produtos
-```
-
-5. **👤 Fluxo do Cliente (Opcional)**
-
-```bash
-POST /v1/customers         # Cadastrar cliente (opcional)
-GET /v1/customers/cpf/{cpf} # Buscar cliente por CPF
-```
-
-6. **🛒 Processo de Pedido**
-
-```bash
-POST /v1/order             # Criar pedido
-PATCH /v1/order/{id}/customer # Vincular cliente (opcional)
-POST /v1/payment           # Gerar pagamento
-```
-
-7. **📊 Gestão de Pedidos**
-
-```bash
-GET /v1/order/sorted-list  # Acompanhar fila de pedidos
-PATCH /v1/order/{id}/prepare # Iniciar preparo
-PATCH /v1/order/{id}/ready   # Marcar como pronto
-PATCH /v1/order/{id}/finished # Finalizar entrega
-```
-
-#### **Headers Necessários:**
-
-```bash
-# Para endpoints de loja
-Authorization: Bearer {access_token}
-
-# Para endpoints de totem
-totem-access-token: {totem_token}
-
-# Para cadastro inicial
-x-api-key: {api_key}
-```
-
-## 🏗️ Arquitetura Clean Code
-
-### 📁 Estrutura do Projeto
-
-O projeto implementa **Clean Architecture** com separação clara de responsabilidades:
-
-```
-src/
-├── common/                    # Elementos compartilhados entre camadas
-│   ├── DTOs/                 # Data Transfer Objects comuns
-│   ├── dataSource/           # Interfaces para acesso a dados
-│   └── exceptions/           # Exceções customizadas do sistema
-├── core/                     # 🎯 CAMADA INTERNA - Regras de Negócio
-│   ├── common/              # Utilitários e Value Objects (CPF, Email, etc.)
-│   └── modules/             # Módulos de domínio (customer, order, payment, etc.)
-│       └── {module}/        # Cada módulo contém:
-│           ├── DTOs/        # Contratos de entrada/saída
-│           ├── controllers/ # Orquestração de casos de uso
-│           ├── entities/    # Entidades de domínio
-│           ├── gateways/    # Interfaces para acesso a dados
-│           ├── mappers/     # Mapeamento entre DTOs e entidades
-│           ├── presenters/  # Formatação de resposta
-│           └── useCases/    # Regras de negócio (casos de uso)
-└── external/                # 🌐 CAMADA EXTERNA - Detalhes de Implementação
-    ├── consumers/           # Interfaces externas (NestJS API)
-    └── dataSources/         # Implementações de acesso a dados
-```
-
-### 🎯 Princípios Aplicados
-
-- **🔄 Inversão de Dependência**: Core não depende de detalhes externos
-- **🧪 Testabilidade**: Regras de negócio isoladas e testáveis
-- **🔌 Independência de Framework**: Lógica de negócio desacoplada do NestJS
-- **📱 Independência de UI**: API pode ser consumida por qualquer interface
-- **🗄️ Independência de Banco**: Uso de interfaces para persistência
-
-### 📖 Documentação Detalhada
-
-Para informações completas sobre a arquitetura, consulte:
-
-**📄 [Guia de Clean Architecture](./src/CLEAN_ARCHITECTURE_GUIDE.md)**
-
-## 🛠️ Comandos de Desenvolvimento
-
-### 📦 Instalação
+### Desenvolvimento Local (sem Docker)
 
 ```bash
 # Instalar dependências
 npm install
 
-# Configurar ambiente
-cp env-example .env
+# Executar migrations
+npm run typeorm:migration:run
+
+# Iniciar em modo de desenvolvimento
+npm run start:dev
 ```
 
-### 🚀 Execução
+## 🛠️ Comandos de Desenvolvimento
+
+### Instalação
+
+```bash
+npm install
+```
+
+### Execução
 
 ```bash
 # Desenvolvimento com hot-reload
@@ -324,13 +229,13 @@ npm run start:debug
 npm run build && npm run start:prod
 ```
 
-### 🧪 Testes
+### Testes
 
 ```bash
 # Testes unitários
 npm test
 
-# Testes com coverage
+# Testes com cobertura
 npm run test:cov
 
 # Testes em modo watch
@@ -340,11 +245,11 @@ npm run test:watch
 npm run test:debug
 ```
 
-### 🗄️ Banco de Dados
+### Banco de Dados
 
 ```bash
 # Gerar migration
-npm run typeorm:migration:generate -- src/migrations/NomeDaMigration
+npm run typeorm:migration:generate -- src/migrations/MigrationName
 
 # Executar migrations
 npm run typeorm:migration:run
@@ -353,164 +258,177 @@ npm run typeorm:migration:run
 npm run typeorm:migration:revert
 ```
 
-### 🔍 Qualidade de Código
+### Qualidade de Código
 
 ```bash
-# Lint e correção automática
+# Lint com auto-fix
 npm run lint
 
 # Formatação de código
 npm run format
 ```
 
+## 🏗️ Estrutura de Clean Architecture
+
+```
+app/src/
+├── common/                    # Elementos compartilhados entre camadas
+│   ├── DTOs/                 # Data Transfer Objects comuns
+│   ├── dataSource/           # Interfaces de acesso a dados
+│   └── exceptions/           # Exceções customizadas do sistema
+├── core/                     # 🎯 CAMADA INTERNA - Regras de Negócio
+│   ├── common/              # Utilitários e Value Objects (CPF, Email, etc.)
+│   └── modules/             # Módulos de domínio
+│       ├── customer/        # Domínio de clientes
+│       │   ├── DTOs/        # Contratos de entrada/saída
+│       │   ├── controllers/ # Orquestração dos casos de uso
+│       │   ├── entities/    # Entidades de domínio
+│       │   ├── gateways/    # Interfaces de acesso a dados
+│       │   ├── mappers/     # Mapeamento DTO/Entidade
+│       │   ├── presenters/  # Formatação de respostas
+│       │   └── useCases/    # Regras de negócio (casos de uso)
+│       └── payment/         # Domínio de pagamentos
+│           └── ...          # Mesma estrutura de customer
+└── external/                # 🌐 CAMADA EXTERNA - Detalhes de Implementação
+    ├── consumers/           # Interfaces externas (API NestJS)
+    └── dataSources/         # Implementações de acesso a dados
+```
+
+### Princípios Aplicados
+
+- **🔄 Inversão de Dependência**: Core não depende de detalhes externos
+- **🧪 Testabilidade**: Regras de negócio isoladas e testáveis
+- **🔌 Independência de Framework**: Lógica de negócio desacoplada do NestJS
+- **📱 Independência de UI**: API pode ser consumida por qualquer interface
+- **🗄️ Independência de Banco de Dados**: Uso de interfaces para persistência
+
 ## 🧪 Testes
 
-### 📊 Cobertura e Qualidade
+### Cobertura e Qualidade
 
-O projeto possui uma suíte abrangente de testes que garante a qualidade e confiabilidade do código:
+- **Cobertura Total**: 88.14%
+- **Suites de Teste**: 10 (todas passando)
+- **Total de Testes**: 131 (todos passando)
+- **Foco de Domínio**: Domínios de Cliente e Pagamento apenas
 
-#### **Tipos de Teste:**
+**Tipos de Teste:**
 
-- ✅ **Testes Unitários**: Cobertura das regras de negócio (entities, use cases)
-- ✅ **Testes de Integração**: Validação de controllers e repositories
-- ✅ **Testes de Value Objects**: Validação de CPF, Email, CNPJ, etc.
-- ✅ **Mocks Configurados**: Simulação de dependências externas
+- ✅ Testes Unitários: Cobertura de regras de negócio (entidades, casos de uso)
+- ✅ Testes de Integração: Validação de controllers e repositórios
+- ✅ Testes de Value Objects: Validação de CPF, Email, etc.
+- ✅ Mocks Configurados: Simulação de dependências externas
 
-#### **Comandos de Teste:**
+### Estrutura de Testes
+
+```
+app/test/
+├── jest.setup.ts              # Configuração global de testes
+└── core/
+    ├── mock/                  # Mocks centralizados
+    └── modules/
+        ├── customer/          # Testes do módulo de clientes
+        └── payment/           # Testes do módulo de pagamentos
+```
+
+## 🔄 Pipeline de CI/CD
+
+### Workflows do GitHub Actions
+
+#### 1. Workflow de CI (.github/workflows/ci.yml)
+
+**Gatilhos**:
+
+- Pull requests para `main` e `develop`
+- Push para `main` e `develop`
+
+**Jobs**:
+
+1. **test**: Executa todos os testes com cobertura
+2. **sonarqube**: Análise de qualidade (needs: test)
+
+**Funcionalidades**:
+
+- ✅ Node.js 20.x
+- ✅ Testes automatizados
+- ✅ Relatório de cobertura
+- ✅ Integração com SonarCloud
+- ✅ Validação de quality gate
+
+#### 2. Workflow de Deploy (.github/workflows/app.yml)
+
+**Gatilhos**:
+
+- Execução de workflow (aguarda CI passar)
+- Push para `main` com caminhos: `app/**`, `infra/ecs/**`
+- Despacho manual
+
+**Funcionalidades**:
+
+- ✅ Aguarda sucesso do CI
+- ✅ Deploy no AWS ECS
+- ✅ Atualização de infraestrutura Terraform
+- ✅ Rollback automático em falha
+
+## ☸️ Deploy
+
+### Deploy com Terraform
+
+O microserviço possui infraestrutura como código com Terraform para deploy na AWS:
 
 ```bash
-# Executar todos os testes
-npm test
+cd infra/ecs
 
-# Testes com relatório de cobertura
-npm run test:cov
+# Inicializar Terraform
+terraform init
 
-# Testes em modo watch (desenvolvimento)
-npm run test:watch
+# Planejar deploy
+terraform plan
 
-# Debug de testes específicos
-npm run test:debug
+# Aplicar infraestrutura
+terraform apply
 ```
 
-#### **Configuração Especial:**
+**Componentes Criados**:
 
-- **Polyfills automáticos** para crypto no ambiente CI
-- **Configuração Jest** otimizada para TypeScript
-- **Mocks centralizados** em `test/core/mock/`
-- **Setup automatizado** com `jest.setup.ts`
+- Task Definition e Service do ECS
+- PostgreSQL RDS
+- Security Groups
+- IAM Roles
+- CloudWatch Logs
 
-### 🔧 Estrutura de Testes
+Para mais detalhes veja [infra/ecs/README.md](./infra/ecs/README.md)
 
-```
-test/
-├── jest.setup.ts              # Configuração global dos testes
-├── core/
-│   ├── mock/                  # Mocks centralizados
-│   │   ├── generalDataSource.mock.ts
-│   │   ├── notificationDataSource.mock.ts
-│   │   └── index.ts
-│   ├── common/
-│   │   └── valueObjects/      # Testes de Value Objects
-│   └── modules/
-│       ├── customer/          # Testes do módulo Customer
-│       ├── order/             # Testes do módulo Order
-│       ├── payment/           # Testes do módulo Payment
-│       └── store/             # Testes do módulo Store
-```
+### Infraestrutura de Banco de Dados
 
-## 🔄 CI/CD
-
-### 🚀 Pipeline Automatizado
-
-O projeto inclui pipeline de CI/CD configurado no **GitHub Actions**:
-
-**📄 Arquivo**: `.github/workflows/ci.yml`
-
-#### **Características do Pipeline:**
-
-- ✅ **Trigger**: Push e Pull Requests para `main`, `qa`, `develop`
-- ✅ **Node.js Setup**: Configuração automática com cache de dependências
-- ✅ **Testes Automatizados**: Execução completa da suíte de testes
-- ✅ **Build Validation**: Verificação de build sem erros
-- ✅ **Health Check**: Validação de endpoints críticos
-
-#### **Matrix Strategy:**
-
-```yaml
-strategy:
-  matrix:
-    node-version: [18.x, 20.x]
-    os: [ubuntu-latest]
-```
-
-## 🎥 Demonstração em Vídeo
-
-### 📹 Vídeo Demonstrativo
-
-**🔗 Link do Vídeo**: [https://www.youtube.com/watch?v=AiEWQPJ_DV4]
-
-**📋 Conteúdo Demonstrado:**
-
-- ✅ **Arquitetura da Solução**: Visão geral dos componentes
-- ✅ **Deploy Kubernetes**: Processo de deploy e configuração
-- ✅ **Funcionamento dos Endpoints**: Teste prático das APIs
-- ✅ **Infraestrutura Criada**: Demonstração da stack completa
-- ✅ **Fluxo de Pedido Completo**: Do cadastro à entrega
-- ✅ **Monitoramento e Logs**: Observabilidade da aplicação
-
-**🎯 Foco**: Evidência prática do funcionamento end-to-end
-
-## 📊 Recursos Adicionais
-
-### 🎨 Documentação Visual
-
-- **📐 [Miro - Arquitetura e Fluxos](https://miro.com/app/board/uXjVIGlxRtY=/)**: Diagramas visuais da arquitetura e user journeys
-- **🗄️ [Modelo do Banco de Dados](https://app.brmodeloweb.com/#!/publicview/68213be2acb39fc7c317bb53)**: Schema completo das entidades
-- **📊 [Diagrama de Escalabilidade](.github/assets/diagram.png)**: Demonstração visual do scale e estrutura da aplicação
-
-### 🔧 Configurações Avançadas
-
-#### **Variáveis de Ambiente Principais:**
+O microserviço inclui configuração de infraestrutura de banco de dados:
 
 ```bash
-# Banco de Dados
-DB_HOST=localhost
-DB_PORT=5432
-DB_USERNAME=postgres
-DB_PASSWORD=postgres
-DB_DATABASE=tech_challenge
+cd infra/database
 
-# JWT
-JWT_SECRET=your-secret-key
+# Deploy da infraestrutura de banco de dados
+terraform init
+terraform apply
 ```
 
-#### **Portas e Endpoints:**
+Para mais detalhes veja [infra/database/README.md](./infra/database/README.md)
 
-- **Aplicação**: `3000`
-- **PostgreSQL**: `5432`
-- **Swagger**: `/docs`
-- **Health Check**: `/health`
+## 📊 Monitoramento e Observabilidade
 
-### 🌟 Características Técnicas
+### SonarCloud
 
-#### **Clean Architecture Benefits:**
+- **Projeto**: fiap-tech-challange_microservice-customer-payment
+- **Organização**: fiap-tech-challange
+- **Quality Gate**: Cobertura > 80%, Sem bugs, Sem vulnerabilidades
 
-- 🔄 **Testabilidade**: Regras de negócio isoladas
-- 🔌 **Flexibilidade**: Fácil troca de frameworks/DBs
-- 📈 **Escalabilidade**: Arquitetura orientada a crescimento
-- 🛡️ **Manutenibilidade**: Código organizando e desacoplado
+### CloudWatch (AWS)
 
-#### **Kubernetes Features:**
+- **Logs**: Logs de tarefas do ECS
+- **Métricas**: CPU, Memória, Contagem de requisições
+- **Alarmes**: Gatilhos de auto-scaling
 
-- 🚀 **Auto Scaling**: HPA configurado (2-8 pods)
-- 💾 **Persistent Storage**: Volume para PostgreSQL
-- 🔒 **Secrets Management**: Configurações sensíveis seguras
-- 📊 **Health Monitoring**: Probes para disponibilidade
-- ⚡ **Load Balancing**: Distribuição automática de carga
+## 🔗 Repositórios Relacionados
 
-#### **Performance & Monitoring:**
-
-- 📈 **Métricas**: CPU e memória monitoradas
-- 🔍 **Logs Centralizados**: Rastreamento de eventos
-- 🧪 **Testes de Carga**: K6 integrado
-- 📊 **Dashboard**: Métricas em tempo real
+- **API Gateway**: [infra-gw-terraform](../infra-gw-terraform/)
+- **Serviço de Produtos**: [microservice-products](../microservice-products/)
+- **Serviço de Loja**: [microservice-store](../microservice-store/)
+- **Serviço de Notificações**: [microservice-notification](../microservice-notification/)

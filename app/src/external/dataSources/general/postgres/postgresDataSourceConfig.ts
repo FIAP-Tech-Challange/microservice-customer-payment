@@ -1,7 +1,6 @@
 import { DataSource } from 'typeorm';
 import { CustomerEntity } from './entities/customer.entity';
 import { PaymentEntity } from './entities/payment.entity';
-import { PaymentEntity } from './entities/payment.entity';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -11,7 +10,6 @@ export interface PostgresConfig {
   username: string;
   password: string;
   database: string;
-  nodeEnv?: string;
   nodeEnv?: string;
 }
 
