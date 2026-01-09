@@ -7,6 +7,7 @@ on:
       - completed
     branches:
       - main
+      - develop
 
 jobs:
   check-quality-gate:
@@ -78,9 +79,7 @@ jobs:
           DB_HOST=$(echo $PARAMS | jq -r '.[] | select(.Name=="/db-customer-payment/main/rds_endpoint") | .Value')
           DB_USER=$(echo $PARAMS | jq -r '.[] | select(.Name=="/db-customer-payment/main/db_username") | .Value')
           DB_PASS=$(echo $PARAMS | jq -r '.[] | select(.Name=="/db-customer-payment/main/db_password") | .Value')
-          DB_HOST=$(echo $PARAMS | jq -r '.[] | select(.Name=="/db-customer-payment/main/rds_endpoint") | .Value')
-          DB_USER=$(echo $PARAMS | jq -r '.[] | select(.Name=="/db-customer-payment/main/db_username") | .Value')
-          DB_PASS=$(echo $PARAMS | jq -r '.[] | select(.Name=="/db-customer-payment/main/db_password") | .Value')
+
 
           # ✅ ADICIONADO: Verificação se os parâmetros do SSM vieram vazios
           if [[ -z "$DB_HOST" ]] || [[ -z "$DB_USER" ]] || [[ -z "$DB_PASS" ]]; then
@@ -125,20 +124,8 @@ jobs:
           file: ./app/Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.tags.outputs.tags }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          build-args: |
-            DB_PG_HOST=${{ env.DB_PG_HOST }}
-            DB_PG_USER=${{ env.DB_PG_USER }}
-            DB_PG_PASSWORD=${{ env.DB_PG_PASSWORD }}
-            DB_PG_NAME=${{ secrets.DB_PG_NAME }}
-            DB_PG_PORT=${{ secrets.DB_PG_PORT }}
-            API_KEY_NAME_ORDER=${{ secrets.API_KEY_NAME_ORDER }}
-            ORDER_SERVICE_BASE_URL_PARAM=${{ secrets.ORDER_SERVICE_BASE_URL_PARAM }}
-            JWT_ACCESS_TOKEN_EXPIRATION_TIME=${{ secrets.JWT_ACCESS_TOKEN_EXPIRATION_TIME }}
-            JWT_SECRET_NAME=${{ secrets.JWT_SECRET_NAME }}
-            NODE_ENV=production
-            EXTERNAL_PAYMENT_CONSUMER_KEY=${{ secrets.EXTERNAL_PAYMENT_CONSUMER_KEY }}
+            cache-from: type=gha
+            cache-to: type=gha,mode=max
 
   deploy:
     name: ☁️ Deploy Terraform
@@ -175,14 +162,12 @@ jobs:
       - name: 📎 Fetch DB Parameters (Runtime)
         run: |
           PARAMS=$(aws ssm get-parameters --names "/db-customer-payment/main/rds_endpoint" "/db-customer-payment/main/db_username" "/db-customer-payment/main/db_password" --with-decryption --query "Parameters[].{Name:Name,Value:Value}" --output json)
-          PARAMS=$(aws ssm get-parameters --names "/db-customer-payment/main/rds_endpoint" "/db-customer-payment/main/db_username" "/db-customer-payment/main/db_password" --with-decryption --query "Parameters[].{Name:Name,Value:Value}" --output json)
+
 
           DB_HOST=$(echo $PARAMS | jq -r '.[] | select(.Name=="/db-customer-payment/main/rds_endpoint") | .Value')
           DB_USER=$(echo $PARAMS | jq -r '.[] | select(.Name=="/db-customer-payment/main/db_username") | .Value')
           DB_PASS=$(echo $PARAMS | jq -r '.[] | select(.Name=="/db-customer-payment/main/db_password") | .Value')
-          DB_HOST=$(echo $PARAMS | jq -r '.[] | select(.Name=="/db-customer-payment/main/rds_endpoint") | .Value')
-          DB_USER=$(echo $PARAMS | jq -r '.[] | select(.Name=="/db-customer-payment/main/db_username") | .Value')
-          DB_PASS=$(echo $PARAMS | jq -r '.[] | select(.Name=="/db-customer-payment/main/db_password") | .Value')
+
 
           if [[ -z "$DB_HOST" ]] || [[ -z "$DB_USER" ]]; then
              echo "❌ Erro Crítico: Falha ao recuperar parâmetros do SSM para o Deploy."
@@ -255,6 +240,7 @@ jobs:
           fi
           echo "✅ Kong Admin URL recuperada."
 
+          cp ../../kong.yaml .
           sed -i "s|PLACEHOLDER_LB_URL|${{ env.LB_URL }}|g" kong.yaml
           
           docker run --rm \
