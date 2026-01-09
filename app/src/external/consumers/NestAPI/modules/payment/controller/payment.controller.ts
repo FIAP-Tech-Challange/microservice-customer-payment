@@ -38,9 +38,6 @@ import { ConfigService } from '@nestjs/config';
 import { StoreGuard } from '../../auth/guards/store.guard';
 import { StoreTokenInterface } from '../../auth/dtos/token.dto';
 import { ExternalPaymentConsumersGuard } from '../../auth/guards/external-payment-consumers.guard';
-import { StoreGuard } from '../../auth/guards/store.guard';
-import { StoreTokenInterface } from '../../auth/dtos/token.dto';
-import { ExternalPaymentConsumersGuard } from '../../auth/guards/external-payment-consumers.guard';
 
 @ApiTags('Payment')
 @Controller({
@@ -77,7 +74,6 @@ export class PaymentController {
   @Post()
   async create(
     @Body() createPaymentDto: CreatePaymentDto,
-    @Request() req: StoreTokenInterface,
     @Request() req: StoreTokenInterface,
   ): Promise<CreatePaymentResponseDto> {
     const coreController = new PaymentCoreController(
@@ -139,7 +135,6 @@ export class PaymentController {
   @Get(':id')
   async findById(
     @Param() params: PaymentIdDto,
-    @Request() req: StoreTokenInterface,
     @Request() req: StoreTokenInterface,
   ): Promise<PaymentResponseDto> {
     const coreController = new PaymentCoreController(

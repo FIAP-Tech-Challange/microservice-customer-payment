@@ -1,23 +1,44 @@
-version: "3.8"
+name: microservice-customer
 
 services:
+  postgres:
+    image: postgres:latest
+    container_name: postgres-customer
+    env_file:
+      - .env
+    ports:
+      - '${DB_PG_PORT}:${DB_PG_PORT}'
+    environment:
+      - POSTGRES_USER=${DB_PG_USER}
+      - POSTGRES_PASSWORD=${DB_PG_PASSWORD}
+      - POSTGRES_DB=${DB_PG_NAME}
+      - PGPORT=${DB_PG_PORT}
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'pg_isready -U ${DB_PG_USER} -d ${DB_PG_NAME} -p ${DB_PG_PORT}',
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
   app:
     build: .
-    container_name: app
+    container_name: app-customer
     ports:
-      - "3000:3000"
+      - '${PORT}:${PORT}'
     env_file:
       - .env
     environment:
-      DB_PG_HOST: ${DB_PG_HOST}
-      DB_PG_PORT: ${DB_PG_PORT}
-      DB_PG_USER: ${DB_PG_USER}
-      DB_PG_PASSWORD: ${DB_PG_PASSWORD}
-      DB_PG_NAME: ${DB_PG_NAME}
-      API_KEY: ${API_KEY}
-      API_KEY_NAME_ORDER: ${API_KEY_NAME_ORDER}
-      ORDER_SERVICE_BASE_URL_PARAM: ${ORDER_SERVICE_BASE_URL_PARAM}
-      JWT_ACCESS_TOKEN_EXPIRATION_TIME: ${JWT_ACCESS_TOKEN_EXPIRATION_TIME}
-      JWT_SECRET_NAME: ${JWT_SECRET_NAME}
-      NODE_ENV: ${NODE_ENV}
-      EXTERNAL_PAYMENT_CONSUMER_KEY: ${EXTERNAL_PAYMENT_CONSUMER_KEY}
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_DEFAULT_REGION=us-east-1
+      - NODE_ENV=development
+      - DB_HOST=postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
