@@ -246,7 +246,6 @@ jobs:
           fi
           echo "✅ Kong Admin URL recuperada."
 
-          cp ../../kong.yaml .
           sed -i "s|PLACEHOLDER_LB_URL|${{ env.LB_URL }}|g" kong.yaml
           
           docker run --rm \
