@@ -219,8 +219,8 @@ resource "aws_ecs_task_definition" "app_task" {
         value = "${var.db_pg_name}"
       },
       {
-        name  = "API_KEY"
-        value = "${aws_secretsmanager_secret_version.api_key_value.secret_string}"
+        name  = "API_KEY_SECRET_NAME"
+        value = "${aws_secretsmanager_secret.api_key.name}"
       },
       {
         name  = "API_KEY_NAME_ORDER"
