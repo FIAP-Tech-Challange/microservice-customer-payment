@@ -3,48 +3,48 @@
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=fiap-tech-challange_microservice-customer-payment&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=fiap-tech-challange_microservice-customer-payment)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=fiap-tech-challange_microservice-customer-payment&metric=coverage)](https://sonarcloud.io/summary/new_code?id=fiap-tech-challange_microservice-customer-payment)
 
-## 📋 Overview
+## 📋 Visão Geral
 
-Microservice responsible for **customer management** and **payment processing** built with **Clean Architecture** and **NestJS**. This service is part of the Tech Challenge microservices architecture and handles all domain logic related to customers and payment processing.
+Microserviço responsável pela **gestão de clientes** e **processamento de pagamentos** construído com **Clean Architecture** e **NestJS**. Este serviço faz parte da arquitetura de microserviços do Tech Challenge e gerencia toda a lógica de domínio relacionada a clientes e processamento de pagamentos.
 
-## 🚀 Features
+## 🚀 Funcionalidades
 
-### 👥 Customer Management
+### 👥 Gestão de Clientes
 
-- Customer registration with CPF, name, email and phone
-- Customer identification by CPF or ID
-- Validation using Value Objects (CPF, Email)
-- Paginated customer listing
+- Cadastro de clientes com CPF, nome, email e telefone
+- Identificação de clientes por CPF ou ID
+- Validação através de Value Objects (CPF, Email)
+- Listagem paginada de clientes
 
-### 💳 Payment Management
+### 💳 Gestão de Pagamentos
 
-- Payment transaction creation
-- Payment status tracking (pending, approved, cancelled)
-- Webhook support for external payment gateways
-- Payment query by ID
+- Criação de transações de pagamento
+- Rastreamento de status de pagamento (pendente, aprovado, cancelado)
+- Suporte a webhooks para gateways de pagamento externos
+- Consulta de pagamento por ID
 
-## 📊 Quality Metrics
+## 📊 Métricas de Qualidade
 
-- **Coverage**: 88.14% (131 tests, 10 suites)
-- **Quality**: Integrated with SonarCloud
-- **CI/CD**: Automated pipeline with GitHub Actions
-- **Architecture**: Clean Architecture with isolated domains
+- **Cobertura**: 88.14% (131 testes, 10 suites)
+- **Qualidade**: Integrado com SonarCloud
+- **CI/CD**: Pipeline automatizado com GitHub Actions
+- **Arquitetura**: Clean Architecture com domínios isolados
 
-## 🏗️ Architecture
+## 🏗️ Arquitetura
 
-### Technology Stack
+### Stack Tecnológico
 
-- **Framework**: NestJS 10+ with TypeScript 5.9.3
-- **Architecture**: Clean Architecture (Hexagonal)
-- **Database**: PostgreSQL with TypeORM
+- **Framework**: NestJS 10+ com TypeScript 5.9.3
+- **Arquitetura**: Clean Architecture (Hexagonal)
+- **Banco de Dados**: PostgreSQL com TypeORM
 - **Container**: Docker
-- **Orchestration**: AWS ECS / Terraform
-- **Tests**: Jest (88.14% coverage)
-- **Quality**: SonarCloud + ESLint
+- **Orquestração**: AWS ECS / Terraform
+- **Testes**: Jest (88.14% de cobertura)
+- **Qualidade**: SonarCloud + ESLint
 - **CI/CD**: GitHub Actions
-- **API Gateway**: Kong Gateway (separate infrastructure)
+- **API Gateway**: Kong Gateway (infraestrutura separada)
 
-### Architecture Diagram
+### Diagrama de Arquitetura
 
 ```mermaid
 graph TD
@@ -56,44 +56,44 @@ graph TD
     G[Load Balancer] --> A
 ```
 
-**Infrastructure Components:**
+**Componentes de Infraestrutura:**
 
-- **Container Orchestration**: AWS ECS with Fargate
-- **Database**: PostgreSQL (RDS)
-- **Auto Scaling**: CPU/Memory based
+- **Orquestração de Containers**: AWS ECS com Fargate
+- **Banco de Dados**: PostgreSQL (RDS)
+- **Auto Scaling**: Baseado em CPU/Memória
 - **Load Balancer**: Application Load Balancer (ALB)
-- **API Gateway**: Kong Gateway for routing
-- **CI/CD**: GitHub Actions with automated deployment
-- **Monitoring**: SonarCloud + CloudWatch
+- **API Gateway**: Kong Gateway para roteamento
+- **CI/CD**: GitHub Actions com deployment automatizado
+- **Monitoramento**: SonarCloud + CloudWatch
 
-### Domain Separation
+### Separação de Domínios
 
-#### 👥 Customer Domain
+#### 👥 Domínio de Clientes
 
-- Customer registration and identification
-- Data validation (CPF, Email, Phone) using Value Objects
-- Queries by CPF, ID or paginated listing
-- Operation history tracking
+- Cadastro e identificação de clientes
+- Validação de dados (CPF, Email, Telefone) usando Value Objects
+- Consultas por CPF, ID ou listagem paginada
+- Rastreamento de histórico de operações
 
-#### 💳 Payment Domain
+#### 💳 Domínio de Pagamentos
 
-- Payment transaction processing
-- States: Pending, Approved, Cancelled
-- Webhook integration with external gateways
-- Real-time status tracking
+- Processamento de transações de pagamento
+- Estados: Pendente, Aprovado, Cancelado
+- Integração via webhook com gateways externos
+- Rastreamento de status em tempo real
 
-## 📚 API Documentation
+## 📚 Documentação da API
 
-### 👥 Customer Endpoints
+### 👥 Endpoints de Clientes
 
 ```http
-POST   /v1/customers            # Create customer
-GET    /v1/customers            # List customers (paginated)
-GET    /v1/customers/{id}       # Get by ID
-GET    /v1/customers/cpf/{cpf}  # Get by CPF
+POST   /v1/customers            # Criar cliente
+GET    /v1/customers            # Listar clientes (paginado)
+GET    /v1/customers/{id}       # Buscar por ID
+GET    /v1/customers/cpf/{cpf}  # Buscar por CPF
 ```
 
-**Request Example (POST /v1/customers)**:
+**Exemplo de Requisição (POST /v1/customers)**:
 
 ```json
 {
@@ -104,16 +104,16 @@ GET    /v1/customers/cpf/{cpf}  # Get by CPF
 }
 ```
 
-### 💳 Payment Endpoints
+### 💳 Endpoints de Pagamento
 
 ```http
-POST   /v1/payment              # Create payment
-GET    /v1/payment/{id}         # Get payment
-PATCH  /v1/payment/{id}/approve # Approve payment (webhook)
-PATCH  /v1/payment/{id}/cancel  # Cancel payment (webhook)
+POST   /v1/payment              # Criar pagamento
+GET    /v1/payment/{id}         # Buscar pagamento
+PATCH  /v1/payment/{id}/approve # Aprovar pagamento (webhook)
+PATCH  /v1/payment/{id}/cancel  # Cancelar pagamento (webhook)
 ```
 
-**Request Example (POST /v1/payment)**:
+**Exemplo de Requisição (POST /v1/payment)**:
 
 ```json
 {
@@ -123,316 +123,312 @@ PATCH  /v1/payment/{id}/cancel  # Cancel payment (webhook)
 }
 ```
 
-**Payment States**:
+**Estados de Pagamento**:
 
-- `pending`: Awaiting confirmation
-- `approved`: Payment confirmed
-- `cancelled`: Payment cancelled
+- `pending`: Aguardando confirmação
+- `approved`: Pagamento confirmado
+- `cancelled`: Pagamento cancelado
 
-### 🔐 Authentication
+### 🔐 Autenticação
 
-Webhook endpoints require authentication via:
+Endpoints de webhook requerem autenticação via:
 
-- **`external-payment-consumer-key`**: API key for external payment webhooks
+- **`external-payment-consumer-key`**: Chave de API para webhooks de pagamento externos
 
-Management endpoints may require JWT as per API Gateway integration.
+Endpoints de gerenciamento podem requerer JWT conforme integração do API Gateway.
 
-## 🚀 Getting Started
+## 🚀 Primeiros Passos
 
-### Prerequisites
+### Pré-requisitos
 
-- **Docker** (v20+) and **Docker Compose**
-- **Node.js** (v20-22) for local development
+- **Docker** (v20+) e **Docker Compose**
+- **Node.js** (v20-22) para desenvolvimento local
 - **PostgreSQL** (v14+)
 
-### Local Execution with Docker
+### Execução Local com Docker
 
-#### 1. Environment Setup
+#### 1. Configuração do Ambiente
 
 ```bash
-# Navigate to app folder
+# Navegar para a pasta app
 cd microservice-customer/app
 
-# Configure environment variables
+# Configurar variáveis de ambiente
 cp env-example .env
-# Adjust variables in .env file as needed
+# Ajustar variáveis no arquivo .env conforme necessário
 ```
 
-**Main Environment Variables:**
+**Principais Variáveis de Ambiente:**
 
 ```bash
-# Database
+# Banco de Dados
 DB_HOST=localhost
 DB_PORT=5432
 DB_USERNAME=postgres
 DB_PASSWORD=postgres
 DB_DATABASE=customer_payment
 
-# Application
+# Aplicação
 PORT=3000
 NODE_ENV=development
 
-# Payment Gateway (optional for local)
+# Gateway de Pagamento (opcional para local)
 PAYMENT_GATEWAY_URL=http://localhost:3001
 PAYMENT_GATEWAY_API_KEY=your-key
 ```
 
-#### 2. Service Initialization
+#### 2. Inicialização dos Serviços
 
 ```bash
-# Start all services (app + database)
+# Iniciar todos os serviços (app + banco de dados)
 docker-compose up -d
 
-# Check logs
+# Verificar logs
 docker-compose logs -f app
 
-# Check container status
+# Verificar status dos containers
 docker-compose ps
 ```
 
-#### 3. Application Access
+#### 3. Acesso à Aplicação
 
 - **API**: [http://localhost:3000](http://localhost:3000)
 - **Health Check**: [http://localhost:3000/health](http://localhost:3000/health)
 
-### Local Development (without Docker)
+### Desenvolvimento Local (sem Docker)
 
 ```bash
-# Install dependencies
+# Instalar dependências
 npm install
 
-# Run migrations
+# Executar migrations
 npm run typeorm:migration:run
 
-# Start in development mode
+# Iniciar em modo de desenvolvimento
 npm run start:dev
 ```
 
-## 🛠️ Development Commands
+## 🛠️ Comandos de Desenvolvimento
 
-### Installation
+### Instalação
 
 ```bash
 npm install
 ```
 
-### Execution
+### Execução
 
 ```bash
-# Development with hot-reload
+# Desenvolvimento com hot-reload
 npm run start:dev
 
-# Debug mode
+# Modo debug
 npm run start:debug
 
-# Production
+# Produção
 npm run build && npm run start:prod
 ```
 
-### Tests
+### Testes
 
 ```bash
-# Unit tests
+# Testes unitários
 npm test
 
-# Tests with coverage
+# Testes com cobertura
 npm run test:cov
 
-# Tests in watch mode
+# Testes em modo watch
 npm run test:watch
 
-# Debug tests
+# Debug de testes
 npm run test:debug
 ```
 
-### Database
+### Banco de Dados
 
 ```bash
-# Generate migration
+# Gerar migration
 npm run typeorm:migration:generate -- src/migrations/MigrationName
 
-# Run migrations
+# Executar migrations
 npm run typeorm:migration:run
 
-# Revert migration
+# Reverter migration
 npm run typeorm:migration:revert
 ```
 
-### Code Quality
+### Qualidade de Código
 
 ```bash
-# Lint with auto-fix
+# Lint com auto-fix
 npm run lint
 
-# Code formatting
+# Formatação de código
 npm run format
 ```
 
-## 🏗️ Clean Architecture Structure
+## 🏗️ Estrutura de Clean Architecture
 
 ```
 app/src/
-├── common/                    # Shared elements between layers
-│   ├── DTOs/                 # Common Data Transfer Objects
-│   ├── dataSource/           # Data access interfaces
-│   └── exceptions/           # Custom system exceptions
-├── core/                     # 🎯 INNER LAYER - Business Rules
-│   ├── common/              # Utilities and Value Objects (CPF, Email, etc.)
-│   └── modules/             # Domain modules
-│       ├── customer/        # Customer domain
-│       │   ├── DTOs/        # Input/output contracts
-│       │   ├── controllers/ # Use case orchestration
-│       │   ├── entities/    # Domain entities
-│       │   ├── gateways/    # Data access interfaces
-│       │   ├── mappers/     # DTO/Entity mapping
-│       │   ├── presenters/  # Response formatting
-│       │   └── useCases/    # Business rules (use cases)
-│       └── payment/         # Payment domain
-│           └── ...          # Same structure as customer
-└── external/                # 🌐 OUTER LAYER - Implementation Details
-    ├── consumers/           # External interfaces (NestJS API)
-    └── dataSources/         # Data access implementations
+├── common/                    # Elementos compartilhados entre camadas
+│   ├── DTOs/                 # Data Transfer Objects comuns
+│   ├── dataSource/           # Interfaces de acesso a dados
+│   └── exceptions/           # Exceções customizadas do sistema
+├── core/                     # 🎯 CAMADA INTERNA - Regras de Negócio
+│   ├── common/              # Utilitários e Value Objects (CPF, Email, etc.)
+│   └── modules/             # Módulos de domínio
+│       ├── customer/        # Domínio de clientes
+│       │   ├── DTOs/        # Contratos de entrada/saída
+│       │   ├── controllers/ # Orquestração dos casos de uso
+│       │   ├── entities/    # Entidades de domínio
+│       │   ├── gateways/    # Interfaces de acesso a dados
+│       │   ├── mappers/     # Mapeamento DTO/Entidade
+│       │   ├── presenters/  # Formatação de respostas
+│       │   └── useCases/    # Regras de negócio (casos de uso)
+│       └── payment/         # Domínio de pagamentos
+│           └── ...          # Mesma estrutura de customer
+└── external/                # 🌐 CAMADA EXTERNA - Detalhes de Implementação
+    ├── consumers/           # Interfaces externas (API NestJS)
+    └── dataSources/         # Implementações de acesso a dados
 ```
 
-### Applied Principles
+### Princípios Aplicados
 
-- **🔄 Dependency Inversion**: Core doesn't depend on external details
-- **🧪 Testability**: Isolated and testable business rules
-- **🔌 Framework Independence**: Business logic decoupled from NestJS
-- **📱 UI Independence**: API can be consumed by any interface
-- **🗄️ Database Independence**: Using interfaces for persistence
+- **🔄 Inversão de Dependência**: Core não depende de detalhes externos
+- **🧪 Testabilidade**: Regras de negócio isoladas e testáveis
+- **🔌 Independência de Framework**: Lógica de negócio desacoplada do NestJS
+- **📱 Independência de UI**: API pode ser consumida por qualquer interface
+- **🗄️ Independência de Banco de Dados**: Uso de interfaces para persistência
 
-## 🧪 Testing
+## 🧪 Testes
 
-### Coverage and Quality
+### Cobertura e Qualidade
 
-- **Total Coverage**: 88.14%
-- **Test Suites**: 10 (all passing)
-- **Total Tests**: 131 (all passing)
-- **Domain Focus**: Customer and Payment domains only
+- **Cobertura Total**: 88.14%
+- **Suites de Teste**: 10 (todas passando)
+- **Total de Testes**: 131 (todos passando)
+- **Foco de Domínio**: Domínios de Cliente e Pagamento apenas
 
-**Test Types:**
+**Tipos de Teste:**
 
-- ✅ Unit Tests: Business rules coverage (entities, use cases)
-- ✅ Integration Tests: Controllers and repositories validation
-- ✅ Value Objects Tests: CPF, Email, etc. validation
-- ✅ Configured Mocks: External dependency simulation
+- ✅ Testes Unitários: Cobertura de regras de negócio (entidades, casos de uso)
+- ✅ Testes de Integração: Validação de controllers e repositórios
+- ✅ Testes de Value Objects: Validação de CPF, Email, etc.
+- ✅ Mocks Configurados: Simulação de dependências externas
 
-### Test Structure
+### Estrutura de Testes
 
 ```
 app/test/
-├── jest.setup.ts              # Global test configuration
+├── jest.setup.ts              # Configuração global de testes
 └── core/
-    ├── mock/                  # Centralized mocks
+    ├── mock/                  # Mocks centralizados
     └── modules/
-        ├── customer/          # Customer module tests
-        └── payment/           # Payment module tests
+        ├── customer/          # Testes do módulo de clientes
+        └── payment/           # Testes do módulo de pagamentos
 ```
 
-## 🔄 CI/CD Pipeline
+## 🔄 Pipeline de CI/CD
 
-### GitHub Actions Workflows
+### Workflows do GitHub Actions
 
-#### 1. CI Workflow (.github/workflows/ci.yml)
+#### 1. Workflow de CI (.github/workflows/ci.yml)
 
-**Triggers**:
+**Gatilhos**:
 
-- Pull requests to `main` and `develop`
-- Push to `main` and `develop`
+- Pull requests para `main` e `develop`
+- Push para `main` e `develop`
 
 **Jobs**:
 
-1. **test**: Run all tests with coverage
-2. **sonarqube**: Quality analysis (needs: test)
+1. **test**: Executa todos os testes com cobertura
+2. **sonarqube**: Análise de qualidade (needs: test)
 
-**Features**:
+**Funcionalidades**:
 
 - ✅ Node.js 20.x
-- ✅ Automated tests
-- ✅ Coverage report
-- ✅ SonarCloud integration
-- ✅ Quality gate validation
+- ✅ Testes automatizados
+- ✅ Relatório de cobertura
+- ✅ Integração com SonarCloud
+- ✅ Validação de quality gate
 
-#### 2. Deploy Workflow (.github/workflows/app.yml)
+#### 2. Workflow de Deploy (.github/workflows/app.yml)
 
-**Triggers**:
+**Gatilhos**:
 
-- Workflow run (waits for CI to pass)
-- Push to `main` with paths: `app/**`, `infra/ecs/**`
-- Manual dispatch
+- Execução de workflow (aguarda CI passar)
+- Push para `main` com caminhos: `app/**`, `infra/ecs/**`
+- Despacho manual
 
-**Features**:
+**Funcionalidades**:
 
-- ✅ Waits for CI success
-- ✅ AWS ECS deployment
-- ✅ Terraform infrastructure update
-- ✅ Auto rollback on failure
+- ✅ Aguarda sucesso do CI
+- ✅ Deploy no AWS ECS
+- ✅ Atualização de infraestrutura Terraform
+- ✅ Rollback automático em falha
 
-## ☸️ Deployment
+## ☸️ Deploy
 
-### Terraform Deploy
+### Deploy com Terraform
 
-The microservice has infrastructure as code with Terraform for AWS deployment:
+O microserviço possui infraestrutura como código com Terraform para deploy na AWS:
 
 ```bash
 cd infra/ecs
 
-# Initialize Terraform
+# Inicializar Terraform
 terraform init
 
-# Plan deployment
+# Planejar deploy
 terraform plan
 
-# Apply infrastructure
+# Aplicar infraestrutura
 terraform apply
 ```
 
-**Created Components**:
+**Componentes Criados**:
 
-- ECS Task Definition and Service
+- Task Definition e Service do ECS
 - PostgreSQL RDS
 - Security Groups
 - IAM Roles
 - CloudWatch Logs
 
-For more details see [infra/ecs/README.md](./infra/ecs/README.md)
+Para mais detalhes veja [infra/ecs/README.md](./infra/ecs/README.md)
 
-### Database Infrastructure
+### Infraestrutura de Banco de Dados
 
-The microservice includes database infrastructure setup:
+O microserviço inclui configuração de infraestrutura de banco de dados:
 
 ```bash
 cd infra/database
 
-# Deploy database infrastructure
+# Deploy da infraestrutura de banco de dados
 terraform init
 terraform apply
 ```
 
-For more details see [infra/database/README.md](./infra/database/README.md)
+Para mais detalhes veja [infra/database/README.md](./infra/database/README.md)
 
-## 📊 Monitoring and Observability
+## 📊 Monitoramento e Observabilidade
 
 ### SonarCloud
 
-- **Project**: fiap-tech-challange_microservice-customer-payment
-- **Organization**: fiap-tech-challange
-- **Quality Gate**: Coverage > 80%, No bugs, No vulnerabilities
+- **Projeto**: fiap-tech-challange_microservice-customer-payment
+- **Organização**: fiap-tech-challange
+- **Quality Gate**: Cobertura > 80%, Sem bugs, Sem vulnerabilidades
 
 ### CloudWatch (AWS)
 
-- **Logs**: ECS task logs
-- **Metrics**: CPU, Memory, Request count
-- **Alarms**: Auto-scaling triggers
+- **Logs**: Logs de tarefas do ECS
+- **Métricas**: CPU, Memória, Contagem de requisições
+- **Alarmes**: Gatilhos de auto-scaling
 
-## 🔗 Related Repositories
+## 🔗 Repositórios Relacionados
 
 - **API Gateway**: [infra-gw-terraform](../infra-gw-terraform/)
-- **Products Service**: [microservice-products](../microservice-products/)
-- **Store Service**: [microservice-store](../microservice-store/)
-- **Notification Service**: [microservice-notification](../microservice-notification/)
-
-## 📝 License
-
-This project is part of the FIAP Tech Challenge program.
+- **Serviço de Produtos**: [microservice-products](../microservice-products/)
+- **Serviço de Loja**: [microservice-store](../microservice-store/)
+- **Serviço de Notificações**: [microservice-notification](../microservice-notification/)
