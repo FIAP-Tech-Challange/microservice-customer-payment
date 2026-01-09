@@ -7,21 +7,6 @@ on:
       - completed
     branches:
       - main
-  push:
-    branches:
-      - main
-    paths:
-      - "app/**"
-      - "infra/ecs/**"
-      - "terraform/**"
-      - ".github/workflows/app.yml"
-  pull_request:
-    branches:
-      - main
-    paths:
-      - "app/**"
-      - "infra/ecs/**"
-      - "terraform/**"
 
 jobs:
   check-quality-gate:
@@ -90,14 +75,11 @@ jobs:
             exit 1
           fi
 
-          DB_HOST=$(echo $PARAMS | jq -r '.[] | select(.Name=="/db-customer-payment/main/rds_endpoint") | .Value')
-          DB_USER=$(echo $PARAMS | jq -r '.[] | select(.Name=="/db-customer-payment/main/db_username") | .Value')
-          DB_PASS=$(echo $PARAMS | jq -r '.[] | select(.Name=="/db-customer-payment/main/db_password") | .Value')
+          # Limpei as linhas duplicadas de extração aqui
           DB_HOST=$(echo $PARAMS | jq -r '.[] | select(.Name=="/db-customer-payment/main/rds_endpoint") | .Value')
           DB_USER=$(echo $PARAMS | jq -r '.[] | select(.Name=="/db-customer-payment/main/db_username") | .Value')
           DB_PASS=$(echo $PARAMS | jq -r '.[] | select(.Name=="/db-customer-payment/main/db_password") | .Value')
 
-          # ✅ ADICIONADO: Verificação se os parâmetros do SSM vieram vazios
           if [[ -z "$DB_HOST" ]] || [[ -z "$DB_USER" ]] || [[ -z "$DB_PASS" ]]; then
              echo "❌ Erro: Um ou mais parâmetros do SSM retornaram vazios."
              exit 1
@@ -159,7 +141,6 @@ jobs:
     name: ☁️ Deploy Terraform
     needs: build
     runs-on: ubuntu-latest
-
     defaults:
       run:
         working-directory: ./infra/ecs
@@ -190,11 +171,7 @@ jobs:
       - name: 📎 Fetch DB Parameters (Runtime)
         run: |
           PARAMS=$(aws ssm get-parameters --names "/db-customer-payment/main/rds_endpoint" "/db-customer-payment/main/db_username" "/db-customer-payment/main/db_password" --with-decryption --query "Parameters[].{Name:Name,Value:Value}" --output json)
-          PARAMS=$(aws ssm get-parameters --names "/db-customer-payment/main/rds_endpoint" "/db-customer-payment/main/db_username" "/db-customer-payment/main/db_password" --with-decryption --query "Parameters[].{Name:Name,Value:Value}" --output json)
 
-          DB_HOST=$(echo $PARAMS | jq -r '.[] | select(.Name=="/db-customer-payment/main/rds_endpoint") | .Value')
-          DB_USER=$(echo $PARAMS | jq -r '.[] | select(.Name=="/db-customer-payment/main/db_username") | .Value')
-          DB_PASS=$(echo $PARAMS | jq -r '.[] | select(.Name=="/db-customer-payment/main/db_password") | .Value')
           DB_HOST=$(echo $PARAMS | jq -r '.[] | select(.Name=="/db-customer-payment/main/rds_endpoint") | .Value')
           DB_USER=$(echo $PARAMS | jq -r '.[] | select(.Name=="/db-customer-payment/main/db_username") | .Value')
           DB_PASS=$(echo $PARAMS | jq -r '.[] | select(.Name=="/db-customer-payment/main/db_password") | .Value')
