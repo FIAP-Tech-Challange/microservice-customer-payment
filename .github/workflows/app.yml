@@ -75,7 +75,6 @@ jobs:
             exit 1
           fi
 
-          # Limpei as linhas duplicadas de extração aqui
           DB_HOST=$(echo $PARAMS | jq -r '.[] | select(.Name=="/db-customer-payment/main/rds_endpoint") | .Value')
           DB_USER=$(echo $PARAMS | jq -r '.[] | select(.Name=="/db-customer-payment/main/db_username") | .Value')
           DB_PASS=$(echo $PARAMS | jq -r '.[] | select(.Name=="/db-customer-payment/main/db_password") | .Value')
