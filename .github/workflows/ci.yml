@@ -9,6 +9,7 @@ on:
       - "app/**"
       - "infra/ecs/**"
       - "terraform/**"
+      - ".github/workflows/app.yml"
   push:
     branches:
       - develop
@@ -17,6 +18,7 @@ on:
       - "app/**"
       - "infra/ecs/**"
       - "terraform/**"
+      - ".github/workflows/app.yml"
 
 jobs:
   test:
