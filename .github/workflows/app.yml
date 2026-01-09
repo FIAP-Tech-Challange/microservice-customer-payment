@@ -7,18 +7,7 @@ on:
       - completed
     branches:
       - main
-    paths:
-      - 'app/**'
-      - 'infra/ecs/**' 
-      - 'terraform/**'
-      - '.github/workflows/app.yml'
-  pull_request:
-    branches:
-      - main 
-    paths:
-      - 'app/**'
-      - 'infra/ecs/**'
-      - 'terraform/**'
+
 
 jobs:
   check-quality-gate:
