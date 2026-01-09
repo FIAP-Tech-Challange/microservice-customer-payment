@@ -24,20 +24,6 @@ jobs:
           echo "✅ CI tests and SonarQube quality gate passed"
           echo "Proceeding with deployment..."
 
-  check-quality-gate:
-    name: ✅ Verify Quality Gate Passed
-    runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Confirm Quality Gate
-        run: |
-          echo "✅ CI tests and SonarQube quality gate passed"
-          echo "Proceeding with deployment..."
-
   build:
     name: 🐳 Build & Push Image
     runs-on: ubuntu-latest
