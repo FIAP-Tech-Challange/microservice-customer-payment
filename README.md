@@ -1,8 +1,5 @@
 # Microservice Customer-Payment
 
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=fiap-tech-challange_microservice-customer-payment&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=fiap-tech-challange_microservice-customer-payment)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=fiap-tech-challange_microservice-customer-payment&metric=coverage)](https://sonarcloud.io/summary/new_code?id=fiap-tech-challange_microservice-customer-payment)
-
 ## 📋 Visão Geral
 
 Microserviço responsável pela **gestão de clientes** e **processamento de pagamentos** construído com **Clean Architecture** e **NestJS**. Este serviço faz parte da arquitetura de microserviços do Tech Challenge e gerencia toda a lógica de domínio relacionada a clientes e processamento de pagamentos.

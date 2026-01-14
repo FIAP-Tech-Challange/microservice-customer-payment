@@ -9,6 +9,6 @@ services:
         paths:
           - /v1/customers
           - /v1/payment
-        strip_path: false
+        strip_path: true
         tags:
           - customer-payment
