@@ -2,7 +2,7 @@ name: 🚀 Deploy Infra & App
 
 on:
   workflow_run:
-    workflows: ["🔍 CI - Tests and Quality"]
+    workflows: ["🛢️ Deploy Database"]
     types:
       - completed
     branches:
@@ -21,10 +21,10 @@ jobs:
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
 
-      - name: Confirm Quality Gate
+      - name: Confirm Database Deployment
         run: |
-          echo "✅ CI tests and SonarQube quality gate passed"
-          echo "Proceeding with deployment..."
+          echo "✅ Database deployment completed successfully"
+          echo "Proceeding with app deployment..."
 
   build:
     name: 🐳 Build & Push Image
@@ -247,7 +247,7 @@ jobs:
           echo "✅ Kong Admin URL recuperada."
 
           sed -i "s|PLACEHOLDER_LB_URL|${{ env.LB_URL }}|g" kong.yaml
-          
+
           docker run --rm \
             -v $(pwd):/data \
             -e DECK_KONG_ADDR=$KONG_ADMIN_URL \
